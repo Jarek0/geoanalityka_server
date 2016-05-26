@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	template="/WEB-INF/templates/default.xhtml">
+	<ui:define name="content">
+		<h1>Test form</h1>
+
+		<h:form id="reg">
+			<h2>Adding layer info</h2>
+			<p>Enforces annotation-based constraints defined on the model
+				class.</p>
+			<h:panelGrid columns="3" columnClasses="titleCell">
+				<h:outputLabel for="name" value="Name:" />
+				<h:inputText id="name"
+					value="#{layerInfoController.newLayerInfo.name}" />
+				<h:message for="name" errorClass="invalid" />
+
+				<h:outputLabel for="layerType" value="#{i18n['layer.type']}:" />
+				<h:selectOneMenu id="layerType" value="#{layerInfoController.newLayerInfo.type}">
+					<f:selectItems var="layerType"
+						value="#{layerInfoController.layerTypes}" itemValue="#{layerType}"
+						itemLabel="#{i18n['layer.type.' += layerType]}" />
+				</h:selectOneMenu>
+				<h:message for="layerType" errorClass="invalid" />
+			</h:panelGrid>
+
+			<p>
+				<h:panelGrid columns="2">
+					<h:commandButton id="register"
+						action="#{layerInfoController.add}" value="#{i18n['common.add']}"
+						styleClass="register" />
+					<h:messages styleClass="messages" errorClass="invalid"
+						infoClass="valid" warnClass="warning" globalOnly="true" />
+				</h:panelGrid>
+			</p>
+		</h:form>
+		<h2>Layer infos</h2>
+		<h:panelGroup rendered="#{empty layerInfoProducer.layerInfos}">
+			<em>No layer infos.</em>
+		</h:panelGroup>
+		<h:dataTable var="_layerInfo" value="#{layerInfoProducer.layerInfos}"
+			rendered="#{not empty layerInfoProducer.layerInfos}" styleClass="simpletablestyle">
+			<h:column>
+				<f:facet name="header">Id</f:facet>
+                #{_layerInfo.id}
+            </h:column>
+			<h:column>
+				<f:facet name="header">Name</f:facet>
+                #{_layerInfo.name}
+            </h:column>
+			<h:column>
+				<f:facet name="header">Type</f:facet>
+                #{_layerInfo.type}
+            </h:column>
+			<h:column>
+				<f:facet name="header">REST URL</f:facet>
+				<a href="#{request.contextPath}/rest/layerinfos/#{_layerInfo.id}">/rest/layerinfos/#{_layerInfo.id}</a>
+			</h:column>
+			<f:facet name="footer">
+            REST URL for all layer infos: <a
+					href="#{request.contextPath}/rest/layerinfos">/rest/layerinfos</a>
+			</f:facet>
+		</h:dataTable>
+	</ui:define>
+</ui:composition>

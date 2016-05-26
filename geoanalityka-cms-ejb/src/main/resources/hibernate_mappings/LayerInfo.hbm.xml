@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+	"-//Hibernate/Hibernate Mapping DTD//EN"
+ 	"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<class name="pl.gisexpert.cms.model.LayerInfo" table="layer_infos">
+		<id name="id" column="id">
+			<generator class="native" />
+		</id>
+		<property name="name" column="name" length="120" />
+		<property name="type" column="type">
+			<type name="org.hibernate.type.EnumType">
+				<param name="enumClass">pl.gisexpert.cms.model.LayerType</param>
+				<param name="useNamed">true</param>
+			</type>
+		</property>
+	</class>
+</hibernate-mapping>

@@ -1,0 +1,39 @@
+.ui-button-text-only .ui-button-text {
+    padding: 6px 12px;
+}
+
+.btn-primary, .btn-danger, .btn-success, .btn-warning {
+    color: #FFF!important;
+}
+
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {
+    text-shadow: initial;
+}
+
+.ui-button {
+    padding: 6px 12px;
+}
+
+.ui-widget {
+   font-size: inherit;
+}
+
+.ui-widget.btn-xs {
+    font-size: 12px;
+}
+
+#addMapModule\:pickList.ui-picklist .ui-picklist-list {
+    height: 260px;
+    width: 300px;
+}
+
+.panel-button {
+       -webkit-tansition: -webkit-transform .2s;
+    transition: transform .2s; 
+}
+
+.panel-button:hover {
+
+    -webkit-transform: scale(1.1);
+    transform: scale(1.04);
+}
