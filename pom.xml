@@ -32,6 +32,7 @@
 		<module>geoanalityka-web</module>
 		<module>geoanalityka-ear</module>
 		<module>geoanalityka-common-ejb</module>
+		<module>geoanalityka-common-jar</module>
 	</modules>
 
 	<repositories>
@@ -82,14 +83,21 @@
 
 	<dependencyManagement>
 		<dependencies>
-		
+
+			<dependency>
+				<groupId>pl.gisexpert</groupId>
+				<artifactId>geoanalityka-common-jar</artifactId>
+				<version>${project.version}</version>
+				<type>jar</type>
+			</dependency>
+			
 			<dependency>
 				<groupId>pl.gisexpert</groupId>
 				<artifactId>geoanalityka-common-ejb</artifactId>
 				<version>${project.version}</version>
 				<type>ejb</type>
 			</dependency>
-				
+
 			<dependency>
 				<groupId>pl.gisexpert</groupId>
 				<artifactId>geoanalityka-cms-ejb</artifactId>

@@ -32,7 +32,7 @@ public class AccountController implements Serializable {
         Subject subject = SecurityUtils.getSubject();
         if (subject.isAuthenticated()) {
             account = accountFacade.findByUsername((String)subject.getPrincipal());
-        } 
+        }
    }
 
     public Account getAccount() {

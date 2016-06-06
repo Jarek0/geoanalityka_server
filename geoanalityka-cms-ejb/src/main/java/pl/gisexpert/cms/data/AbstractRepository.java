@@ -7,6 +7,8 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.transaction.Transactional;
+
 import org.primefaces.model.SortOrder;
 
 public abstract class AbstractRepository<T> {
@@ -23,15 +25,18 @@ public abstract class AbstractRepository<T> {
 
     protected abstract EntityManager getEntityManager();
 
+    @Transactional
     public void create(T entity) {
         getEntityManager().persist(entity);
     }
-
+    
+    @Transactional
     public void edit(T entity) {
 
         getEntityManager().merge(entity);
     }
-
+    
+    @Transactional
     public void remove(T entity) {
         getEntityManager().remove(getEntityManager().merge(entity));
     }

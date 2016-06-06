@@ -59,7 +59,7 @@ public class ResetPasswordController implements Serializable {
             Date date = new Date();
             Calendar cal = Calendar.getInstance();
             cal.setTime(date);
-            cal.add(Calendar.HOUR, 24); // reset token will expire after 24 hours
+            cal.add(Calendar.HOUR, 24);
             date = cal.getTime();
 
             resetPassword.setExpDate(date);
@@ -105,7 +105,6 @@ public class ResetPasswordController implements Serializable {
             ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
             FacesMessage failMessgae = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Podany link jest już nieaktualny lub nieprawidłowy. Proszę ponownie skorzystać z formularza.", null);
             context.addMessage("resetPassword", failMessgae);
-
         }
 
     }

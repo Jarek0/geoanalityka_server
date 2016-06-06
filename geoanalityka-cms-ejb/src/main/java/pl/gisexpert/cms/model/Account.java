@@ -16,6 +16,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.NamedNativeQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -37,7 +38,7 @@ public class Account implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 30)
+    @Column(nullable = false, length = 80)
     @NotNull
     @Size(min = 1, max = 30)
     private String username;
@@ -55,7 +56,7 @@ public class Account implements Serializable {
     private Collection<Role> roles;
 
     @Email
-    @Column(name = "email_address", nullable = false)
+    @Column(name = "email_address", nullable = false, length = 80)
     @NotNull
     private String emailAddress;
 
@@ -70,9 +71,23 @@ public class Account implements Serializable {
     @Column(name = "date_last_login")
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date lastLoginDate;
+    
+    @Column(name = "account_status", nullable = false)
+    private AccountStatus accountStatus;
 
     @Embedded
     private ResetPassword resetPassword;
+    
+    @Embedded
+    private AccountConfirmation accountConfirmation;
+    
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @JoinTable(name = "account_tokens",
+    joinColumns = {
+        @JoinColumn(name = "account_id", referencedColumnName = "id")},
+    inverseJoinColumns = {
+        @JoinColumn(name = "token_id", referencedColumnName = "id")})
+    private Collection<AccessToken> tokens;
     
     public String hashPassword(String password) {
         DefaultPasswordService passwordService = new DefaultPasswordService();
@@ -156,8 +171,32 @@ public class Account implements Serializable {
     public void setResetPassword(ResetPassword resetPassword) {
         this.resetPassword = resetPassword;
     }
+    
+    public AccountConfirmation getAccountConfirmation() {
+		return accountConfirmation;
+	}
 
-    @Override
+	public void setAccountConfirmation(AccountConfirmation accountConfirmation) {
+		this.accountConfirmation = accountConfirmation;
+	}
+
+	public AccountStatus getAccountStatus() {
+		return accountStatus;
+	}
+
+	public void setAccountStatus(AccountStatus accountStatus) {
+		this.accountStatus = accountStatus;
+	}
+	
+	public Collection<AccessToken> getTokens() {
+		return tokens;
+	}
+
+	public void setTokens(Collection<AccessToken> tokens) {
+		this.tokens = tokens;
+	}
+
+	@Override
     public int hashCode() {
         int hash = 7;
         hash = 89 * hash + Objects.hashCode(this.username);

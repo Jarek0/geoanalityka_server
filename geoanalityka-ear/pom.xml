@@ -34,7 +34,13 @@
 	</licenses>
 
 	<dependencies>
-
+	
+		<dependency>
+			<groupId>pl.gisexpert</groupId>
+			<artifactId>geoanalityka-common-jar</artifactId>
+			<type>jar</type>
+		</dependency>
+		
 		<dependency>
 			<groupId>pl.gisexpert</groupId>
 			<artifactId>geoanalityka-common-ejb</artifactId>

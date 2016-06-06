@@ -14,31 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pl.gisexpert.stat.util;
+package pl.gisexpert.cms.service;
 
-import javax.enterprise.inject.Produces;
+import javax.ejb.Stateless;
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
 
-import pl.gisexpert.stat.qualifier.StatEntityManager;
+import org.slf4j.Logger;
 
-/**
- * This class uses CDI to alias Java EE resources, such as the persistence context, to CDI beans
- * 
- * <p>
- * Example injection on a managed bean field:
- * </p>
- * 
- * <pre>
- * &#064;Inject
- * &#064;StatEntityManager
- * private EntityManager em;
- * </pre>
- */
-public class Resources {
+import pl.gisexpert.cms.model.AccessToken;
+import pl.gisexpert.cms.model.Account;
+import pl.gisexpert.cms.model.LayerInfo;
+import pl.gisexpert.cms.qualifier.CMSEntityManager;
 
-    @Produces
-    @StatEntityManager
-    @PersistenceContext(unitName = "stat_pu")
+
+// The @Stateless annotation eliminates the need for manual transaction demarcation
+@Stateless
+public class BearerTokenService {
+
+    @Inject
+    private Logger log;
+
+    @Inject
+    @CMSEntityManager
     private EntityManager em;
+
+    public Account addToken(Account account, AccessToken token){
+    	account = em.find(Account.class, account.getId());
+    	account.getTokens().add(token);
+    	em.merge(account);
+    	return account;
+    }
 }

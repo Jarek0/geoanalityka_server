@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <h:head>
+        <meta charset="utf-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <meta name="description" content=""/>
+        <meta name="author" content=""/>
+
+        <title>#{i18n.app}</title>
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+    </h:head>
+
+    <h:body>
+
+        <h:outputStylesheet name="plugins/bootstrap/dist/css/bootstrap.min.css"/>
+        <h:outputStylesheet name="plugins/font-awesome/css/font-awesome.min.css"/>
+        <h:outputStylesheet name="css/style.css"/>
+
+        <div id="wrapper">
+            <div id="page-wrapper">
+                <ui:insert name="content"></ui:insert>
+            </div>
+            <!-- /#page-wrapper -->
+
+        </div>
+        <!-- /#wrapper -->
+        <h:outputScript name="plugins/jquery/dist/jquery.min.js" />
+        <h:outputScript name="plugins/bootstrap/dist/js/bootstrap.min.js" />
+        
+        <ui:insert name="additionalScripts" />
+
+    </h:body>
+</html>

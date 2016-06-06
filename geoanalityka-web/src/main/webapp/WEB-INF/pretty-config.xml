@@ -19,6 +19,11 @@
         <action>#{accountController.logOut}</action>
     </url-mapping>
     
+    <url-mapping id="register">
+        <pattern value="/register/" />
+        <view-id value="/faces/register.xhtml" />
+    </url-mapping>
+    
     <url-mapping id="resetPassword">
         <pattern value="/reset_password/" />
         <view-id value="/faces/resetPassword.xhtml" />
@@ -30,7 +35,7 @@
     </url-mapping>
         
         
-    <url-mapping id="admin"> 
+    <url-mapping id="admin">
         <pattern value="/admin/" /> 
         <view-id value="/faces/admin/dashboard.xhtml" />
     </url-mapping>

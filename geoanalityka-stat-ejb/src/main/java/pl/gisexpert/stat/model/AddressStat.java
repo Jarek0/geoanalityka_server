@@ -1,35 +1,25 @@
 package pl.gisexpert.stat.model;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Objects;
-import javax.persistence.CascadeType;
+
 import javax.persistence.Column;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
+import javax.persistence.NamedNativeQueries;
 import javax.persistence.NamedNativeQuery;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import org.apache.shiro.authc.credential.DefaultPasswordService;
-import org.apache.shiro.crypto.SecureRandomNumberGenerator;
-import org.apache.shiro.crypto.hash.DefaultHashService;
-import org.hibernate.annotations.Immutable;
-import org.hibernate.validator.constraints.Email;
 
-@Immutable
+import org.hibernate.annotations.Immutable;
+
 @Entity
-@Table(name = "stat")
+@Immutable
+@Table(name = "stat2015_stan_na_30_05_2016")
+@NamedNativeQueries({
+	@NamedNativeQuery(name="AddressStat.SumAllInRadius", query="SELECT sum(liczbaosobzamwlokalach)\\:\\:int FROM stat2015_stan_na_30_05_2016 "
+			+ "WHERE ST_Within(geom,ST_Buffer(ST_GeomFromText('POINT(' || :x || ' ' || :y || ')', :epsg), :radius))", resultClass = AddressStat.class)
+})
 public class AddressStat implements Serializable {
 
     private static final long serialVersionUID = 1033705321916453635L;
@@ -37,27 +27,6 @@ public class AddressStat implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column
-    protected String wojewodztwo;
-    
-    @Column
-    protected String powiat;
-    
-    @Column
-    protected String gmina;
-    
-    @Column(name="kodterytorialny")
-    protected String kodTerytorialny;
-    
-    @Column
-    protected String miejscowosc;
-    
-    @Column
-    protected String ulica;
-    
-    @Column
-    protected String numerdomu;
     
     @Column
     protected Integer liczbaLokali;
@@ -118,7 +87,6 @@ public class AddressStat implements Serializable {
     
     @Column(name="przedzialwiekuod75k")
     protected Integer przedzialWiekuOd75K;
-
     
     @Column(name="przedzialwiekuod0do4m")
     protected Integer przedzialWiekuOd0Do4M;
@@ -168,9 +136,6 @@ public class AddressStat implements Serializable {
     @Column(name="przedzialwiekuod75m")
     protected Integer przedzialWiekuOd75M;
     
-    @Column(name="stan_na")
-    protected Date stanNa;
-    
     @Column(name="geom")
     protected byte[] geometry;
 
@@ -205,34 +170,6 @@ public class AddressStat implements Serializable {
 
 	public static long getSerialversionuid() {
 		return serialVersionUID;
-	}
-
-	public String getWojewodztwo() {
-		return wojewodztwo;
-	}
-
-	public String getPowiat() {
-		return powiat;
-	}
-
-	public String getGmina() {
-		return gmina;
-	}
-
-	public String getKodTerytorialny() {
-		return kodTerytorialny;
-	}
-
-	public String getMiejscowosc() {
-		return miejscowosc;
-	}
-
-	public String getUlica() {
-		return ulica;
-	}
-
-	public String getNumerdomu() {
-		return numerdomu;
 	}
 
 	public Integer getLiczbaLokali() {
@@ -377,10 +314,6 @@ public class AddressStat implements Serializable {
 
 	public Integer getPrzedzialWiekuOd75M() {
 		return przedzialWiekuOd75M;
-	}
-
-	public Date getStanNa() {
-		return stanNa;
 	}
 
 	public byte[] getGeometry() {

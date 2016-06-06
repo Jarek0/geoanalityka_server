@@ -45,15 +45,21 @@ public class Address implements Serializable {
     @Size(max = 100)
     private String street;
 
-    @Column(name = "house_number", nullable = false)
+    @Column(name = "house_number", nullable = false, length = 12)
     @NotNull
-    private Integer houseNumber;
+    private String houseNumber;
 
-    @Column(name = "flat_number")
-    private Integer flatNumber;
+    @Column(name = "flat_number", length = 12)
+    private String flatNumber;
 
     @Column
     private String phone;
+    
+    @Column(name = "company_name", nullable = false, length = 100)
+    private String companyName;
+    
+    @Column(name = "tax_id", nullable = false, length = 20)
+    private String taxId;
 
     public Address() {
     }
@@ -106,23 +112,23 @@ public class Address implements Serializable {
         this.street = street;
     }
 
-    public Integer getHouseNumber() {
-        return houseNumber;
-    }
+    public String getHouseNumber() {
+		return houseNumber;
+	}
 
-    public void setHouseNumber(Integer houseNumber) {
-        this.houseNumber = houseNumber;
-    }
+	public void setHouseNumber(String houseNumber) {
+		this.houseNumber = houseNumber;
+	}
 
-    public Integer getFlatNumber() {
-        return flatNumber;
-    }
+	public String getFlatNumber() {
+		return flatNumber;
+	}
 
-    public void setFlatNumber(Integer flatNumber) {
-        this.flatNumber = flatNumber;
-    }
+	public void setFlatNumber(String flatNumber) {
+		this.flatNumber = flatNumber;
+	}
 
-    public String getPhone() {
+	public String getPhone() {
         return phone;
     }
 
@@ -130,7 +136,23 @@ public class Address implements Serializable {
         this.phone = phone;
     }
 
-    @Override
+    public String getCompanyName() {
+		return companyName;
+	}
+
+	public void setCompanyName(String companyName) {
+		this.companyName = companyName;
+	}
+
+	public String getTaxId() {
+		return taxId;
+	}
+
+	public void setTaxId(String taxId) {
+		this.taxId = taxId;
+	}
+
+	@Override
     public int hashCode() {
         int hash = 7;
         hash = 23 * hash + Objects.hashCode(this.id);
