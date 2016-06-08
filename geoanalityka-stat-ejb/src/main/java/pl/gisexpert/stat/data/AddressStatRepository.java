@@ -78,8 +78,8 @@ public class AddressStatRepository extends AbstractRepository<AddressStat> {
 		}
 		String columnSumsStr = Joiner.on(",").join(columnSumsArray);
 
-		String queryString = "SELECT " + columnSumsStr + " FROM stat2015_stan_na_30_05_2016"
-				+ "WHERE ST_Within(geom,ST_Buffer(ST_GeomFromText('POINT(' || :x || ' ' || :y || ')', :epsg), :radius))";
+		String queryString = "SELECT " + columnSumsStr
+				+ " FROM stat2015_stan_na_30_05_2016 WHERE ST_Within(geom,ST_Buffer(ST_GeomFromText('POINT(' || :x || ' ' || :y || ')', :epsg), :radius))";
 
 		Query query = em.createNativeQuery(queryString);
 
@@ -92,12 +92,16 @@ public class AddressStatRepository extends AbstractRepository<AddressStat> {
 		List<Object[]> results = query.getResultList();
 		Object[] result = results.get(0);
 
+		if (result == null) {
+			return null;
+		}
+
 		Map<Integer, Integer> kobiety = new HashMap<>();
 		Map<Integer, Integer> mezczyzni = new HashMap<>();
 
 		for (int i = 0; i < result.length; i += 2) {
-			kobiety.put((i / 2) * 5, (Integer) result[i]);
-			mezczyzni.put((i / 2) * 5, (Integer) result[i + 1]);
+			kobiety.put(range[0] + ((i / 2) * 5), (Integer) result[i]);
+			mezczyzni.put(range[0] + ((i / 2) * 5), (Integer) result[i + 1]);
 		}
 
 		Map<String, Map<Integer, Integer>> kobietyAndMezczyzniValues = new HashMap<>();

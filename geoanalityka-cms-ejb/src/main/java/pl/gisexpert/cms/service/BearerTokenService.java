@@ -16,17 +16,14 @@
  */
 package pl.gisexpert.cms.service;
 
+import java.util.Date;
+
 import javax.ejb.Stateless;
-import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-
-import org.slf4j.Logger;
 
 import pl.gisexpert.cms.model.AccessToken;
 import pl.gisexpert.cms.model.Account;
-import pl.gisexpert.cms.model.LayerInfo;
 import pl.gisexpert.cms.qualifier.CMSEntityManager;
 
 
@@ -35,15 +32,13 @@ import pl.gisexpert.cms.qualifier.CMSEntityManager;
 public class BearerTokenService {
 
     @Inject
-    private Logger log;
-
-    @Inject
     @CMSEntityManager
     private EntityManager em;
 
     public Account addToken(Account account, AccessToken token){
     	account = em.find(Account.class, account.getId());
     	account.getTokens().add(token);
+    	account.setLastLoginDate(new Date());
     	em.merge(account);
     	return account;
     }

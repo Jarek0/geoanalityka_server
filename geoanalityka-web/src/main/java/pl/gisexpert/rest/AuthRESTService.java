@@ -24,7 +24,6 @@ import java.util.Date;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
-import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -38,9 +37,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.apache.shiro.crypto.hash.DefaultHashService;
-import org.slf4j.Logger;
+import org.apache.shiro.subject.Subject;
 
 import pl.gisexpert.cms.data.AccessTokenRepository;
 import pl.gisexpert.cms.data.AccountRepository;
@@ -50,11 +50,12 @@ import pl.gisexpert.cms.model.AccountConfirmation;
 import pl.gisexpert.cms.model.AccountStatus;
 import pl.gisexpert.cms.model.Address;
 import pl.gisexpert.cms.service.BearerTokenService;
+import pl.gisexpert.rest.model.AccountInfo;
+import pl.gisexpert.rest.model.BaseResponse;
 import pl.gisexpert.rest.model.GetTokenForm;
 import pl.gisexpert.rest.model.GetTokenResponse;
 import pl.gisexpert.rest.model.RegisterForm;
 import pl.gisexpert.rest.model.RegisterResponse;
-import pl.gisexpert.rest.model.BaseResponse;
 import pl.gisexpert.util.SendMail;
 
 @Path("/auth")
@@ -68,9 +69,6 @@ public class AuthRESTService {
 	
 	@Inject
 	AccessTokenRepository accessTokenRepository;
-
-	@Inject
-	private Logger log;
 
 	@POST
 	@Path("/register")
@@ -130,7 +128,7 @@ public class AuthRESTService {
 		String url = request.getRequestURL().toString();
 		String baseURL = url.substring(0, url.length() - request.getRequestURI().length()) + request.getContextPath();
 
-		String confirmAccountURL = baseURL + "/" + account.getId() + "/" + confirmationCode;
+		String confirmAccountURL = baseURL + "/rest/auth/confirm/" + account.getId() + "/" + confirmationCode;
 		Object[] params = { confirmAccountURL };
 
 		String emailText = formatter.format(params);
@@ -181,7 +179,7 @@ public class AuthRESTService {
 	@Path("/getToken")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response getToken(@Context HttpServletRequest request, GetTokenForm formData) {
+	public Response getToken(GetTokenForm formData) {
 		
 		Account account = accountRepository.findByUsername(formData.getUsername());
 
@@ -245,5 +243,25 @@ public class AuthRESTService {
 		rs.responseStatus = Response.Status.UNAUTHORIZED;
 
 		return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();		
+	}
+	
+	@GET
+	@Path("/accountInfo")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getAccountInfo() {
+		
+		Subject currentUser = SecurityUtils.getSubject();
+		String username = (String) currentUser.getPrincipal();
+		
+		Account account = accountRepository.findByUsername(username, true);
+		
+		AccountInfo accountInfo = new AccountInfo();
+		accountInfo.setUsername(username);
+		accountInfo.setEmail(account.getEmailAddress());
+		accountInfo.setLastLogin(account.getLastLoginDate());
+		Address address = account.getAddress();
+		accountInfo.setCompanyName(address.getCompanyName());
+		
+		return Response.status(Response.Status.OK).entity(accountInfo).build();
 	}
 }

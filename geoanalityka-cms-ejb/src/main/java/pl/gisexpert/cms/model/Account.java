@@ -12,6 +12,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
@@ -28,7 +29,7 @@ import org.apache.shiro.crypto.hash.DefaultHashService;
 import org.hibernate.validator.constraints.Email;
 
 @Entity
-@Table(name = "accounts")
+@Table(name = "accounts", indexes = {@Index(name="username_index", columnList="username", unique=true)})
 @NamedNativeQuery(name = "Account.removeRole", query = "DELETE FROM account_roles WHERE username = ? AND role = ?")
 public class Account implements Serializable {
 

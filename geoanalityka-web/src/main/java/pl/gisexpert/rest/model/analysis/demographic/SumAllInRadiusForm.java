@@ -20,5 +20,4 @@ public class SumAllInRadiusForm extends BaseForm {
 		this.radius = radius;
 	}
 	
-	
 }

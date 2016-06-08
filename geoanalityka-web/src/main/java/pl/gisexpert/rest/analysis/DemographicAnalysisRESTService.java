@@ -38,6 +38,11 @@ public class DemographicAnalysisRESTService {
 	@Inject
 	AddressStatRepository addressStatRepository;
 
+	/**
+	 * Returns total population in given radius around given point
+	 * @param sumAllInRadiusForm
+	 * @return
+	 */
 	@POST
 	@Path("/sum_total")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -51,6 +56,13 @@ public class DemographicAnalysisRESTService {
 		return Response.status(Response.Status.OK).entity(responseValue).build();
 	}
 
+	/**
+	 * Performs analysis on population in given radius, around a given point and also in given age range.
+	 * Result contains two dictionaries containing population of men and women, divided into small
+	 * age ranges inside the given age range
+	 * @param sumRangeInRadiusForm
+	 * @return
+	 */
 	@POST
 	@Path("sum_range")
 	@Consumes(MediaType.APPLICATION_JSON)

@@ -68,6 +68,14 @@ public class BearerAuthenticationRealm extends AuthorizingRealm {
         try {
             conn = dataSource.getConnection();
             accountInfo = getAccountInfo(conn, token);
+            
+            if (new Date().after(accountInfo.expires)) {
+                throw new AuthenticationException("Invalid token.");
+            }
+           
+            info = new SimpleAuthenticationInfo(accountInfo.username, token.accessToken, getName());
+            return info;
+            
         } catch (SQLException ex) {
             final String message = "There was a SQL error while authenticating token [" + token.getPrincipal() + "]";
             log.error(message);
@@ -75,17 +83,10 @@ public class BearerAuthenticationRealm extends AuthorizingRealm {
             JdbcUtils.closeConnection(conn);
         }
         
-        if (new Date().after(accountInfo.expires)) {
-            throw new AuthenticationException("Invalid token.");
-        }
-       
-
-        info = new SimpleAuthenticationInfo(accountInfo.username, token.accessToken, getName());
-        return info;
-
+        return null;
     }
 
-    private AccountInfo getAccountInfo(Connection conn, BearerAuthenticationToken bearerToken) throws SQLException {
+    private AccountInfo getAccountInfo(Connection conn, BearerAuthenticationToken bearerToken) {
 
         String token = bearerToken.getAccessToken();
         PreparedStatement ps = null;
@@ -102,7 +103,10 @@ public class BearerAuthenticationRealm extends AuthorizingRealm {
                 accountInfo.username = rs.getString("username");
                 accountInfo.expires = rs.getTimestamp("expires");
             }
-        } finally {
+        } catch (Exception e) {
+        	throw new AuthorizationException("test");
+        }
+        finally {
             JdbcUtils.closeResultSet(rs);
             JdbcUtils.closeStatement(ps);
         }
