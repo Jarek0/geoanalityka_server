@@ -32,14 +32,18 @@ public class AddressStatRepository extends AbstractRepository<AddressStat> {
 		super(AddressStat.class);
 	}
 
+	/**
+	 * 
+	 * @param radius
+	 * @param point
+	 * @return
+	 */
 	public Integer sumAllInRadius(Integer radius, Coordinate point) {
 		Query query = em.createNamedQuery("AddressStat.SumAllInRadius");
 		query.setParameter("x", point.getX());
 		query.setParameter("y", point.getY());
 		query.setParameter("epsg", point.getEpsgCode());
 		query.setParameter("radius", radius);
-
-		query.getFirstResult();
 
 		Integer result = (Integer) query.getSingleResult();
 		result = result == null ? 0 : result;

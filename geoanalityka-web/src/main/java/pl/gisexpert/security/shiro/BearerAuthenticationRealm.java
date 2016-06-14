@@ -56,7 +56,7 @@ public class BearerAuthenticationRealm extends AuthorizingRealm {
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authToken) throws AuthenticationException {
 
         BearerAuthenticationToken token = (BearerAuthenticationToken) authToken;
-
+        
         if (token.getAccessToken() == null) {
             throw new AccountException("Null accessToken is not allowed by this realm.");
         }

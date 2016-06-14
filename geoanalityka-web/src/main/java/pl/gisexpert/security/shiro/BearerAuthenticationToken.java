@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 public class BearerAuthenticationToken implements AuthenticationToken {
     private static final long serialVersionUID = -209983244840001440L;
     Logger log = LoggerFactory.getLogger(BearerAuthenticationToken.class);
-   
     
     String accessToken;    
     

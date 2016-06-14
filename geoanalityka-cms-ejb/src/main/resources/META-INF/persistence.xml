@@ -8,16 +8,23 @@
 	<persistence-unit name="geoanalityka_pu">
 	    <class>pl.gisexpert.cms.model.Account</class>
 	    <class>pl.gisexpert.cms.model.Address</class>
+	    <class>pl.gisexpert.cms.model.AccessToken</class>
 	    <class>pl.gisexpert.cms.model.Role</class>
 	    <class>pl.gisexpert.cms.model.LayerInfo</class>
+	    <class>pl.gisexpert.cms.model.analysis.demographic.DemographicAnalysis</class>
+	    <class>pl.gisexpert.cms.model.analysis.demographic.AdvancedDemographicAnalysis</class>
+	    <class>pl.gisexpert.cms.model.analysis.demographic.SimpleDemographicAnalysis</class>
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
 		<jta-data-source>java:/geoanalitykaDS</jta-data-source>
 		<exclude-unlisted-classes>true</exclude-unlisted-classes>
 		<mapping-file>/hibernate_mappings/LayerInfo.hbm.xml</mapping-file>
 		<properties>
+		    <property name="javax.persistence.schema-generation.database.action" value="drop-and-create"/>
+		    <property name="javax.persistence.sql-load-script-source" value="META-INF/init_db.sql"/>
 		    <property name="hibernate.archive.autodetection" value="class"/>
-			<property name="hibernate.hbm2ddl.auto" value="update" />
+			<!-- <property name="hibernate.hbm2ddl.auto" value="create" /> -->
 			<property name="hibernate.show_sql" value="true" />
+			
 		</properties>
 	</persistence-unit>
 	

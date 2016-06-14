@@ -18,7 +18,7 @@ import org.hibernate.annotations.Immutable;
 @Table(name = "stat2015_stan_na_30_05_2016")
 @NamedNativeQueries({
 	@NamedNativeQuery(name="AddressStat.SumAllInRadius", query="SELECT sum(liczbaosobzamwlokalach)\\:\\:int FROM stat2015_stan_na_30_05_2016 "
-			+ "WHERE ST_Within(geom,ST_Buffer(ST_GeomFromText('POINT(' || :x || ' ' || :y || ')', :epsg), :radius))", resultClass = AddressStat.class)
+			+ "WHERE ST_Within(geom,ST_Buffer(ST_Transform(ST_GeomFromText('POINT(' || :x || ' ' || :y || ')', :epsg), 2180), :radius))")
 })
 public class AddressStat implements Serializable {
 

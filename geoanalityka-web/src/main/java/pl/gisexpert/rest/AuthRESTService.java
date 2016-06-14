@@ -32,6 +32,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -138,7 +139,6 @@ public class AuthRESTService {
 		registerStatus.message = "Account created. Confirmation link has been sent to your E-Mail address. Use it to complete the registration.";
 		registerStatus.responseStatus = Status.OK;
 		registerStatus.username = account.getUsername();
-		registerStatus.confirmationCode = confirmationCode.toString();
 
 		return Response.status(Response.Status.OK).entity(registerStatus).build();
 	}
@@ -246,6 +246,25 @@ public class AuthRESTService {
 	}
 	
 	@GET
+	@Path("/logout")
+	public Response deauthToken(@Context HttpServletRequest request){
+		
+		String token = request.getHeader("Access-Token");
+		
+		if (token == null){
+			return Response.status(Response.Status.UNAUTHORIZED).build();
+		}
+		
+		AccessToken tokenEntity = accessTokenRepository.findByToken(token);
+		tokenEntity.setExpires(new Date());
+		accessTokenRepository.edit(tokenEntity);
+		
+		SecurityUtils.getSubject().logout();
+		
+		return Response.status(Response.Status.OK).build();
+	}
+	
+	@GET
 	@Path("/accountInfo")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAccountInfo() {
@@ -259,7 +278,11 @@ public class AuthRESTService {
 		accountInfo.setUsername(username);
 		accountInfo.setEmail(account.getEmailAddress());
 		accountInfo.setLastLogin(account.getLastLoginDate());
+		accountInfo.setCredits(account.getCredits());
+		
 		Address address = account.getAddress();
+		accountInfo.setFirstName(address.getFirstName());
+		accountInfo.setLastName(address.getLastName());
 		accountInfo.setCompanyName(address.getCompanyName());
 		
 		return Response.status(Response.Status.OK).entity(accountInfo).build();

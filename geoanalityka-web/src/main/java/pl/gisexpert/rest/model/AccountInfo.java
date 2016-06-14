@@ -7,6 +7,9 @@ public class AccountInfo {
 	private String email;
 	private Date lastLogin;
 	private String companyName;
+	private String firstName;
+	private String lastName;
+	private Double credits;
 	
 	public String getUsername() {
 		return username;
@@ -32,6 +35,23 @@ public class AccountInfo {
 	public void setCompanyName(String companyName) {
 		this.companyName = companyName;
 	}
-	
+	public String getFirstName() {
+		return firstName;
+	}
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+	public String getLastName() {
+		return lastName;
+	}
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+	public Double getCredits() {
+		return credits;
+	}
+	public void setCredits(Double credits) {
+		this.credits = credits;
+	}
 	
 }

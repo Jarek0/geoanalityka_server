@@ -28,6 +28,8 @@ import org.apache.shiro.crypto.SecureRandomNumberGenerator;
 import org.apache.shiro.crypto.hash.DefaultHashService;
 import org.hibernate.validator.constraints.Email;
 
+import pl.gisexpert.cms.model.analysis.demographic.DemographicAnalysis;
+
 @Entity
 @Table(name = "accounts", indexes = {@Index(name="username_index", columnList="username", unique=true)})
 @NamedNativeQuery(name = "Account.removeRole", query = "DELETE FROM account_roles WHERE username = ? AND role = ?")
@@ -75,6 +77,9 @@ public class Account implements Serializable {
     
     @Column(name = "account_status", nullable = false)
     private AccountStatus accountStatus;
+    
+    @Column(nullable = false)
+    private Double credits = 0.0;
 
     @Embedded
     private ResetPassword resetPassword;
@@ -89,6 +94,14 @@ public class Account implements Serializable {
     inverseJoinColumns = {
         @JoinColumn(name = "token_id", referencedColumnName = "id")})
     private Collection<AccessToken> tokens;
+    
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "account_analyses",
+    joinColumns = {
+        @JoinColumn(name = "account_id", referencedColumnName = "id")},
+    inverseJoinColumns = {
+        @JoinColumn(name = "analysis_id", referencedColumnName = "id")})
+    private Collection<DemographicAnalysis> analyses;
     
     public String hashPassword(String password) {
         DefaultPasswordService passwordService = new DefaultPasswordService();
@@ -195,6 +208,22 @@ public class Account implements Serializable {
 
 	public void setTokens(Collection<AccessToken> tokens) {
 		this.tokens = tokens;
+	}
+
+	public Double getCredits() {
+		return credits;
+	}
+
+	public void setCredits(Double credits) {
+		this.credits = credits;
+	}	
+
+	public Collection<DemographicAnalysis> getAnalyses() {
+		return analyses;
+	}
+
+	public void setAnalyses(Collection<DemographicAnalysis> analyses) {
+		this.analyses = analyses;
 	}
 
 	@Override
