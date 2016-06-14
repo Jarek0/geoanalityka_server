@@ -2,6 +2,7 @@ package pl.gisexpert.cms.data;
 
 import java.util.List;
 import java.util.Map;
+
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -13,103 +14,104 @@ import org.primefaces.model.SortOrder;
 
 public abstract class AbstractRepository<T> {
 
-    private Class<T> entityClass;
+	private Class<T> entityClass;
 
-    public AbstractRepository() {
+	public AbstractRepository() {
 
-    }
+	}
 
-    public AbstractRepository(Class<T> entityClass) {
-        this.entityClass = entityClass;
-    }
+	public AbstractRepository(Class<T> entityClass) {
+		this.entityClass = entityClass;
+	}
 
-    protected abstract EntityManager getEntityManager();
+	protected abstract EntityManager getEntityManager();
 
-    @Transactional
-    public void create(T entity) {
-        getEntityManager().persist(entity);
-    }
-    
-    @Transactional
-    public void edit(T entity) {
+	@Transactional
+	public void create(T entity) {
+		getEntityManager().persist(entity);
+	}
 
-        getEntityManager().merge(entity);
-    }
-    
-    @Transactional
-    public void remove(T entity) {
-        getEntityManager().remove(getEntityManager().merge(entity));
-    }
+	@Transactional
+	public void edit(T entity) {
 
-    public T find(Object id) {
-        return getEntityManager().find(entityClass, id);
-    }
+		getEntityManager().merge(entity);
+	}
 
-    public List<T> findAll() {
-        javax.persistence.criteria.CriteriaQuery cq = getEntityManager().getCriteriaBuilder().createQuery();
-        cq.select(cq.from(entityClass));
-        return getEntityManager().createQuery(cq).getResultList();
-    }
+	@Transactional
+	public void remove(T entity) {
+		getEntityManager().remove(getEntityManager().merge(entity));
+	}
 
-    public List<T> findRange(int[] range) {
-        javax.persistence.criteria.CriteriaQuery cq = getEntityManager().getCriteriaBuilder().createQuery();
-        cq.select(cq.from(entityClass));
-        javax.persistence.Query q = getEntityManager().createQuery(cq);
-        q.setMaxResults(range[1] - range[0] + 1);
-        q.setFirstResult(range[0]);
-        return q.getResultList();
-    }
+	public T find(Object id) {
+		return getEntityManager().find(entityClass, id);
+	}
 
-    public int count() {
-        javax.persistence.criteria.CriteriaQuery cq = getEntityManager().getCriteriaBuilder().createQuery();
-        javax.persistence.criteria.Root<T> rt = cq.from(entityClass);
-        cq.select(getEntityManager().getCriteriaBuilder().count(rt));
-        javax.persistence.Query q = getEntityManager().createQuery(cq);
-        return ((Long) q.getSingleResult()).intValue();
-    }
+	public List<T> findAll() {
+		javax.persistence.criteria.CriteriaQuery cq = getEntityManager().getCriteriaBuilder().createQuery();
+		cq.select(cq.from(entityClass));
+		return getEntityManager().createQuery(cq).getResultList();
+	}
 
-    public List<T> loadLazy(int first, int pageSize, String sortField, SortOrder sortOrder, Map<String, Object> filters) {
-        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
-        CriteriaQuery<T> cq = cb.createQuery(entityClass);
-        Root<T> myObj = cq.from(entityClass);
+	public List<T> findRange(int[] range) {
+		javax.persistence.criteria.CriteriaQuery cq = getEntityManager().getCriteriaBuilder().createQuery();
+		cq.select(cq.from(entityClass));
+		javax.persistence.Query q = getEntityManager().createQuery(cq);
+		q.setMaxResults(range[1] - range[0] + 1);
+		q.setFirstResult(range[0]);
+		return q.getResultList();
+	}
 
-        if (filters != null && !filters.isEmpty()) {
-            cq.where(getFilterCondition(cb, myObj, filters));
-        }
+	public int count() {
+		javax.persistence.criteria.CriteriaQuery cq = getEntityManager().getCriteriaBuilder().createQuery();
+		javax.persistence.criteria.Root<T> rt = cq.from(entityClass);
+		cq.select(getEntityManager().getCriteriaBuilder().count(rt));
+		javax.persistence.Query q = getEntityManager().createQuery(cq);
+		return ((Long) q.getSingleResult()).intValue();
+	}
 
-        if (sortField != null) {
-            if (sortOrder.equals(SortOrder.ASCENDING)) {
-                cq.orderBy(cb.asc(myObj.get(sortField)));
-            } else if (sortOrder.equals(SortOrder.DESCENDING)) {
-                cq.orderBy(cb.desc(myObj.get(sortField)));
-            }
-        }
-        return getEntityManager().createQuery(cq).setFirstResult(first).setMaxResults(pageSize).getResultList();
-    }
+	public List<T> loadLazy(int first, int pageSize, String sortField, SortOrder sortOrder,
+			Map<String, Object> filters) {
+		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+		CriteriaQuery<T> cq = cb.createQuery(entityClass);
+		Root<T> myObj = cq.from(entityClass);
 
-    private Predicate getFilterCondition(CriteriaBuilder cb, Root<T> root, Map<String, Object> filters) {
-        Predicate filterCondition = cb.conjunction();
-        String wildCard = "%";
-        for (Map.Entry<String, Object> filter : filters.entrySet()) {
-            String value = wildCard + filter.getValue() + wildCard;
-            if (!filter.getValue().equals("")) {
-                javax.persistence.criteria.Path<String> path = root.get(filter.getKey());// order.get(filter.getKey());
-                filterCondition = cb.and(filterCondition, cb.like(path, value));
+		if (filters != null && !filters.isEmpty()) {
+			cq.where(getFilterCondition(cb, myObj, filters));
+		}
 
-            }
-        }
-        return filterCondition;
-    }
+		if (sortField != null) {
+			if (sortOrder.equals(SortOrder.ASCENDING)) {
+				cq.orderBy(cb.asc(myObj.get(sortField)));
+			} else if (sortOrder.equals(SortOrder.DESCENDING)) {
+				cq.orderBy(cb.desc(myObj.get(sortField)));
+			}
+		}
+		return getEntityManager().createQuery(cq).setFirstResult(first).setMaxResults(pageSize).getResultList();
+	}
 
-    public int count(Map<String, Object> filters) {
-        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
-        CriteriaQuery<Long> cq = cb.createQuery(Long.class);
-        Root<T> myObj = cq.from(entityClass);
-        cq.where(getFilterCondition(cb, myObj, filters));
-        cq.select(cb.count(myObj));
-        int count = getEntityManager().createQuery(cq).getSingleResult().intValue();
-        int x = 1;
-        return count;
-    }
+	private Predicate getFilterCondition(CriteriaBuilder cb, Root<T> root, Map<String, Object> filters) {
+		Predicate filterCondition = cb.conjunction();
+		String wildCard = "%";
+		for (Map.Entry<String, Object> filter : filters.entrySet()) {
+			String value = wildCard + filter.getValue() + wildCard;
+			if (!filter.getValue().equals("")) {
+				javax.persistence.criteria.Path<String> path = root.get(filter.getKey());// order.get(filter.getKey());
+				filterCondition = cb.and(filterCondition, cb.like(path, value));
+
+			}
+		}
+		return filterCondition;
+	}
+
+	public int count(Map<String, Object> filters) {
+		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+		CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+		Root<T> myObj = cq.from(entityClass);
+		cq.where(getFilterCondition(cb, myObj, filters));
+		cq.select(cb.count(myObj));
+		int count = getEntityManager().createQuery(cq).getSingleResult().intValue();
+		int x = 1;
+		return count;
+	}
 
 }

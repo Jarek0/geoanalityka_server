@@ -1,24 +1,18 @@
 package pl.gisexpert.cms.data;
 
 import java.util.Collection;
-import javax.ejb.Stateless;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Root;
-import javax.transaction.Transactional;
 
-import org.hibernate.Hibernate;
-
-import pl.gisexpert.cms.model.AccessToken;
 import pl.gisexpert.cms.model.Account;
-import pl.gisexpert.cms.model.Address;
 import pl.gisexpert.cms.model.Role;
 import pl.gisexpert.cms.qualifier.CMSEntityManager;
 
@@ -42,7 +36,7 @@ public class AccountRepository extends AbstractRepository<Account> {
 		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
 		CriteriaQuery<Account> cq = cb.createQuery(Account.class);
 		Root<Account> account = cq.from(Account.class);
-		if (fetchAddress){
+		if (fetchAddress) {
 			account.fetch("address", JoinType.INNER);
 		}
 		cq.select(account);
@@ -50,17 +44,16 @@ public class AccountRepository extends AbstractRepository<Account> {
 		TypedQuery<Account> q = getEntityManager().createQuery(cq);
 
 		try {
-			Account resultAccount = q.getSingleResult();			
+			Account resultAccount = q.getSingleResult();
 			return resultAccount;
 		} catch (Exception e) {
 			return null;
 		}
 	}
-	
+
 	public Account findByUsername(String username) {
 		return findByUsername(username, false);
 	}
-	
 
 	public Account findByEmail(String email) {
 		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();

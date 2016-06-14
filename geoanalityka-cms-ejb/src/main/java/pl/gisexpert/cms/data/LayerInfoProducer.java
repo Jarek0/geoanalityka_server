@@ -16,6 +16,8 @@
  */
 package pl.gisexpert.cms.data;
 
+import java.util.List;
+
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.event.Observes;
@@ -26,28 +28,26 @@ import javax.inject.Named;
 
 import pl.gisexpert.cms.model.LayerInfo;
 
-import java.util.List;
-
 @Named
 @RequestScoped
 public class LayerInfoProducer {
 
-    @Inject
-    private LayerInfoRepository layerInfoRepository;
+	@Inject
+	private LayerInfoRepository layerInfoRepository;
 
-    private List<LayerInfo> members;
+	private List<LayerInfo> members;
 
-    @Produces
-    public List<LayerInfo> getLayerInfos() {
-        return members;
-    }
+	@Produces
+	public List<LayerInfo> getLayerInfos() {
+		return members;
+	}
 
-    public void onLayerInfoListChanged(@Observes(notifyObserver = Reception.IF_EXISTS) final LayerInfo member) {
-        retrieveAllLayerInfosOrderedByName();
-    }
+	public void onLayerInfoListChanged(@Observes(notifyObserver = Reception.IF_EXISTS) final LayerInfo member) {
+		retrieveAllLayerInfosOrderedByName();
+	}
 
-    @PostConstruct
-    public void retrieveAllLayerInfosOrderedByName() {
-        members = layerInfoRepository.findAllOrderedByName();
-    }
+	@PostConstruct
+	public void retrieveAllLayerInfosOrderedByName() {
+		members = layerInfoRepository.findAllOrderedByName();
+	}
 }

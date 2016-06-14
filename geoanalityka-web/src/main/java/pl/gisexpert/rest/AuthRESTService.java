@@ -32,7 +32,6 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -57,19 +56,26 @@ import pl.gisexpert.rest.model.GetTokenForm;
 import pl.gisexpert.rest.model.GetTokenResponse;
 import pl.gisexpert.rest.model.RegisterForm;
 import pl.gisexpert.rest.model.RegisterResponse;
-import pl.gisexpert.util.SendMail;
+import pl.gisexpert.service.GlobalConfigService;
+import pl.gisexpert.service.MailService;
 
 @Path("/auth")
 public class AuthRESTService {
-	
+
 	@Inject
 	AccountRepository accountRepository;
-	
+
 	@Inject
 	BearerTokenService tokenService;
-	
+
 	@Inject
 	AccessTokenRepository accessTokenRepository;
+
+	@Inject
+	GlobalConfigService appConfig;
+
+	@Inject
+	MailService mailService;
 
 	@POST
 	@Path("/register")
@@ -116,7 +122,6 @@ public class AuthRESTService {
 			return Response.status(Response.Status.BAD_REQUEST).entity(errorStatus).build();
 		}
 
-		SendMail sendMail = new SendMail();
 		String subject = "Geoanalityka - potwierdzenie rejestracji użytkownika";
 
 		MessageFormat formatter = new MessageFormat("");
@@ -133,12 +138,13 @@ public class AuthRESTService {
 		Object[] params = { confirmAccountURL };
 
 		String emailText = formatter.format(params);
-		sendMail.sendMail(subject, emailText, account.getEmailAddress());
+		mailService.sendMail(subject, emailText, account.getEmailAddress());
 
 		RegisterResponse registerStatus = new RegisterResponse();
 		registerStatus.message = "Account created. Confirmation link has been sent to your E-Mail address. Use it to complete the registration.";
 		registerStatus.responseStatus = Status.OK;
 		registerStatus.username = account.getUsername();
+		registerStatus.email = account.getEmailAddress();
 
 		return Response.status(Response.Status.OK).entity(registerStatus).build();
 	}
@@ -146,7 +152,7 @@ public class AuthRESTService {
 	@GET
 	@Path("/confirm/{accountId}/{confirmationToken}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response confirmAccount(@PathParam("accountId") Long accountId,
+	public Response confirmAccount(@Context HttpServletRequest request, @PathParam("accountId") Long accountId,
 			@PathParam("confirmationToken") String confirmationToken) {
 
 		Account account = accountRepository.find(accountId);
@@ -160,27 +166,28 @@ public class AuthRESTService {
 			account.setAccountConfirmation(null);
 			account.setAccountStatus(AccountStatus.CONFIRMED);
 			accountRepository.edit(account);
-			
-			try {
-				Response.temporaryRedirect(new URI("/"));
-			} catch (URISyntaxException e) {
-			}
 
-			return Response.status(Response.Status.OK).entity(requestStatus).build();
+			try {
+				return Response.temporaryRedirect(new URI(request.getScheme() + "://" + request.getRemoteHost()
+						+ appConfig.getLandingPageUrl() + "/login.html?activate_success=true")).build();
+			} catch (URISyntaxException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		requestStatus.message = "Account confirmation failed.";
 		requestStatus.responseStatus = Response.Status.UNAUTHORIZED;
-		
+
 		return Response.status(Response.Status.UNAUTHORIZED).entity(requestStatus).build();
 	}
-	
+
 	@POST
 	@Path("/getToken")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response getToken(GetTokenForm formData) {
-		
+
 		Account account = accountRepository.findByUsername(formData.getUsername());
 
 		BaseResponse rs = new BaseResponse();
@@ -189,102 +196,102 @@ public class AuthRESTService {
 			rs.responseStatus = Response.Status.UNAUTHORIZED;
 			return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();
 		}
-		
-		if (account.getAccountStatus() == AccountStatus.UNCONFIRMED){
+
+		if (account.getAccountStatus() == AccountStatus.UNCONFIRMED) {
 			rs.message = "You need to confirm your registration first";
 			rs.responseStatus = Response.Status.UNAUTHORIZED;
-			return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();			
+			return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();
 		}
-		
-		if (account.getAccountStatus() == AccountStatus.DISABLED){
+
+		if (account.getAccountStatus() == AccountStatus.DISABLED) {
 			rs.message = "Your account has been disabled";
 			rs.responseStatus = Response.Status.UNAUTHORIZED;
-			return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();			
+			return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();
 		}
-		
-		
+
 		DefaultPasswordService passwordService = new DefaultPasswordService();
-        DefaultHashService dhs = new DefaultHashService();
-        dhs.setHashIterations(5);
-        passwordService.setHashService(dhs);
-        
-        if (passwordService.passwordsMatch(formData.getPassword(), account.getPassword())) {
-            
-        	AccessToken accessToken = new AccessToken();
-            String token = UUID.randomUUID().toString();
-            
-            while (accessTokenRepository.findByToken(token) != null){
-                token = UUID.randomUUID().toString();
-            }
-            accessToken.setToken(token);
-            accessToken.setAccount(account);
+		DefaultHashService dhs = new DefaultHashService();
+		dhs.setHashIterations(5);
+		passwordService.setHashService(dhs);
 
-            Date date = new Date();
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(date);
-            cal.add(Calendar.MINUTE, 240); // token will expire after 240 minutes
-            date = cal.getTime();
+		if (passwordService.passwordsMatch(formData.getPassword(), account.getPassword())) {
 
-            accessToken.setExpires(date);
-            
-            accessTokenRepository.create(accessToken);
-            account = tokenService.addToken(account, accessToken);
-            
-            GetTokenResponse getTokenStatus = new GetTokenResponse();
-            getTokenStatus.message = "Successfully generated token";
-            getTokenStatus.token = token;
-            getTokenStatus.responseStatus = Response.Status.OK;
-            getTokenStatus.expires = date;
-            
-            return Response.status(Response.Status.OK).entity(getTokenStatus).build();
-        }
-        
+			AccessToken accessToken = new AccessToken();
+			String token = UUID.randomUUID().toString();
+
+			while (accessTokenRepository.findByToken(token) != null) {
+				token = UUID.randomUUID().toString();
+			}
+			accessToken.setToken(token);
+			accessToken.setAccount(account);
+
+			Date date = new Date();
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(date);
+			cal.add(Calendar.MINUTE, 240); // token will expire after 240
+											// minutes
+			date = cal.getTime();
+
+			accessToken.setExpires(date);
+
+			accessTokenRepository.create(accessToken);
+			account = tokenService.addToken(account, accessToken);
+
+			GetTokenResponse getTokenStatus = new GetTokenResponse();
+			getTokenStatus.message = "Successfully generated token";
+			getTokenStatus.token = token;
+			getTokenStatus.responseStatus = Response.Status.OK;
+			getTokenStatus.expires = date;
+
+			return Response.status(Response.Status.OK).entity(getTokenStatus).build();
+		}
+
 		rs.message = "Authentication failed.";
 		rs.responseStatus = Response.Status.UNAUTHORIZED;
 
-		return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();		
+		return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();
 	}
-	
+
 	@GET
 	@Path("/logout")
-	public Response deauthToken(@Context HttpServletRequest request){
-		
+	public Response deauthToken(@Context HttpServletRequest request) {
+
 		String token = request.getHeader("Access-Token");
-		
-		if (token == null){
+
+		if (token == null) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
-		
+
 		AccessToken tokenEntity = accessTokenRepository.findByToken(token);
 		tokenEntity.setExpires(new Date());
 		accessTokenRepository.edit(tokenEntity);
-		
+
 		SecurityUtils.getSubject().logout();
-		
+
 		return Response.status(Response.Status.OK).build();
 	}
-	
+
 	@GET
 	@Path("/accountInfo")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAccountInfo() {
-		
+
 		Subject currentUser = SecurityUtils.getSubject();
 		String username = (String) currentUser.getPrincipal();
-		
+
 		Account account = accountRepository.findByUsername(username, true);
-		
+
 		AccountInfo accountInfo = new AccountInfo();
 		accountInfo.setUsername(username);
 		accountInfo.setEmail(account.getEmailAddress());
 		accountInfo.setLastLogin(account.getLastLoginDate());
 		accountInfo.setCredits(account.getCredits());
-		
+
 		Address address = account.getAddress();
 		accountInfo.setFirstName(address.getFirstName());
 		accountInfo.setLastName(address.getLastName());
 		accountInfo.setCompanyName(address.getCompanyName());
-		
+
 		return Response.status(Response.Status.OK).entity(accountInfo).build();
 	}
 }

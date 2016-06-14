@@ -2,11 +2,9 @@
 package pl.gisexpert.cms.model;
 
 import java.io.Serializable;
-import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
 @Embeddable
 public class AccountConfirmation implements Serializable {
