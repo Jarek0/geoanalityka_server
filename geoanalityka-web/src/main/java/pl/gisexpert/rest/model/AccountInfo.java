@@ -10,6 +10,8 @@ public class AccountInfo {
 	private String firstName;
 	private String lastName;
 	private Double credits;
+	private Date tokenExpires;
+	private String accessToken;
 	
 	public String getUsername() {
 		return username;
@@ -52,6 +54,18 @@ public class AccountInfo {
 	}
 	public void setCredits(Double credits) {
 		this.credits = credits;
+	}
+	public Date getTokenExpires() {
+		return tokenExpires;
+	}
+	public void setTokenExpires(Date tokenExpires) {
+		this.tokenExpires = tokenExpires;
+	}
+	public String getAccessToken() {
+		return accessToken;
+	}
+	public void setAccessToken(String accessToken) {
+		this.accessToken = accessToken;
 	}
 	
 }

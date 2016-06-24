@@ -1,6 +1,10 @@
 package pl.gisexpert.model.gis;
 
-public class Coordinate {
+import java.io.Serializable;
+
+public class Coordinate implements Serializable {
+
+	private static final long serialVersionUID = -5138413995590331020L;
 	
 	private Double x;
 	private Double y;

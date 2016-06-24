@@ -1,32 +1,32 @@
 package pl.gisexpert.cms.model.analysis.demographic;
 
 import java.io.Serializable;
-import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Inheritance;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.Lob;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
-import pl.gisexpert.cms.model.Account;
-import pl.gisexpert.cms.model.analysis.AnalysisStatus;
+import pl.gisexpert.cms.model.analysis.Analysis;
+import pl.gisexpert.model.gis.Coordinate;
 
 @Entity
 @Inheritance
 @DiscriminatorColumn(name = "analysis_type")
 @Table(name = "demographic_analyses", indexes = {
-		@Index(name = "account_index", columnList = "account_id", unique = false) })
-public class DemographicAnalysis implements Serializable {
+		@Index(name = "account_index", columnList = "account_id", unique = false),
+		@Index(name = "hash_index", columnList = "hash", unique = true) })
+@NamedQueries({
+		@NamedQuery(name = "DemographicAnalysis.findRecentAnalysesFroAccount", query = "SELECT analysis FROM DemographicAnalysis analysis LEFT OUTER JOIN analysis.creator creator WHERE creator = :account") })
+public class DemographicAnalysis extends Analysis implements Serializable {
 
 	private static final long serialVersionUID = -4420992994918486571L;
 
@@ -34,20 +34,15 @@ public class DemographicAnalysis implements Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(name="date_started")
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date dateStarted;
-
-	@Column(name="date_finished")
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date dateFinished;
+	@Column
+	private Integer radius;
 
 	@Column
-	private AnalysisStatus status;
+	@Lob
+	private Coordinate location;
 
-	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "account_id")
-	private Account creator;
+	@Column
+	private String locationDisplayName;
 
 	public Long getId() {
 		return id;
@@ -57,36 +52,28 @@ public class DemographicAnalysis implements Serializable {
 		this.id = id;
 	}
 
-	public Date getDateStarted() {
-		return dateStarted;
+	public Integer getRadius() {
+		return radius;
 	}
 
-	public void setDateStarted(Date dateStarted) {
-		this.dateStarted = dateStarted;
+	public void setRadius(Integer radius) {
+		this.radius = radius;
 	}
 
-	public Date getDateFinished() {
-		return dateFinished;
+	public Coordinate getLocation() {
+		return location;
 	}
 
-	public void setDateFinished(Date dateFinished) {
-		this.dateFinished = dateFinished;
+	public void setLocation(Coordinate location) {
+		this.location = location;
 	}
 
-	public AnalysisStatus getStatus() {
-		return status;
+	public String getLocationDisplayName() {
+		return locationDisplayName;
 	}
 
-	public void setStatus(AnalysisStatus status) {
-		this.status = status;
-	}
-
-	public Account getCreator() {
-		return creator;
-	}
-
-	public void setCreator(Account creator) {
-		this.creator = creator;
+	public void setLocationDisplayName(String locationDisplayName) {
+		this.locationDisplayName = locationDisplayName;
 	}
 
 }

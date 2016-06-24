@@ -61,9 +61,10 @@ public class AddressStatRepository extends AbstractRepository<AddressStat> {
 	 *         of people in specific age range. Eg. the key "0" contains number
 	 *         of people aged 0 - 4.
 	 */
-	public Map<String, Map<Integer, Integer>> sumRangeInRadius(Integer[] range, Integer radius, Coordinate point) {
+	public HashMap<String, HashMap<Integer, Integer>> sumRangeInRadius(Integer[] range, Integer radius,
+			Coordinate point) {
 
-		Map<Integer, String> kobietyRangeColumnsMap = new HashMap<>();
+		HashMap<Integer, String> kobietyRangeColumnsMap = new HashMap<>();
 		for (int i = 0; i <= 70; i += 5) {
 			kobietyRangeColumnsMap.put(i, "przedzialwiekuod" + i + "do" + (i + 4) + "k");
 		}
@@ -76,14 +77,18 @@ public class AddressStatRepository extends AbstractRepository<AddressStat> {
 		mezczyzniRangeColumnsMap.put(75, "przedzialwiekuod75m");
 
 		List<String> columnSumsArray = new ArrayList<>();
-		for (int i = range[0]; i < range[1]; i += 5) {
+		for (int i = range[0]; i < range[1] && i < 75; i += 5) {
 			columnSumsArray.add("sum(" + kobietyRangeColumnsMap.get(i) + ")\\:\\:int as sum_k_" + i + "_" + (i + 4));
 			columnSumsArray.add("sum(" + mezczyzniRangeColumnsMap.get(i) + ")\\:\\:int as sum_m_" + i + "_" + (i + 4));
+		}
+		if (range[1] >= 75) {
+			columnSumsArray.add("sum(" + kobietyRangeColumnsMap.get(75) + ")\\:\\:int as sum_k_75");
+			columnSumsArray.add("sum(" + mezczyzniRangeColumnsMap.get(75) + ")\\:\\:int as sum_m_75");
 		}
 		String columnSumsStr = Joiner.on(",").join(columnSumsArray);
 
 		String queryString = "SELECT " + columnSumsStr
-				+ " FROM stat2015_stan_na_30_05_2016 WHERE ST_Within(geom,ST_Buffer(ST_GeomFromText('POINT(' || :x || ' ' || :y || ')', :epsg), :radius))";
+				+ " FROM stat2015_stan_na_30_05_2016 WHERE ST_Within(geom,ST_Buffer(ST_Transform(ST_GeomFromText('POINT(' || :x || ' ' || :y || ')', :epsg), 2180), :radius))";
 
 		Query query = em.createNativeQuery(queryString);
 
@@ -100,15 +105,15 @@ public class AddressStatRepository extends AbstractRepository<AddressStat> {
 			return null;
 		}
 
-		Map<Integer, Integer> kobiety = new HashMap<>();
-		Map<Integer, Integer> mezczyzni = new HashMap<>();
+		HashMap<Integer, Integer> kobiety = new HashMap<>();
+		HashMap<Integer, Integer> mezczyzni = new HashMap<>();
 
 		for (int i = 0; i < result.length; i += 2) {
 			kobiety.put(range[0] + ((i / 2) * 5), (Integer) result[i]);
 			mezczyzni.put(range[0] + ((i / 2) * 5), (Integer) result[i + 1]);
 		}
 
-		Map<String, Map<Integer, Integer>> kobietyAndMezczyzniValues = new HashMap<>();
+		HashMap<String, HashMap<Integer, Integer>> kobietyAndMezczyzniValues = new HashMap<>();
 		kobietyAndMezczyzniValues.put("kobiety", kobiety);
 		kobietyAndMezczyzniValues.put("mezczyzni", mezczyzni);
 

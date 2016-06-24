@@ -8,6 +8,8 @@ public class SumRangeInRadiusForm extends BaseForm {
 	private Coordinate point;
 	private Integer radius;
 	private Integer[] range;
+	private String name;
+	private String locationName;
 	
 	public Coordinate getPoint() {
 		return point;
@@ -27,5 +29,18 @@ public class SumRangeInRadiusForm extends BaseForm {
 	public void setRange(Integer[] range) {
 		this.range = range;
 	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getLocationName() {
+		return locationName;
+	}
+	public void setLocationName(String locationName) {
+		this.locationName = locationName;
+	}
+	
 	
 }

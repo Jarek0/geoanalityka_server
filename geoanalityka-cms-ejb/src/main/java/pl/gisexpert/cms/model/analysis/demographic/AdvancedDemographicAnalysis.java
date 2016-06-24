@@ -1,6 +1,6 @@
 package pl.gisexpert.cms.model.analysis.demographic;
 
-import java.util.Map;
+import java.util.HashMap;
 
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
@@ -15,14 +15,25 @@ public class AdvancedDemographicAnalysis extends DemographicAnalysis {
 
 	@Lob
 	@Column(name = "analysis_data")
-	Map<String, Map<Integer, Integer>> kobietyAndMezczyzniByAgeRanges;
+	private HashMap<String, HashMap<Integer, Integer>> kobietyAndMezczyzniByAgeRanges;
+	
+	@Column(name="age_range", length = 7)
+	private String ageRange;
 
-	public Map<String, Map<Integer, Integer>> getKobietyAndMezczyzniByAgeRanges() {
+	public HashMap<String, HashMap<Integer, Integer>> getKobietyAndMezczyzniByAgeRanges() {
 		return kobietyAndMezczyzniByAgeRanges;
 	}
 
-	public void setKobietyAndMezczyzniByAgeRanges(Map<String, Map<Integer, Integer>> kobietyAndMezczyzniByAgeRanges) {
+	public void setKobietyAndMezczyzniByAgeRanges(HashMap<String, HashMap<Integer, Integer>> kobietyAndMezczyzniByAgeRanges) {
 		this.kobietyAndMezczyzniByAgeRanges = kobietyAndMezczyzniByAgeRanges;
+	}
+
+	public String getAgeRange() {
+		return ageRange;
+	}
+
+	public void setAgeRange(String ageRange) {
+		this.ageRange = ageRange;
 	}
 
 }

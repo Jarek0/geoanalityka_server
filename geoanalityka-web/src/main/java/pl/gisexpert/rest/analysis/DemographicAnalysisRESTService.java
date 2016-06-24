@@ -16,30 +16,43 @@
  */
 package pl.gisexpert.rest.analysis;
 
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
+
+import com.google.common.base.Joiner;
 
 import pl.gisexpert.cms.data.AccountRepository;
 import pl.gisexpert.cms.data.analysis.DemographicAnalysisRepository;
 import pl.gisexpert.cms.model.Account;
 import pl.gisexpert.cms.model.analysis.AnalysisStatus;
 import pl.gisexpert.cms.model.analysis.demographic.AdvancedDemographicAnalysis;
+import pl.gisexpert.cms.model.analysis.demographic.DemographicAnalysis;
 import pl.gisexpert.cms.model.analysis.demographic.SimpleDemographicAnalysis;
 import pl.gisexpert.cms.service.AnalysisService;
+import pl.gisexpert.rest.model.BaseResponse;
+import pl.gisexpert.rest.model.analysis.AdvancedDemographicAnalysisDetails;
+import pl.gisexpert.rest.model.analysis.AnalysisHashResponse;
+import pl.gisexpert.rest.model.analysis.DemographicAnalysisDetails;
+import pl.gisexpert.rest.model.analysis.SimpleDemographicAnalysisDetails;
 import pl.gisexpert.rest.model.analysis.demographic.SumAllInRadiusForm;
-import pl.gisexpert.rest.model.analysis.demographic.SumAllInRadiusResponse;
 import pl.gisexpert.rest.model.analysis.demographic.SumRangeInRadiusForm;
-import pl.gisexpert.rest.model.analysis.demographic.SumRangeInRadiusResponse;
+import pl.gisexpert.service.AnalysisCostCalculator;
 import pl.gisexpert.stat.data.AddressStatRepository;
 
 @Path("/analysis/demographic")
@@ -57,6 +70,9 @@ public class DemographicAnalysisRESTService {
 	@Inject
 	DemographicAnalysisRepository analysisRepository;
 
+	@Inject
+	AnalysisCostCalculator analysisCostCalculator;
+
 	/**
 	 * Returns total population in given radius around given point
 	 * 
@@ -71,14 +87,26 @@ public class DemographicAnalysisRESTService {
 
 		SimpleDemographicAnalysis analysis = new SimpleDemographicAnalysis();
 		Account creator = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal());
+
 		analysis.setCreator(creator);
 		analysis.setDateStarted(new Date());
+		analysis.setRadius(sumAllInRadiusForm.getRadius());
+		analysis.setLocation(sumAllInRadiusForm.getPoint());
+		analysis.setLocationDisplayName(sumAllInRadiusForm.getLocationName());
+		analysis.setName(sumAllInRadiusForm.getName());
 		analysis.setStatus(AnalysisStatus.PENDING);
+		
+		Double analysisCost = analysisCostCalculator.calculate(analysis);
+		if (creator.getCredits() < analysisCost) {
+			BaseResponse response = new BaseResponse();
+			response.responseStatus = Response.Status.UNAUTHORIZED;
+			response.message = "Insufficient credits";
+			return Response.status(Response.Status.UNAUTHORIZED).entity(response).build();
+		}
 
-		SumAllInRadiusResponse responseValue = new SumAllInRadiusResponse();
 		Integer sum = addressStatRepository.sumAllInRadius(sumAllInRadiusForm.getRadius(),
 				sumAllInRadiusForm.getPoint());
-		responseValue.setSum(sum);
+
 		analysis.setPopulation(sum);
 
 		analysis.setDateFinished(new Date());
@@ -86,6 +114,15 @@ public class DemographicAnalysisRESTService {
 
 		analysisRepository.create(analysis);
 		analysisService.addDemographicAnalysis(creator, analysis);
+
+		System.out.println(creator.getCredits() + " - " + analysisCost);
+		creator.setCredits(creator.getCredits() - analysisCost);
+		System.out.println(creator.getCredits());
+		accountRepository.edit(creator);
+
+		AnalysisHashResponse responseValue = new AnalysisHashResponse();
+		responseValue.responseStatus = Response.Status.OK;
+		responseValue.setHash(analysis.getHash().toString());
 
 		return Response.status(Response.Status.OK).entity(responseValue).build();
 	}
@@ -100,26 +137,35 @@ public class DemographicAnalysisRESTService {
 	 * @return
 	 */
 	@POST
-	@Path("sum_range")
+	@Path("/sum_range")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response sumRange(SumRangeInRadiusForm sumRangeInRadiusForm) {
 
 		AdvancedDemographicAnalysis analysis = new AdvancedDemographicAnalysis();
 		Account creator = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal());
+
 		analysis.setCreator(creator);
 		analysis.setDateStarted(new Date());
+		analysis.setRadius(sumRangeInRadiusForm.getRadius());
+		analysis.setLocation(sumRangeInRadiusForm.getPoint());
+		analysis.setLocationDisplayName(sumRangeInRadiusForm.getLocationName());
+		analysis.setName(sumRangeInRadiusForm.getName());
 		analysis.setStatus(AnalysisStatus.PENDING);
 
 		Integer[] range = sumRangeInRadiusForm.getRange();
+		analysis.setAgeRange(Joiner.on("-").join(range));
 
-		Map<String, Map<Integer, Integer>> kobietyAndMezczyzniByAgeRanges = addressStatRepository
+		Double analysisCost = analysisCostCalculator.calculate(analysis);
+		if (creator.getCredits() < analysisCost) {
+			BaseResponse response = new BaseResponse();
+			response.responseStatus = Response.Status.UNAUTHORIZED;
+			response.message = "Insufficient credits";
+			return Response.status(Response.Status.UNAUTHORIZED).entity(response).build();
+		}
+
+		HashMap<String, HashMap<Integer, Integer>> kobietyAndMezczyzniByAgeRanges = addressStatRepository
 				.sumRangeInRadius(range, sumRangeInRadiusForm.getRadius(), sumRangeInRadiusForm.getPoint());
-
-		SumRangeInRadiusResponse responseValue = new SumRangeInRadiusResponse();
-		responseValue.setKobiety(kobietyAndMezczyzniByAgeRanges.get("kobiety"));
-		responseValue.setMezczyzni(kobietyAndMezczyzniByAgeRanges.get("mezczyzni"));
-		responseValue.responseStatus = Response.Status.OK;
 
 		analysis.setKobietyAndMezczyzniByAgeRanges(kobietyAndMezczyzniByAgeRanges);
 
@@ -129,23 +175,98 @@ public class DemographicAnalysisRESTService {
 		analysisRepository.create(analysis);
 		analysisService.addDemographicAnalysis(creator, analysis);
 
+		creator.setCredits(creator.getCredits() - analysisCost);
+		accountRepository.edit(creator);
+
+		AnalysisHashResponse responseValue = new AnalysisHashResponse();
+		responseValue.setHash(analysis.getHash().toString());
+		responseValue.responseStatus = Response.Status.OK;
+
 		return Response.status(Response.Status.OK).entity(responseValue).build();
 	}
 
 	@POST
-	@Path("calculate_cost/sum_total")
+	@Path("/calculate_cost/sum_total")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response calculateSumTotalCost(SumAllInRadiusForm sumAllInRadiusForm) {
-		return Response.status(Response.Status.OK).entity(10).build();
+
+		SimpleDemographicAnalysis analysis = new SimpleDemographicAnalysis();
+		analysis.setRadius(sumAllInRadiusForm.getRadius());
+
+		Double cost = analysisCostCalculator.calculate(analysis);
+
+		BaseResponse response = new BaseResponse();
+		response.message = String.valueOf(cost.intValue());
+		response.responseStatus = Response.Status.OK;
+
+		return Response.status(Response.Status.OK).entity(response).build();
 	}
 
 	@POST
-	@Path("calculate_cost/sum_total")
+	@Path("/calculate_cost/sum_range")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response calculateSumAllInRadiusCost(SumRangeInRadiusForm sumRangeInRadiusForm) {
-		return Response.status(Response.Status.OK).entity(10).build();
+
+		AdvancedDemographicAnalysis analysis = new AdvancedDemographicAnalysis();
+		Integer[] range = sumRangeInRadiusForm.getRange();
+		analysis.setAgeRange(Joiner.on("-").join(range));
+		analysis.setRadius(sumRangeInRadiusForm.getRadius());
+
+		Double cost = analysisCostCalculator.calculate(analysis);
+
+		BaseResponse response = new BaseResponse();
+		response.message = String.valueOf(cost.intValue());
+		response.responseStatus = Response.Status.OK;
+
+		return Response.status(Response.Status.OK).entity(response).build();
+	}
+
+	@GET
+	@Path("/recent/{begin}/{end}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getRecentAnalyses(@PathParam("begin") Integer begin, @PathParam("end") Integer end) {
+
+		Subject currentUser = SecurityUtils.getSubject();
+		String username = (String) currentUser.getPrincipal();
+		Account account = accountRepository.findByUsername(username, true);
+
+		List<DemographicAnalysis> accountAnalyses = analysisRepository.findMostRecentRangeForAccount(account, begin, end);
+		
+		List<DemographicAnalysisDetails> analysesDetailsList = new ArrayList<>();
+		
+		for (DemographicAnalysis analysis : accountAnalyses) {
+			analysesDetailsList.add(new DemographicAnalysisDetails(analysis));
+		}
+
+		return Response.status(Response.Status.OK).entity(analysesDetailsList).build();
+	}
+
+	@GET
+	@Path("/details/{hash}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response analysisDetails(@PathParam("hash") String hash) {
+
+		DemographicAnalysis analysis = analysisRepository.findByHash(UUID.fromString(hash));
+		DemographicAnalysisDetails details = null;
+		
+		if (analysis instanceof AdvancedDemographicAnalysis) {
+			details = new AdvancedDemographicAnalysisDetails(
+					(AdvancedDemographicAnalysis) analysis);
+		} else if (analysis instanceof SimpleDemographicAnalysis) {
+			details = new SimpleDemographicAnalysisDetails(
+					(SimpleDemographicAnalysis) analysis);
+		}
+
+		if (analysis != null) {
+			return Response.status(Response.Status.OK).entity(details).build();
+		} else {
+			BaseResponse response = new BaseResponse();
+			response.message = "Analysis not found";
+			response.responseStatus = Response.Status.NOT_FOUND;
+			return Response.status(Response.Status.NOT_FOUND).entity(response).build();
+		}
 	}
 
 }

@@ -42,6 +42,23 @@
         <url-pattern>/faces/*</url-pattern>
     </servlet-mapping>
     
+    <servlet>
+        <servlet-name>iMapLite</servlet-name>
+        <servlet-class>org.mitre.dsmiley.httpproxy.ProxyServlet</servlet-class>
+        <init-param>
+            <param-name>targetUri</param-name>
+            <param-value>http://mapy.geoportal.gov.pl/iMapLite</param-value>
+        </init-param>
+        <init-param>
+            <param-name>log</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>iMapLite</servlet-name>
+        <url-pattern>/iMapLite/*</url-pattern>
+    </servlet-mapping>
+    
     <session-config>   
         <session-timeout>
             30

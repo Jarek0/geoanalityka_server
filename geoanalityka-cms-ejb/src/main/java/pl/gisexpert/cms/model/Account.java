@@ -79,7 +79,7 @@ public class Account implements Serializable {
     private AccountStatus accountStatus;
     
     @Column(nullable = false)
-    private Double credits = 0.0;
+    private Double credits = 99999.0;
 
     @Embedded
     private ResetPassword resetPassword;

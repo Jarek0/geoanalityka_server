@@ -228,8 +228,7 @@ public class AuthRESTService {
 			Date date = new Date();
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(date);
-			cal.add(Calendar.MINUTE, 240); // token will expire after 240
-											// minutes
+			cal.add(Calendar.MINUTE, 240); // token will expire after 240 minutes
 			date = cal.getTime();
 
 			accessToken.setExpires(date);
@@ -250,6 +249,29 @@ public class AuthRESTService {
 		rs.responseStatus = Response.Status.UNAUTHORIZED;
 
 		return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();
+	}
+	
+	@GET
+	@Path("/renewToken")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response renewToken(@Context HttpServletRequest request) {
+		String token = request.getHeader("Access-Token");
+		
+		AccessToken accessToken = accessTokenRepository.findByToken(token);
+		if (accessToken == null) {
+			return Response.status(Response.Status.FORBIDDEN).build();
+		}
+		
+		Date date = new Date();
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal.add(Calendar.MINUTE, 240); // token will expire after 240 minutes
+		date = cal.getTime();
+
+		accessToken.setExpires(date);
+		
+		return Response.status(Response.Status.OK).build();
+		
 	}
 
 	@GET
@@ -274,7 +296,7 @@ public class AuthRESTService {
 	@GET
 	@Path("/accountInfo")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAccountInfo() {
+	public Response getAccountInfo(@Context HttpServletRequest request) {
 
 		Subject currentUser = SecurityUtils.getSubject();
 		String username = (String) currentUser.getPrincipal();
@@ -286,6 +308,15 @@ public class AuthRESTService {
 		accountInfo.setEmail(account.getEmailAddress());
 		accountInfo.setLastLogin(account.getLastLoginDate());
 		accountInfo.setCredits(account.getCredits());
+		
+		String token = request.getHeader("Access-Token");
+		
+		AccessToken accessToken = accessTokenRepository.findByToken(token);
+		if (accessToken == null) {
+			return Response.status(Response.Status.FORBIDDEN).build();
+		}
+		accountInfo.setAccessToken(accessToken.getToken());
+		accountInfo.setTokenExpires(accessToken.getExpires());
 
 		Address address = account.getAddress();
 		accountInfo.setFirstName(address.getFirstName());

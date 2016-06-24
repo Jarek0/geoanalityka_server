@@ -16,7 +16,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "roles")
-@NamedNativeQueries({@NamedNativeQuery(name = "Role.removeRoleFromAllAccounts", query = "DELETE FROM account_roles WHERE role = ?")})
+
 public class Role implements Serializable {
     private static final long serialVersionUID = -4767712582624098830L;
     
