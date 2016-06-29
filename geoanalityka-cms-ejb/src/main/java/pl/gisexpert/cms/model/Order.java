@@ -1,0 +1,90 @@
+package pl.gisexpert.cms.model;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+
+@Entity
+@Table(name = "orders")
+public class Order implements Serializable {
+	
+	private static final long serialVersionUID = 5383553825661933604L;
+
+	@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+	
+	@ManyToOne(fetch = FetchType.EAGER)
+	private Account buyer;
+	
+	@Column
+	private Integer amount;
+	
+	@Column
+	@Temporal(javax.persistence.TemporalType.TIMESTAMP)
+	private Date date;
+	
+	@Column(length = 40)
+	private String payuOperationRefId;
+	
+	@Column
+	private OrderStatus status;
+
+	public Account getBuyer() {
+		return buyer;
+	}
+
+	public void setBuyer(Account buyer) {
+		this.buyer = buyer;
+	}
+
+	public Integer getAmount() {
+		return amount;
+	}
+
+	public void setAmount(Integer amount) {
+		this.amount = amount;
+	}
+
+	public Date getDate() {
+		return date;
+	}
+
+	public void setDate(Date date) {
+		this.date = date;
+	}
+
+	public String getPayuOperationRefId() {
+		return payuOperationRefId;
+	}
+
+	public void setPayuOperationRefId(String payuOperationRefId) {
+		this.payuOperationRefId = payuOperationRefId;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public OrderStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(OrderStatus status) {
+		this.status = status;
+	}
+	
+}

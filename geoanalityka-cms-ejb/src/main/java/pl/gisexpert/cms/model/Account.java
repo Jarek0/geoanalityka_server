@@ -103,6 +103,14 @@ public class Account implements Serializable {
         @JoinColumn(name = "analysis_id", referencedColumnName = "id")})
     private Collection<DemographicAnalysis> analyses;
     
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @JoinTable(name = "account_orders",
+    joinColumns = {
+        @JoinColumn(name = "account_id", referencedColumnName = "id")},
+    inverseJoinColumns = {
+        @JoinColumn(name = "order_id", referencedColumnName = "id")})
+    private Collection<Order> orders;
+    
     public String hashPassword(String password) {
         DefaultPasswordService passwordService = new DefaultPasswordService();
         DefaultHashService dhs = new DefaultHashService();
@@ -224,6 +232,14 @@ public class Account implements Serializable {
 
 	public void setAnalyses(Collection<DemographicAnalysis> analyses) {
 		this.analyses = analyses;
+	}
+
+	public Collection<Order> getOrders() {
+		return orders;
+	}
+
+	public void setOrders(Collection<Order> orders) {
+		this.orders = orders;
 	}
 
 	@Override
