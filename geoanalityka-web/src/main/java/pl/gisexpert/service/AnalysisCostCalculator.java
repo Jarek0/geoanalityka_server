@@ -15,6 +15,8 @@ import pl.gisexpert.cms.model.analysis.demographic.SimpleDemographicAnalysis;
 @ApplicationScoped
 public class AnalysisCostCalculator {
 
+	private final Double BASE_VALUE = 10.0;
+
 	public Double calculate(Analysis analysis) {
 
 		if (analysis instanceof SimpleDemographicAnalysis) {
@@ -28,10 +30,11 @@ public class AnalysisCostCalculator {
 
 	private Double calculateSimpleDemographic(SimpleDemographicAnalysis analysis) {
 		Integer radius = analysis.getRadius();
-		if (radius <= 1000) {
-			return 1.0;
+		if (radius <= 2000) {
+			return BASE_VALUE;
 		} else {
-			return Math.ceil((radius.doubleValue() / 10000.0) * (Math.log(radius) / Math.log(10)));
+			return Math.round((radius.doubleValue() / 1000.0) / (Math.log(radius / 1000.0) / Math.log(2.0)))
+					* BASE_VALUE;
 		}
 	}
 
@@ -41,10 +44,11 @@ public class AnalysisCostCalculator {
 		List<String> ageRanges = Lists.newArrayList(Splitter.on("-").split(analysis.getAgeRange()));
 		Integer numAgeRanges = (int) Math
 				.ceil((Integer.parseInt(ageRanges.get(1)) - Integer.parseInt(ageRanges.get(0))) / 5.0);
-		if (radius <= 1000) {
-			return numAgeRanges.doubleValue();
+		if (radius <= 2000) {
+			return numAgeRanges * BASE_VALUE;
 		} else {
-			return Math.ceil(numAgeRanges * (radius.doubleValue() / 10000.0) * (Math.log(radius) / Math.log(10)));
+			return Math.round(((radius.doubleValue() / 1000.0) / (Math.log(radius / 1000.0) / Math.log(2.0)))
+					* numAgeRanges.doubleValue()) * BASE_VALUE;
 		}
 	}
 }

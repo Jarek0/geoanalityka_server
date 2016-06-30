@@ -9,33 +9,37 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 
 @Entity
-@Table(name = "orders")
+@Table(name = "orders", indexes = { @Index(name = "order_hash_index", columnList = "order_hash", unique = true) })
 public class Order implements Serializable {
-	
+
 	private static final long serialVersionUID = 5383553825661933604L;
 
 	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-	
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
+	@Column(length = 36, name = "order_hash")
+	private String orderHash;
+
 	@ManyToOne(fetch = FetchType.EAGER)
 	private Account buyer;
-	
+
 	@Column
 	private Integer amount;
-	
+
 	@Column
 	@Temporal(javax.persistence.TemporalType.TIMESTAMP)
 	private Date date;
-	
-	@Column(length = 40)
-	private String payuOperationRefId;
-	
+
+	@Column(length = 32)
+	private String payuOrderId;
+
 	@Column
 	private OrderStatus status;
 
@@ -63,12 +67,12 @@ public class Order implements Serializable {
 		this.date = date;
 	}
 
-	public String getPayuOperationRefId() {
-		return payuOperationRefId;
+	public String getPayuOrderId() {
+		return payuOrderId;
 	}
 
-	public void setPayuOperationRefId(String payuOperationRefId) {
-		this.payuOperationRefId = payuOperationRefId;
+	public void setPayuOrderId(String payuOrderId) {
+		this.payuOrderId = payuOrderId;
 	}
 
 	public Long getId() {
@@ -86,5 +90,14 @@ public class Order implements Serializable {
 	public void setStatus(OrderStatus status) {
 		this.status = status;
 	}
+
+	public String getOrderHash() {
+		return orderHash;
+	}
+
+	public void setOrderHash(String orderHash) {
+		this.orderHash = orderHash;
+	}
 	
+
 }

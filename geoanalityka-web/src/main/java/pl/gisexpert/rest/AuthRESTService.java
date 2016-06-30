@@ -175,7 +175,7 @@ public class AuthRESTService {
 				}
 				
 				return Response.temporaryRedirect(new URI(request.getScheme() + "://" + remoteHost
-						+ appConfig.getLandingPageUrl() + "/login.html?activate_success=true")).build();
+						+ appConfig.getClients().getLandingPageUrl() + "/login.html?activate_success=true")).build();
 			} catch (URISyntaxException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
