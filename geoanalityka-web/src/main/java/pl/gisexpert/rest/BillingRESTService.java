@@ -46,6 +46,7 @@ import pl.gisexpert.model.payu.OrderBase;
 import pl.gisexpert.model.payu.Product;
 import pl.gisexpert.rest.client.PayUClient;
 import pl.gisexpert.rest.model.AddCreditForm;
+import pl.gisexpert.rest.model.BaseResponse;
 import pl.gisexpert.service.GlobalConfigService;
 import pl.gisexpert.service.GlobalConfigService.PayU;
 
@@ -100,11 +101,11 @@ public class BillingRESTService {
 		createOrderForm.setNotifyUrl("http://mapy.gis-expert.pl/geoanalityka-web/rest/billing/payu_notify");
 
 		List<Product> products = new ArrayList<>();
-		Product product = new Product("credit", 1, formData.getAmount() * 100);
+		Product product = new Product("1 gr. do wykorzystania w serwisie Geoanalizy", 1, formData.getAmount() * 100);
 		products.add(product);
 
 		createOrderForm.setProducts(products);
-		createOrderForm.setTotalAmount(formData.getAmount() * 10);
+		createOrderForm.setTotalAmount(formData.getAmount() * 100);
 		createOrderForm.setBuyer(new Buyer(buyer));
 
 		Order order = new Order();
@@ -120,9 +121,17 @@ public class BillingRESTService {
 		Buyer payuBuyer = new Buyer(buyer);
 		createOrderForm.setBuyer(payuBuyer);
 
-		payuClient.createOrder(createOrderForm);
+		String payuRedirectUrl = payuClient.createOrder(createOrderForm);
+		
+		if (payuRedirectUrl == null) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(null).build();
+		}
+		
+		BaseResponse responseEntity = new BaseResponse();
+		responseEntity.message = payuRedirectUrl;
+		responseEntity.responseStatus = Response.Status.OK;
 
-		return Response.status(Response.Status.OK).entity(null).build();
+		return Response.status(Response.Status.OK).entity(responseEntity).build();
 	}
 
 	@POST
@@ -150,7 +159,7 @@ public class BillingRESTService {
 			case "COMPLETED":
 				order.setStatus(OrderStatus.COMPLETED);
 				Account buyer = order.getBuyer();
-				buyer.setCredits(buyer.getCredits() + order.getAmount());
+				buyer.setCredits(buyer.getCredits() + (order.getAmount() * 100));
 				accountRepository.edit(buyer);
 				break;
 			case "CANCELED":
