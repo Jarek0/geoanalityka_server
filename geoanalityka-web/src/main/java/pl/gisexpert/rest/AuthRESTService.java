@@ -275,6 +275,7 @@ public class AuthRESTService {
 		date = cal.getTime();
 
 		accessToken.setExpires(date);
+		accessTokenRepository.edit(accessToken);
 		
 		return Response.status(Response.Status.OK).build();
 		
