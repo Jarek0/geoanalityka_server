@@ -6,6 +6,7 @@ public class CreateOrderStatus {
 	private String codeLiteral;
 	private String statusDesc;
 	private String code;
+	private String severity;
 	
 	public String getStatusCode() {
 		return statusCode;
@@ -31,6 +32,13 @@ public class CreateOrderStatus {
 	public void setCode(String code) {
 		this.code = code;
 	}
+	public String getSeverity() {
+		return severity;
+	}
+	public void setSeverity(String severity) {
+		this.severity = severity;
+	}
+	
 	
 
 	
