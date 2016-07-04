@@ -114,8 +114,6 @@ public class AuthRESTService {
 			accountRepository.create(account);
 		} catch (Exception e) {
 
-			System.out.println(e.getMessage());
-
 			BaseResponse errorStatus = new BaseResponse();
 			errorStatus.message = "Invalid parameters.";
 			errorStatus.responseStatus = Status.BAD_REQUEST;

@@ -1,4 +1,4 @@
-package pl.gisexpert.model.payu;
+package pl.gisexpert.payu.model;
 
 import pl.gisexpert.cms.model.Account;
 

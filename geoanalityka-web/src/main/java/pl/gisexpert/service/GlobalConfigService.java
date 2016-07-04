@@ -33,7 +33,6 @@ public class GlobalConfigService {
 		public void setPortalUrl(String portalUrl) {
 			this.portalUrl = portalUrl;
 		}
-
 	}
 
 	public class PayU {

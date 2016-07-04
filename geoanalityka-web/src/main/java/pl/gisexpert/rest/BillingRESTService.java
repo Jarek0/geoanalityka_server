@@ -40,11 +40,11 @@ import pl.gisexpert.cms.model.Account;
 import pl.gisexpert.cms.model.Order;
 import pl.gisexpert.cms.model.OrderStatus;
 import pl.gisexpert.cms.service.BillingService;
-import pl.gisexpert.model.payu.Buyer;
-import pl.gisexpert.model.payu.CreateOrderNotify;
-import pl.gisexpert.model.payu.OrderBase;
-import pl.gisexpert.model.payu.Product;
-import pl.gisexpert.rest.client.PayUClient;
+import pl.gisexpert.payu.client.PayUClient;
+import pl.gisexpert.payu.model.Buyer;
+import pl.gisexpert.payu.model.CreateOrderNotify;
+import pl.gisexpert.payu.model.OrderBase;
+import pl.gisexpert.payu.model.Product;
 import pl.gisexpert.rest.model.AddCreditForm;
 import pl.gisexpert.rest.model.BaseResponse;
 import pl.gisexpert.service.GlobalConfigService;
@@ -79,18 +79,29 @@ public class BillingRESTService {
 
 		PayU payUSettings = appConfig.getPayu();
 
-		Account buyer = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal(), true);
+		Account buyerAccount = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal(), true);
 
 		OrderBase createOrderForm = new OrderBase();
 		createOrderForm.setCurrencyCode("PLN");
-
-		String customerIpAddress = request.getHeader("X-Forwarded-For");
-		if (customerIpAddress == null) {
-			customerIpAddress = request.getRemoteAddr();
-		}
-
-		// Extract IP address from an IP:PORT string
-		StringTokenizer stk = new StringTokenizer(customerIpAddress, ":");
+		
+		String customerIpAddress = request.getHeader("X-Forwarded-For");  
+        if (customerIpAddress == null || customerIpAddress.length() == 0 || "unknown".equalsIgnoreCase(customerIpAddress)) {  
+            customerIpAddress = request.getHeader("Proxy-Client-IP");  
+        }  
+        if (customerIpAddress == null || customerIpAddress.length() == 0 || "unknown".equalsIgnoreCase(customerIpAddress)) {  
+            customerIpAddress = request.getHeader("WL-Proxy-Client-IP");  
+        }  
+        if (customerIpAddress == null || customerIpAddress.length() == 0 || "unknown".equalsIgnoreCase(customerIpAddress)) {  
+            customerIpAddress = request.getHeader("HTTP_CLIENT_IP");  
+        }  
+        if (customerIpAddress == null || customerIpAddress.length() == 0 || "unknown".equalsIgnoreCase(customerIpAddress)) {  
+            customerIpAddress = request.getHeader("HTTP_X_FORWARDED_FOR");  
+        }  
+        if (customerIpAddress == null || customerIpAddress.length() == 0 || "unknown".equalsIgnoreCase(customerIpAddress)) {  
+            customerIpAddress = request.getRemoteAddr();  
+        }  
+        
+        StringTokenizer stk = new StringTokenizer(customerIpAddress, ":");
 		if (stk.hasMoreTokens()) {
 			customerIpAddress = stk.nextToken();
 		}
@@ -106,19 +117,19 @@ public class BillingRESTService {
 
 		createOrderForm.setProducts(products);
 		createOrderForm.setTotalAmount(formData.getAmount() * 100);
-		createOrderForm.setBuyer(new Buyer(buyer));
+		createOrderForm.setBuyer(new Buyer(buyerAccount));
 
 		Order order = new Order();
 		order.setStatus(OrderStatus.PENDING);
-		order.setBuyer(buyer);
+		order.setBuyer(buyerAccount);
 		order.setAmount(formData.getAmount());
 		order.setDate(new Date());
 
 		orderRepository.create(order);
-		billingService.addOrder(buyer, order);
+		billingService.addOrder(buyerAccount, order);
 		createOrderForm.setExtOrderId(order.getId().toString() + "_" + order.getOrderHash());
 
-		Buyer payuBuyer = new Buyer(buyer);
+		Buyer payuBuyer = new Buyer(buyerAccount);
 		createOrderForm.setBuyer(payuBuyer);
 
 		String payuRedirectUrl = payuClient.createOrder(createOrderForm);
