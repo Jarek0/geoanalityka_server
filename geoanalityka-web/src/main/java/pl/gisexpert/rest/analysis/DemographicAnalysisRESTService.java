@@ -16,10 +16,12 @@
  */
 package pl.gisexpert.rest.analysis;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -54,24 +56,31 @@ import pl.gisexpert.rest.model.analysis.demographic.SumAllInRadiusForm;
 import pl.gisexpert.rest.model.analysis.demographic.SumRangeInRadiusForm;
 import pl.gisexpert.service.AnalysisCostCalculator;
 import pl.gisexpert.stat.data.AddressStatRepository;
+import pl.gisexpert.util.producer.qualifier.RESTI18n;
 
 @Path("/analysis/demographic")
 public class DemographicAnalysisRESTService {
 
 	@Inject
-	AddressStatRepository addressStatRepository;
+	private AddressStatRepository addressStatRepository;
 
 	@Inject
-	AccountRepository accountRepository;
+	private AccountRepository accountRepository;
 
 	@Inject
-	AnalysisService analysisService;
+	private AnalysisService analysisService;
 
 	@Inject
-	DemographicAnalysisRepository analysisRepository;
+	private DemographicAnalysisRepository analysisRepository;
 
 	@Inject
-	AnalysisCostCalculator analysisCostCalculator;
+	private AnalysisCostCalculator analysisCostCalculator;
+	
+	@Inject
+	@RESTI18n
+	private ResourceBundle i18n;
+	
+	private final int MIN_VALID_POPULATION = 50;
 
 	/**
 	 * Returns total population in given radius around given point
@@ -106,6 +115,19 @@ public class DemographicAnalysisRESTService {
 
 		Integer sum = addressStatRepository.sumAllInRadius(sumAllInRadiusForm.getRadius(),
 				sumAllInRadiusForm.getPoint());
+		
+		if (!isPopulationHighEnough(sum)) {
+			BaseResponse response = new BaseResponse();
+			response.responseStatus = Response.Status.NOT_FOUND;
+			
+			Object[] messageArguments = { MIN_VALID_POPULATION };
+			String pattern = i18n.getString("analysis.demographic.lowpopulation");
+			MessageFormat formatter = new MessageFormat(pattern);
+		    formatter.setLocale(i18n.getLocale());		    
+			response.message = formatter.format(messageArguments);
+			
+			return Response.status(Response.Status.NOT_FOUND).entity(response).build();
+		}
 
 		analysis.setPopulation(sum);
 
@@ -115,9 +137,7 @@ public class DemographicAnalysisRESTService {
 		analysisRepository.create(analysis);
 		analysis = (SimpleDemographicAnalysis) analysisService.addDemographicAnalysis(creator, analysis);
 
-		System.out.println(creator.getCredits() + " - " + analysisCost);
 		creator.setCredits(creator.getCredits() - analysisCost);
-		System.out.println(creator.getCredits());
 		accountRepository.edit(creator);
 
 		AnalysisHashResponse responseValue = new AnalysisHashResponse();
@@ -166,6 +186,19 @@ public class DemographicAnalysisRESTService {
 
 		HashMap<String, HashMap<Integer, Integer>> kobietyAndMezczyzniByAgeRanges = addressStatRepository
 				.sumRangeInRadius(range, sumRangeInRadiusForm.getRadius(), sumRangeInRadiusForm.getPoint());
+		
+		if (!isPopulationHighEnough(kobietyAndMezczyzniByAgeRanges)) {
+			BaseResponse response = new BaseResponse();
+			response.responseStatus = Response.Status.NOT_FOUND;
+			
+			Object[] messageArguments = { MIN_VALID_POPULATION };
+			String pattern = i18n.getString("analysis.demographic.lowpopulation");
+			MessageFormat formatter = new MessageFormat(pattern);
+		    formatter.setLocale(i18n.getLocale());		    
+			response.message = formatter.format(messageArguments);
+			
+			return Response.status(Response.Status.NOT_FOUND).entity(response).build();
+		}
 
 		analysis.setKobietyAndMezczyzniByAgeRanges(kobietyAndMezczyzniByAgeRanges);
 
@@ -267,6 +300,25 @@ public class DemographicAnalysisRESTService {
 			response.responseStatus = Response.Status.NOT_FOUND;
 			return Response.status(Response.Status.NOT_FOUND).entity(response).build();
 		}
+	}
+	
+	public boolean isPopulationHighEnough(int population) {
+		return population > MIN_VALID_POPULATION;
+	}
+	
+	public boolean isPopulationHighEnough(HashMap<String, HashMap<Integer, Integer>> kobietyAndMezczyzniByAgeRanges) {
+		int sum = 0;
+		for (Integer value : kobietyAndMezczyzniByAgeRanges.get("kobiety").values()) {
+			if (value != null) {
+				sum += value;
+			}
+		}
+		for (Integer value : kobietyAndMezczyzniByAgeRanges.get("mezczyzni").values()) {
+			if (value != null) {
+				sum += value;
+			}
+		}
+		return sum > MIN_VALID_POPULATION;
 	}
 
 }
