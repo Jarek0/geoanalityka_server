@@ -9,6 +9,7 @@
 	    <class>pl.gisexpert.cms.model.Account</class>
 	    <class>pl.gisexpert.cms.model.Address</class>
 	    <class>pl.gisexpert.cms.model.AccessToken</class>
+	    <class>pl.gisexpert.cms.model.LoginAttempt</class>
 	    <class>pl.gisexpert.cms.model.Order</class>
 	    <class>pl.gisexpert.cms.model.Role</class>
 	    <class>pl.gisexpert.cms.model.ResetPassword</class>

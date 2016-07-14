@@ -4,6 +4,8 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Schedule;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.client.Client;
@@ -16,18 +18,18 @@ import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
-import org.omnifaces.cdi.Eager;
 import org.slf4j.Logger;
 
 import pl.gisexpert.payu.model.AuthResponse;
 import pl.gisexpert.service.GlobalConfigService;
 import pl.gisexpert.service.GlobalConfigService.PayU;
 
-@Eager
+@Startup
+@Singleton
 @ApplicationScoped
 public class PayUAuthService {
 
-	private UUID accessToken;
+	private static UUID accessToken;
 
 	@Inject
 	private Logger log;
@@ -36,7 +38,7 @@ public class PayUAuthService {
 	private GlobalConfigService appConfig;
 
 	@PostConstruct
-	@Schedule(hour = "*/1", minute = "0", second = "0", persistent = false)
+	@Schedule(hour = "*/1", minute = "0", second = "0", persistent = true)
 	private void refreshToken() {
 
 		Client client;
@@ -64,6 +66,7 @@ public class PayUAuthService {
 					+ responseEntity.getErrorDescription());
 		} else {
 			log.info("Successfully generated PayU access token");
+			accessToken = UUID.fromString(responseEntity.getAccessToken());
 		}
 
 		client.close();

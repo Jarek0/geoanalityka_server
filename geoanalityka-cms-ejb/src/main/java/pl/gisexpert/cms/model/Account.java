@@ -87,28 +87,10 @@ public class Account implements Serializable {
     @Embedded
     private AccountConfirmation accountConfirmation;
     
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    @JoinTable(name = "account_tokens",
-    joinColumns = {
-        @JoinColumn(name = "account_id", referencedColumnName = "id")},
-    inverseJoinColumns = {
-        @JoinColumn(name = "token_id", referencedColumnName = "id")})
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, mappedBy = "account")
     private Collection<AccessToken> tokens;
     
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "account_analyses",
-    joinColumns = {
-        @JoinColumn(name = "account_id", referencedColumnName = "id")},
-    inverseJoinColumns = {
-        @JoinColumn(name = "analysis_id", referencedColumnName = "id")})
-    private Collection<DemographicAnalysis> analyses;
-    
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    @JoinTable(name = "account_orders",
-    joinColumns = {
-        @JoinColumn(name = "account_id", referencedColumnName = "id")},
-    inverseJoinColumns = {
-        @JoinColumn(name = "order_id", referencedColumnName = "id")})
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, mappedBy = "buyer")
     private Collection<Order> orders;
     
     public String hashPassword(String password) {
@@ -225,14 +207,6 @@ public class Account implements Serializable {
 	public void setCredits(Double credits) {
 		this.credits = credits;
 	}	
-
-	public Collection<DemographicAnalysis> getAnalyses() {
-		return analyses;
-	}
-
-	public void setAnalyses(Collection<DemographicAnalysis> analyses) {
-		this.analyses = analyses;
-	}
 
 	public Collection<Order> getOrders() {
 		return orders;

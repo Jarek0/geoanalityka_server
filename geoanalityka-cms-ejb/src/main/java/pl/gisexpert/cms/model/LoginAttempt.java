@@ -19,8 +19,8 @@ import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 
 @Entity
-@Table(name = "access_tokens", indexes = {@Index(name="token_index", columnList="token", unique=true)})
-public class AccessToken implements Serializable {
+@Table(name = "login_attempts", indexes = {@Index(name="login_attempts_date_account_index", columnList="date,account_id", unique=false)})
+public class LoginAttempt implements Serializable {
 
     private static final long serialVersionUID = -1658846400249396866L;
 
@@ -28,21 +28,17 @@ public class AccessToken implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 36)
+    @Column(nullable = false)
     @NotNull
-    private String token;
+    private Boolean successful;
 
     @Column(nullable = false)
     @NotNull
     @Temporal(TemporalType.TIMESTAMP)
-    private Date expires;
+    private Date date;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinTable(name = "account_tokens",
-    joinColumns = {
-        @JoinColumn(name = "token_id", referencedColumnName = "id")},
-    inverseJoinColumns = {
-        @JoinColumn(name = "account_id", referencedColumnName = "id")})
+    @JoinColumn(name = "account_id")
     private Account account;
 
     public Long getId() {
@@ -53,31 +49,31 @@ public class AccessToken implements Serializable {
         this.id = id;
     }
 
-    public String getToken() {
-        return token;
-    }
+    public Boolean getSuccessful() {
+		return successful;
+	}
 
-    public void setToken(String token) {
-        this.token = token;
-    }
+	public void setSuccessful(Boolean successful) {
+		this.successful = successful;
+	}
 
-    public Account getAccount() {
-        return account;
-    }
+	public Date getDate() {
+		return date;
+	}
 
-    public void setAccount(Account account) {
-        this.account = account;
-    }
+	public void setDate(Date date) {
+		this.date = date;
+	}
 
-    public Date getExpires() {
-        return expires;
-    }
+	public Account getAccount() {
+		return account;
+	}
 
-    public void setExpires(Date expires) {
-        this.expires = expires;
-    }
+	public void setAccount(Account account) {
+		this.account = account;
+	}
 
-    @Override
+	@Override
     public int hashCode() {
         int hash = 0;
         hash += (id != null ? id.hashCode() : 0);
@@ -87,10 +83,10 @@ public class AccessToken implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof AccessToken)) {
+        if (!(object instanceof LoginAttempt)) {
             return false;
         }
-        AccessToken other = (AccessToken) object;
+        LoginAttempt other = (LoginAttempt) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }

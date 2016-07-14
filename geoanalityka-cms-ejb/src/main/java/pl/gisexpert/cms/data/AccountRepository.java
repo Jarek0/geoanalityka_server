@@ -11,6 +11,9 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Root;
+import javax.transaction.Transactional;
+
+import org.hibernate.Hibernate;
 
 import pl.gisexpert.cms.model.Account;
 import pl.gisexpert.cms.model.Role;
@@ -32,7 +35,8 @@ public class AccountRepository extends AbstractRepository<Account> {
 		super(Account.class);
 	}
 
-	public Account findByUsername(String username, Boolean fetchAddress) {
+	@Transactional
+	public Account findByUsername(String username, Boolean fetchAddress, Boolean fetchTokens) {
 		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
 		CriteriaQuery<Account> cq = cb.createQuery(Account.class);
 		Root<Account> account = cq.from(Account.class);
@@ -45,14 +49,21 @@ public class AccountRepository extends AbstractRepository<Account> {
 
 		try {
 			Account resultAccount = q.getSingleResult();
+			if (fetchTokens) {
+				Hibernate.initialize(resultAccount.getTokens());
+			}
 			return resultAccount;
 		} catch (Exception e) {
 			return null;
 		}
 	}
+	
+	public Account findByUsername(String username, Boolean fetchAddress) {
+		return findByUsername(username, fetchAddress, false);
+	}
 
 	public Account findByUsername(String username) {
-		return findByUsername(username, false);
+		return findByUsername(username, false, false);
 	}
 
 	public Account findByEmail(String email) {

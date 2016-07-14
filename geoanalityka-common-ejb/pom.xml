@@ -4,12 +4,10 @@
     <parent>
     <artifactId>geoanalityka</artifactId>
     <groupId>pl.gisexpert</groupId>
-    <version>0.1</version>
+    <version>0.2</version>
   </parent>
 
-    <groupId>pl.gisexpert</groupId>
     <artifactId>geoanalityka-common-ejb</artifactId>
-    <version>0.1</version>
     <packaging>ejb</packaging>
 
     <name>geoanalityka-common-ejb</name>

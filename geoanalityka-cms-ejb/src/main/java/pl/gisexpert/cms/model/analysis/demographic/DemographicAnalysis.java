@@ -22,8 +22,8 @@ import pl.gisexpert.model.gis.Coordinate;
 @Inheritance
 @DiscriminatorColumn(name = "analysis_type")
 @Table(name = "demographic_analyses", indexes = {
-		@Index(name = "demo_anal_account_index", columnList = "account_id", unique = false),
-		@Index(name = "demo_anal_hash_index", columnList = "hash", unique = true) })
+		@Index(name = "demographic_analysis_account_index", columnList = "account_id", unique = false),
+		@Index(name = "demographic_analysis_hash_index", columnList = "hash", unique = true) })
 @NamedQueries({
 		@NamedQuery(name = "DemographicAnalysis.findRecentAnalysesFroAccount", query = "SELECT analysis FROM DemographicAnalysis analysis LEFT OUTER JOIN analysis.creator creator WHERE creator = :account") })
 public class DemographicAnalysis extends Analysis implements Serializable {

@@ -16,29 +16,41 @@
  */
 package pl.gisexpert.cms.service;
 
+import java.util.Date;
+
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
 
+import pl.gisexpert.cms.data.AccessTokenRepository;
+import pl.gisexpert.cms.data.AccountRepository;
+import pl.gisexpert.cms.model.AccessToken;
 import pl.gisexpert.cms.model.Account;
-import pl.gisexpert.cms.model.analysis.demographic.DemographicAnalysis;
 import pl.gisexpert.cms.qualifier.CMSEntityManager;
+
 
 // The @Stateless annotation eliminates the need for manual transaction demarcation
 @Stateless
-public class AnalysisService {
+public class AccountService {
 
-	@Inject
-	@CMSEntityManager
-	private EntityManager em;
+    @Inject
+    @CMSEntityManager
+    private EntityManager em;
 
-	public DemographicAnalysis addDemographicAnalysis(Account account, DemographicAnalysis analysis) {
-		
-		if (analysis.getCreator() == null) {
-			account = em.find(Account.class, account.getId());
-			analysis.setCreator(account);
-		}
-		return em.merge(analysis);
-	}
+    @Inject
+    private AccountRepository accountRepository;
+    
+    @Inject
+    private AccessTokenRepository accessTokenRepository;
+    
+    @Transactional
+    public Account addToken(Account account, AccessToken token){
+    	
+    	
+    	
+
+    	return account;
+    }
 
 }

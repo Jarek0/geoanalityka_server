@@ -36,6 +36,7 @@ public class PayUClient {
 	public String createOrder(OrderBase createOrderForm) {
 
 		client = ClientBuilder.newClient();
+		
 		createOrderTarget = client.target(appConfig.getPayu().getRestUrl() + "/orders");
 
 		MultivaluedMap<String, Object> myHeaders = new MultivaluedHashMap<>();

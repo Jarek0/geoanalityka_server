@@ -113,7 +113,7 @@ public class DemographicAnalysisRESTService {
 		analysis.setStatus(AnalysisStatus.FINISHED);
 
 		analysisRepository.create(analysis);
-		analysisService.addDemographicAnalysis(creator, analysis);
+		analysis = (SimpleDemographicAnalysis) analysisService.addDemographicAnalysis(creator, analysis);
 
 		System.out.println(creator.getCredits() + " - " + analysisCost);
 		creator.setCredits(creator.getCredits() - analysisCost);
@@ -173,7 +173,7 @@ public class DemographicAnalysisRESTService {
 		analysis.setStatus(AnalysisStatus.FINISHED);
 
 		analysisRepository.create(analysis);
-		analysisService.addDemographicAnalysis(creator, analysis);
+		analysis = (AdvancedDemographicAnalysis) analysisService.addDemographicAnalysis(creator, analysis);
 
 		creator.setCredits(creator.getCredits() - analysisCost);
 		accountRepository.edit(creator);

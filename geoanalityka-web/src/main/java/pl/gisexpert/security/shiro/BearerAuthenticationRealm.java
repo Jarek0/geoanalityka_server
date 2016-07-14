@@ -98,13 +98,17 @@ public class BearerAuthenticationRealm extends AuthorizingRealm {
             ps = conn.prepareStatement(accountInfoQuery);
             ps.setString(1, token);
             rs = ps.executeQuery();
+            
+            int count = 0;
             while (rs.next()) {
+            	count++;
                 accountInfo.id = rs.getLong("id");
                 accountInfo.username = rs.getString("username");
                 accountInfo.expires = rs.getTimestamp("expires");
             }
+            
         } catch (Exception e) {
-        	throw new AuthorizationException("test");
+        	throw new AuthorizationException("Unable to retrieve account info.");
         }
         finally {
             JdbcUtils.closeResultSet(rs);

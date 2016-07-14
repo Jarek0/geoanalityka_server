@@ -21,10 +21,13 @@ import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
+import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -44,12 +47,15 @@ import org.apache.shiro.subject.Subject;
 
 import pl.gisexpert.cms.data.AccessTokenRepository;
 import pl.gisexpert.cms.data.AccountRepository;
+import pl.gisexpert.cms.data.LoginAttemptRepository;
 import pl.gisexpert.cms.model.AccessToken;
 import pl.gisexpert.cms.model.Account;
 import pl.gisexpert.cms.model.AccountConfirmation;
 import pl.gisexpert.cms.model.AccountStatus;
 import pl.gisexpert.cms.model.Address;
-import pl.gisexpert.cms.service.BearerTokenService;
+import pl.gisexpert.cms.model.LoginAttempt;
+import pl.gisexpert.cms.service.AccountService;
+import pl.gisexpert.cms.service.LoginAttemptService;
 import pl.gisexpert.rest.model.AccountInfo;
 import pl.gisexpert.rest.model.BaseResponse;
 import pl.gisexpert.rest.model.GetTokenForm;
@@ -58,24 +64,36 @@ import pl.gisexpert.rest.model.RegisterForm;
 import pl.gisexpert.rest.model.RegisterResponse;
 import pl.gisexpert.service.GlobalConfigService;
 import pl.gisexpert.service.MailService;
+import pl.gisexpert.util.producer.qualifier.RESTI18n;
 
 @Path("/auth")
+@RequestScoped
 public class AuthRESTService {
 
 	@Inject
-	AccountRepository accountRepository;
+	private AccountRepository accountRepository;
 
 	@Inject
-	BearerTokenService tokenService;
+	private AccountService tokenService;
 
 	@Inject
-	AccessTokenRepository accessTokenRepository;
+	private AccessTokenRepository accessTokenRepository;
+	
+	@Inject
+	private LoginAttemptRepository loginAttemptRepository;
 
 	@Inject
-	GlobalConfigService appConfig;
+	private LoginAttemptService loginAttemptService;
+	
+	@Inject
+	private GlobalConfigService appConfig;
 
 	@Inject
-	MailService mailService;
+	private MailService mailService;
+	
+	@Inject
+	@RESTI18n
+	private ResourceBundle i18n;
 
 	@POST
 	@Path("/register")
@@ -196,22 +214,33 @@ public class AuthRESTService {
 
 		BaseResponse rs = new BaseResponse();
 		if (account == null) {
-			rs.message = "Account not found";
+			rs.message =  i18n.getString("account.validation.usernamenotexists");
 			rs.responseStatus = Response.Status.UNAUTHORIZED;
 			return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();
 		}
 
 		if (account.getAccountStatus() == AccountStatus.UNCONFIRMED) {
-			rs.message = "You need to confirm your registration first";
+			rs.message = i18n.getString("account.validation.notconfirmed");
 			rs.responseStatus = Response.Status.UNAUTHORIZED;
 			return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();
 		}
 
 		if (account.getAccountStatus() == AccountStatus.DISABLED) {
-			rs.message = "Your account has been disabled";
+			rs.message = i18n.getString("account.validation.disabled");
 			rs.responseStatus = Response.Status.UNAUTHORIZED;
 			return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();
 		}
+		
+		List<LoginAttempt> recentLoginAttempts = loginAttemptService.findRecentLoginAttempts(5, account, 100);
+		if (recentLoginAttempts != null && recentLoginAttempts.size() == 20) {
+			rs.message = i18n.getString("account.validation.toomanyloginattempts");
+			rs.responseStatus = Response.Status.FORBIDDEN;
+			return Response.status(Response.Status.FORBIDDEN).entity(rs).build();
+		}
+		
+		LoginAttempt loginAttempt = new LoginAttempt();
+		loginAttempt.setDate(new Date());
+		loginAttempt.setAccount(account);
 
 		DefaultPasswordService passwordService = new DefaultPasswordService();
 		DefaultHashService dhs = new DefaultHashService();
@@ -222,12 +251,11 @@ public class AuthRESTService {
 
 			AccessToken accessToken = new AccessToken();
 			String token = UUID.randomUUID().toString();
-
+			
 			while (accessTokenRepository.findByToken(token) != null) {
 				token = UUID.randomUUID().toString();
 			}
 			accessToken.setToken(token);
-			accessToken.setAccount(account);
 
 			Date date = new Date();
 			Calendar cal = Calendar.getInstance();
@@ -236,20 +264,25 @@ public class AuthRESTService {
 			date = cal.getTime();
 
 			accessToken.setExpires(date);
-
-			accessTokenRepository.create(accessToken);
-			account = tokenService.addToken(account, accessToken);
+			accessToken.setAccount(account);
+			accessToken = accessTokenRepository.create(accessToken,true);
 
 			GetTokenResponse getTokenStatus = new GetTokenResponse();
 			getTokenStatus.message = "Successfully generated token";
 			getTokenStatus.token = token;
 			getTokenStatus.responseStatus = Response.Status.OK;
 			getTokenStatus.expires = date;
-
+			
+			loginAttempt.setSuccessful(true);
+			loginAttemptRepository.create(loginAttempt);
+			
 			return Response.status(Response.Status.OK).entity(getTokenStatus).build();
 		}
+		
+		loginAttempt.setSuccessful(false);
+		loginAttemptRepository.create(loginAttempt);
 
-		rs.message = "Authentication failed.";
+		rs.message = i18n.getString("account.validation.authfailed");
 		rs.responseStatus = Response.Status.UNAUTHORIZED;
 
 		return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();

@@ -17,29 +17,45 @@
 package pl.gisexpert.cms.service;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
 
 import pl.gisexpert.cms.model.AccessToken;
 import pl.gisexpert.cms.model.Account;
+import pl.gisexpert.cms.model.LoginAttempt;
 import pl.gisexpert.cms.qualifier.CMSEntityManager;
 
 
 // The @Stateless annotation eliminates the need for manual transaction demarcation
 @Stateless
-public class BearerTokenService {
+public class LoginAttemptService {
 
     @Inject
     @CMSEntityManager
     private EntityManager em;
-
-    public Account addToken(Account account, AccessToken token){
-    	account = em.find(Account.class, account.getId());
-    	account.getTokens().add(token);
-    	account.setLastLoginDate(new Date());
-    	em.merge(account);
-    	return account;
+    
+    public List<LoginAttempt> findRecentLoginAttempts(Integer minutesLimit, Account account, Integer limit) {
+    	
+    	String queryString = "SELECT la FROM LoginAttempt la WHERE la.date > :date AND la.account = :account";
+    	TypedQuery<LoginAttempt> query = em.createQuery(queryString, LoginAttempt.class);
+    	
+    	Date date = new Date(System.currentTimeMillis() - 60 * 1000 * minutesLimit);
+    	
+    	query.setParameter("date", date);
+    	query.setParameter("account", account);
+    	query.setMaxResults(limit);
+ 
+    	List<LoginAttempt> loginAttempts = query.getResultList();
+   
+    	return loginAttempts;
+    	
+    };
+    
+    public List<LoginAttempt> findRecentLoginAttempts(Account account) {
+    	return findRecentLoginAttempts(15, account, 5);
     }
 }
