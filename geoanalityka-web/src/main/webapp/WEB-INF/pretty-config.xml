@@ -1,79 +1,79 @@
-<pretty-config xmlns="http://ocpsoft.org/schema/rewrite-config-prettyfaces" 
-               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-               xsi:schemaLocation="http://ocpsoft.org/schema/rewrite-config-prettyfaces
+<pretty-config xmlns="http://ocpsoft.org/schema/rewrite-config-prettyfaces"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://ocpsoft.org/schema/rewrite-config-prettyfaces
                       http://ocpsoft.org/xml/ns/prettyfaces/rewrite-config-prettyfaces.xsd">
 
-    <url-mapping id="home">
-        <pattern value="/" />
-        <view-id value="/faces/index.xhtml"/>
-    </url-mapping>
-    
-    <url-mapping id="login">
-        <pattern value="/login/" />
-        <view-id value="/faces/login.xhtml" />
-    </url-mapping>
-    
-    <url-mapping id="logout">
-        <pattern value="/logout/" />
-        <view-id value="/faces/index.xhtml"/>
-        <action>#{accountController.logOut}</action>
-    </url-mapping>
-    
-    <url-mapping id="register">
-        <pattern value="/register/" />
-        <view-id value="/faces/register.xhtml" />
-    </url-mapping>
-    
-    <url-mapping id="resetPassword">
-        <pattern value="/reset_password/" />
-        <view-id value="/faces/resetPassword.xhtml" />
-    </url-mapping>
-    
-    <url-mapping parentId="resetPassword" id="resetPassword_token">
-        <pattern value="#{token}" />
-        <view-id value="/faces/resetPassword.xhtml" />
-    </url-mapping>
-        
-        
-    <url-mapping id="admin">
-        <pattern value="/admin/" /> 
-        <view-id value="/faces/admin/dashboard.xhtml" />
-    </url-mapping>
-    
-    <url-mapping parentId="admin" id="admin_users"> 
-        <pattern value="users/" /> 
-        <view-id value="/faces/admin/users/users.xhtml" />
-    </url-mapping>
-    
-    <url-mapping parentId="admin_users" id="admin_users_new"> 
-        <pattern value="new/" /> 
-        <view-id value="/faces/admin/users/addUser.xhtml" />
-    </url-mapping>
-    
-    <url-mapping parentId="admin_users" id="admin_users_edit"> 
-        <pattern value="edit/#{username}/" /> 
-        <view-id value="/faces/admin/users/editUser.xhtml" />
-    </url-mapping>
-    
-    <url-mapping parentId="admin" id="admin_roles"> 
-        <pattern value="roles/" /> 
-        <view-id value="/faces/admin/roles/roles.xhtml" />
-    </url-mapping>
-    
-    <url-mapping parentId="admin_roles" id="admin_roles_edit"> 
-        <pattern value="#{role}/" /> 
-        <view-id value="/faces/admin/roles/editRole.xhtml" />
-    </url-mapping>
-    
-    
-    <url-mapping id="account"> 
-        <pattern value="/account/" /> 
-        <view-id value="/faces/account/details.xhtml" />
-    </url-mapping>
-    
-    <url-mapping parentId="account" id="account_changepassword"> 
-        <pattern value="change_password/" /> 
-        <view-id value="/faces/account/changepassword.xhtml" />
-    </url-mapping>
+	<url-mapping id="home">
+		<pattern value="/" />
+		<view-id value="/faces/index.xhtml" />
+	</url-mapping>
+
+	<url-mapping id="login">
+		<pattern value="/login/" />
+		<view-id value="/faces/login.xhtml" />
+	</url-mapping>
+
+	<url-mapping id="logout">
+		<pattern value="/logout/" />
+		<view-id value="/faces/index.xhtml" />
+		<action>#{accountController.logOut}</action>
+	</url-mapping>
+
+	<url-mapping id="register">
+		<pattern value="/register/" />
+		<view-id value="/faces/register.xhtml" />
+	</url-mapping>
+
+	<url-mapping id="resetPassword">
+		<pattern value="/reset_password/" />
+		<view-id value="/faces/resetPassword.xhtml" />
+	</url-mapping>
+
+	<url-mapping parentId="resetPassword" id="resetPassword_token">
+		<pattern value="#{token}" />
+		<view-id value="/faces/resetPassword.xhtml" />
+	</url-mapping>
+
+
+	<url-mapping id="admin">
+		<pattern value="/admin/" />
+		<view-id value="/faces/admin/dashboard.xhtml" />
+	</url-mapping>
+
+	<url-mapping parentId="admin" id="admin_users">
+		<pattern value="users/" />
+		<view-id value="/faces/admin/users/users.xhtml" />
+	</url-mapping>
+
+	<url-mapping parentId="admin_users" id="admin_users_new">
+		<pattern value="new/" />
+		<view-id value="/faces/admin/users/addUser.xhtml" />
+	</url-mapping>
+
+	<url-mapping parentId="admin_users" id="admin_users_edit">
+		<pattern value="edit/#{username}/" />
+		<view-id value="/faces/admin/users/editUser.xhtml" />
+	</url-mapping>
+
+	<url-mapping parentId="admin" id="admin_roles">
+		<pattern value="roles/" />
+		<view-id value="/faces/admin/roles/roles.xhtml" />
+	</url-mapping>
+
+	<url-mapping parentId="admin_roles" id="admin_roles_edit">
+		<pattern value="#{role}/" />
+		<view-id value="/faces/admin/roles/editRole.xhtml" />
+	</url-mapping>
+
+
+	<url-mapping id="account">
+		<pattern value="/account/" />
+		<view-id value="/faces/account/details.xhtml" />
+	</url-mapping>
+
+	<url-mapping parentId="account" id="account_changepassword">
+		<pattern value="change_password/" />
+		<view-id value="/faces/account/changepassword.xhtml" />
+	</url-mapping>
 
 </pretty-config>

@@ -36,6 +36,7 @@ public class GlobalConfigService {
 	}
 
 	public class PayU {
+		
 		private String restUrl;
 		private String posId;
 		private String clientKey;
@@ -73,9 +74,22 @@ public class GlobalConfigService {
 			this.clientSecret = clientSecret;
 		}
 	}
+	
+	public class Settings {
+		private Integer baseCredits;
+
+		public Integer getBaseCredits() {
+			return baseCredits;
+		}
+
+		public void setBaseCredits(Integer baseCredits) {
+			this.baseCredits = baseCredits;
+		}
+	}
 
 	private Clients clients;
 	private PayU payu;
+	private Settings settings;
 
 	@Inject
 	Logger log;
@@ -95,6 +109,9 @@ public class GlobalConfigService {
 			payu.setPosId(config.get("payu", "pos_id", String.class));
 			payu.setClientKey(config.get("payu", "client_key", String.class));
 			payu.setClientSecret(config.get("payu", "client_secret", String.class));
+			
+			settings = new Settings();
+			settings.setBaseCredits(config.get("settings", "base_credits", Integer.class));
 
 		} catch (IOException ex) {
 			log.error(null, ex);
@@ -108,4 +125,9 @@ public class GlobalConfigService {
 	public PayU getPayu() {
 		return payu;
 	}
+
+	public Settings getSettings() {
+		return settings;
+	}
+	
 }

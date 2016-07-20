@@ -4,8 +4,10 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Objects;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.ColumnResult;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -16,167 +18,178 @@ import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.NamedNativeQueries;
 import javax.persistence.NamedNativeQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.SqlResultSetMapping;
+import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+
 import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.apache.shiro.crypto.SecureRandomNumberGenerator;
 import org.apache.shiro.crypto.hash.DefaultHashService;
 import org.hibernate.validator.constraints.Email;
 
-import pl.gisexpert.cms.model.analysis.demographic.DemographicAnalysis;
-
 @Entity
-@Table(name = "accounts", indexes = {@Index(name="username_index", columnList="username", unique=true)})
-@NamedNativeQuery(name = "Account.removeRole", query = "DELETE FROM account_roles WHERE username = ? AND role = ?")
+@Table(name = "accounts", indexes = { @Index(name = "username_index", columnList = "username", unique = true) })
+@SqlResultSetMappings({
+    @SqlResultSetMapping(name = "Account.sumMapping", columns = {
+        @ColumnResult(name = "items_count", type = Integer.class)})
+})
+@NamedNativeQueries({
+		@NamedNativeQuery(name = "Account.removeRole", query = "DELETE FROM account_roles WHERE username = ? AND role = ?"),
+		@NamedNativeQuery(name = "Account.getRoles", query = "SELECT roles.* FROM roles, account_roles WHERE account_roles.username = :username AND roles.name = account_roles.role", resultClass = Role.class),
+		@NamedNativeQuery(name = "Account.hasRole", query = "SELECT COUNT(*) as items_count FROM account_roles WHERE username = :username AND role = :role", resultSetMapping = "Account.sumMapping")})
 public class Account implements Serializable {
 
-    private static final long serialVersionUID = 1033705321916453635L;
+	private static final long serialVersionUID = 1033705321916453635L;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(nullable = false, length = 80)
-    @NotNull
-    @Size(min = 1, max = 30)
-    private String username;
+	@Column(nullable = false, length = 80)
+	@NotNull
+	@Size(min = 1, max = 30)
+	private String username;
 
-    @Column(nullable = false, length = 102)
-    @NotNull
-    private String password;
+	@Column(nullable = false, length = 102)
+	@NotNull
+	private String password;
 
-    @ManyToMany
-    @JoinTable(name = "account_roles",
-            joinColumns = {
-                @JoinColumn(name = "username", referencedColumnName = "username")},
-            inverseJoinColumns = {
-                @JoinColumn(name = "role", referencedColumnName = "name")})
-    private Collection<Role> roles;
+	@ManyToMany
+	@JoinTable(name = "account_roles", joinColumns = {
+			@JoinColumn(name = "username", referencedColumnName = "username") }, inverseJoinColumns = {
+					@JoinColumn(name = "role", referencedColumnName = "name") }, indexes = {
+							@Index(name = "role_username_index", columnList = "username", unique = false) })
+	private Collection<Role> roles;
 
-    @Email
-    @Column(name = "email_address", nullable = false, length = 80)
-    @NotNull
-    private String emailAddress;
+	@Email
+	@Column(name = "email_address", nullable = false, length = 80)
+	@NotNull
+	private String emailAddress;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "address_id")
-    private Address address;
+	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@JoinColumn(name = "address_id")
+	private Address address;
 
-    @Column(nullable = false, name = "date_registered")
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    private Date dateRegistered;
+	@Column(nullable = false, name = "date_registered")
+	@Temporal(javax.persistence.TemporalType.TIMESTAMP)
+	private Date dateRegistered;
 
-    @Column(name = "date_last_login")
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    private Date lastLoginDate;
-    
-    @Column(name = "account_status", nullable = false)
-    private AccountStatus accountStatus;
-    
-    @Column(nullable = false)
-    private Double credits = 100.0;
+	@Column(name = "date_last_login")
+	@Temporal(javax.persistence.TemporalType.TIMESTAMP)
+	private Date lastLoginDate;
 
-    @Embedded
-    private ResetPassword resetPassword;
-    
-    @Embedded
-    private AccountConfirmation accountConfirmation;
-    
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, mappedBy = "account")
-    private Collection<AccessToken> tokens;
-    
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, mappedBy = "buyer")
-    private Collection<Order> orders;
-    
-    public String hashPassword(String password) {
-        DefaultPasswordService passwordService = new DefaultPasswordService();
-        DefaultHashService dhs = new DefaultHashService();
-        dhs.setHashIterations(5);
-        dhs.setHashAlgorithmName("SHA-256");
-        dhs.setGeneratePublicSalt(true);
-        dhs.setRandomNumberGenerator(new SecureRandomNumberGenerator());
-        passwordService.setHashService(dhs);
-        return passwordService.encryptPassword(password);
-    }
+	@Column(name = "account_status", nullable = false)
+	private AccountStatus accountStatus;
 
-    public Long getId() {
-        return id;
-    }
+	@Column(nullable = false)
+	private Double credits = 5.0;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	@Column(name = "queued_payment")
+	private Double queuedPayment;
 
-    public String getUsername() {
-        return username;
-    }
+	@Embedded
+	private ResetPassword resetPassword;
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	@Embedded
+	private AccountConfirmation accountConfirmation;
 
-    public String getPassword() {
-        return password;
-    }
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, mappedBy = "account")
+	private Collection<AccessToken> tokens;
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, mappedBy = "buyer")
+	private Collection<Order> orders;
 
-    public Collection<Role> getRoles() {
-        return roles;
-    }
+	public String hashPassword(String password) {
+		DefaultPasswordService passwordService = new DefaultPasswordService();
+		DefaultHashService dhs = new DefaultHashService();
+		dhs.setHashIterations(5);
+		dhs.setHashAlgorithmName("SHA-256");
+		dhs.setGeneratePublicSalt(true);
+		dhs.setRandomNumberGenerator(new SecureRandomNumberGenerator());
+		passwordService.setHashService(dhs);
+		return passwordService.encryptPassword(password);
+	}
 
-    public void setRoles(Collection<Role> roles) {
-        this.roles = roles;
-    }
+	public Long getId() {
+		return id;
+	}
 
-    public String getEmailAddress() {
-        return emailAddress;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public void setEmailAddress(String emailAddress) {
-        this.emailAddress = emailAddress;
-    }
+	public String getUsername() {
+		return username;
+	}
 
-    public Address getAddress() {
-        return address;
-    }
+	public void setUsername(String username) {
+		this.username = username;
+	}
 
-    public void setAddress(Address address) {
-        this.address = address;
-    }
+	public String getPassword() {
+		return password;
+	}
 
-    public Date getDateRegistered() {
-        return dateRegistered;
-    }
+	public void setPassword(String password) {
+		this.password = password;
+	}
 
-    public void setDateRegistered(Date dateRegistered) {
-        this.dateRegistered = dateRegistered;
-    }
+	public Collection<Role> getRoles() {
+		return roles;
+	}
 
-    public Date getLastLoginDate() {
-        return lastLoginDate;
-    }
+	public void setRoles(Collection<Role> roles) {
+		this.roles = roles;
+	}
 
-    public void setLastLoginDate(Date lastLoginDate) {
-        this.lastLoginDate = lastLoginDate;
-    }
+	public String getEmailAddress() {
+		return emailAddress;
+	}
 
-    public ResetPassword getResetPassword() {
-        return resetPassword;
-    }
+	public void setEmailAddress(String emailAddress) {
+		this.emailAddress = emailAddress;
+	}
 
-    public void setResetPassword(ResetPassword resetPassword) {
-        this.resetPassword = resetPassword;
-    }
-    
-    public AccountConfirmation getAccountConfirmation() {
+	public Address getAddress() {
+		return address;
+	}
+
+	public void setAddress(Address address) {
+		this.address = address;
+	}
+
+	public Date getDateRegistered() {
+		return dateRegistered;
+	}
+
+	public void setDateRegistered(Date dateRegistered) {
+		this.dateRegistered = dateRegistered;
+	}
+
+	public Date getLastLoginDate() {
+		return lastLoginDate;
+	}
+
+	public void setLastLoginDate(Date lastLoginDate) {
+		this.lastLoginDate = lastLoginDate;
+	}
+
+	public ResetPassword getResetPassword() {
+		return resetPassword;
+	}
+
+	public void setResetPassword(ResetPassword resetPassword) {
+		this.resetPassword = resetPassword;
+	}
+
+	public AccountConfirmation getAccountConfirmation() {
 		return accountConfirmation;
 	}
 
@@ -191,7 +204,7 @@ public class Account implements Serializable {
 	public void setAccountStatus(AccountStatus accountStatus) {
 		this.accountStatus = accountStatus;
 	}
-	
+
 	public Collection<AccessToken> getTokens() {
 		return tokens;
 	}
@@ -206,7 +219,7 @@ public class Account implements Serializable {
 
 	public void setCredits(Double credits) {
 		this.credits = credits;
-	}	
+	}
 
 	public Collection<Order> getOrders() {
 		return orders;
@@ -216,31 +229,39 @@ public class Account implements Serializable {
 		this.orders = orders;
 	}
 
+	public Double getQueuedPayment() {
+		return queuedPayment;
+	}
+
+	public void setQueuedPayment(Double queuedPayment) {
+		this.queuedPayment = queuedPayment;
+	}
+
 	@Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 89 * hash + Objects.hashCode(this.username);
-        return hash;
-    }
+	public int hashCode() {
+		int hash = 7;
+		hash = 89 * hash + Objects.hashCode(this.username);
+		return hash;
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Account other = (Account) obj;
-        if (!Objects.equals(this.username, other.username)) {
-            return false;
-        }
-        return true;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final Account other = (Account) obj;
+		if (!Objects.equals(this.username, other.username)) {
+			return false;
+		}
+		return true;
+	}
 
-    @Override
-    public String toString() {
-        return "pl.gisexpert.ejb.entity.Account[ username=" + username + " ]";
-    }
+	@Override
+	public String toString() {
+		return "pl.gisexpert.ejb.entity.Account[ username=" + username + " ]";
+	}
 
 }

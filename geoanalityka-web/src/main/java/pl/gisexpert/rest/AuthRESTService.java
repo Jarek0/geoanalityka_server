@@ -27,7 +27,6 @@ import java.util.UUID;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -44,6 +43,7 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.apache.shiro.crypto.hash.DefaultHashService;
 import org.apache.shiro.subject.Subject;
+import org.slf4j.Logger;
 
 import pl.gisexpert.cms.data.AccessTokenRepository;
 import pl.gisexpert.cms.data.AccountRepository;
@@ -54,7 +54,6 @@ import pl.gisexpert.cms.model.AccountConfirmation;
 import pl.gisexpert.cms.model.AccountStatus;
 import pl.gisexpert.cms.model.Address;
 import pl.gisexpert.cms.model.LoginAttempt;
-import pl.gisexpert.cms.service.AccountService;
 import pl.gisexpert.cms.service.LoginAttemptService;
 import pl.gisexpert.rest.model.AccountInfo;
 import pl.gisexpert.rest.model.BaseResponse;
@@ -62,9 +61,9 @@ import pl.gisexpert.rest.model.GetTokenForm;
 import pl.gisexpert.rest.model.GetTokenResponse;
 import pl.gisexpert.rest.model.RegisterForm;
 import pl.gisexpert.rest.model.RegisterResponse;
+import pl.gisexpert.rest.util.producer.qualifier.RESTI18n;
 import pl.gisexpert.service.GlobalConfigService;
 import pl.gisexpert.service.MailService;
-import pl.gisexpert.util.producer.qualifier.RESTI18n;
 
 @Path("/auth")
 @RequestScoped
@@ -72,9 +71,6 @@ public class AuthRESTService {
 
 	@Inject
 	private AccountRepository accountRepository;
-
-	@Inject
-	private AccountService tokenService;
 
 	@Inject
 	private AccessTokenRepository accessTokenRepository;
@@ -94,6 +90,9 @@ public class AuthRESTService {
 	@Inject
 	@RESTI18n
 	private ResourceBundle i18n;
+	
+	@Inject
+	private Logger log;
 
 	@POST
 	@Path("/register")
@@ -105,6 +104,9 @@ public class AuthRESTService {
 		account.setUsername(formData.getEmail());
 		account.setPassword(account.hashPassword(formData.getPassword()));
 		account.setEmailAddress(formData.getEmail());
+		if (formData.getQueuedPayment() != null) {
+			account.setQueuedPayment(formData.getQueuedPayment());
+		}
 
 		Address address = new Address();
 		address.setFirstName(formData.getFirstname());
@@ -258,6 +260,7 @@ public class AuthRESTService {
 			accessToken.setToken(token);
 
 			Date date = new Date();
+			
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(date);
 			cal.add(Calendar.MINUTE, 240); // token will expire after 240 minutes
@@ -274,6 +277,8 @@ public class AuthRESTService {
 			getTokenStatus.expires = date;
 			
 			loginAttempt.setSuccessful(true);
+			account.setLastLoginDate(new Date());
+			accountRepository.edit(account);
 			loginAttemptRepository.create(loginAttempt);
 			
 			return Response.status(Response.Status.OK).entity(getTokenStatus).build();
@@ -295,7 +300,9 @@ public class AuthRESTService {
 		String token = request.getHeader("Access-Token");
 		
 		AccessToken accessToken = accessTokenRepository.findByToken(token);
+		
 		if (accessToken == null) {
+			log.debug("Failed to renew token: " + accessToken.getToken());
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
 		
@@ -307,6 +314,8 @@ public class AuthRESTService {
 
 		accessToken.setExpires(date);
 		accessTokenRepository.edit(accessToken);
+		
+		log.debug("Successfully renewed token: " + accessToken.getToken());
 		
 		return Response.status(Response.Status.OK).build();
 		
@@ -338,14 +347,13 @@ public class AuthRESTService {
 
 		Subject currentUser = SecurityUtils.getSubject();
 		String username = (String) currentUser.getPrincipal();
-
+		
+		if (username == null) {
+			return Response.status(Response.Status.FORBIDDEN).build();
+		}
 		Account account = accountRepository.findByUsername(username, true);
-
-		AccountInfo accountInfo = new AccountInfo();
-		accountInfo.setUsername(username);
-		accountInfo.setEmail(account.getEmailAddress());
-		accountInfo.setLastLogin(account.getLastLoginDate());
-		accountInfo.setCredits(account.getCredits());
+		AccountInfo accountInfo = new AccountInfo(account);
+		
 		
 		String token = request.getHeader("Access-Token");
 		
@@ -355,11 +363,6 @@ public class AuthRESTService {
 		}
 		accountInfo.setAccessToken(accessToken.getToken());
 		accountInfo.setTokenExpires(accessToken.getExpires());
-
-		Address address = account.getAddress();
-		accountInfo.setFirstName(address.getFirstName());
-		accountInfo.setLastName(address.getLastName());
-		accountInfo.setCompanyName(address.getCompanyName());
 
 		return Response.status(Response.Status.OK).entity(accountInfo).build();
 	}

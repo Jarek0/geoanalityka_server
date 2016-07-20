@@ -2,6 +2,9 @@ package pl.gisexpert.rest.model;
 
 import java.util.Date;
 
+import pl.gisexpert.cms.model.Account;
+import pl.gisexpert.cms.model.Address;
+
 public class AccountInfo {
 	private String username;
 	private String email;
@@ -12,6 +15,25 @@ public class AccountInfo {
 	private Double credits;
 	private Date tokenExpires;
 	private String accessToken;
+	private Double queuedPayment;
+	
+	public AccountInfo(){
+		
+	}
+	
+	public AccountInfo(Account account) {
+		
+		username = account.getUsername();
+		email=account.getEmailAddress();
+		lastLogin = account.getLastLoginDate();
+		credits = account.getCredits();
+		queuedPayment = account.getQueuedPayment();
+		
+		Address address = account.getAddress();
+		firstName = address.getFirstName();
+		lastName = address.getLastName();
+		companyName = address.getCompanyName();
+	}
 	
 	public String getUsername() {
 		return username;
@@ -67,5 +89,10 @@ public class AccountInfo {
 	public void setAccessToken(String accessToken) {
 		this.accessToken = accessToken;
 	}
-	
+	public Double getQueuedPayment() {
+		return queuedPayment;
+	}
+	public void setQueuedPayment(Double queuedPayment) {
+		this.queuedPayment = queuedPayment;
+	}
 }

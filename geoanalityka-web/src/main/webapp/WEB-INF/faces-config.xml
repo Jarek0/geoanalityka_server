@@ -38,5 +38,7 @@
             <default-locale>pl_PL</default-locale>
             <supported-locale>pl_PL</supported-locale>
         </locale-config>
+       
     </application>
+
 </faces-config>

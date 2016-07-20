@@ -24,6 +24,7 @@ import java.util.StringTokenizer;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -34,12 +35,22 @@ import javax.ws.rs.core.Response;
 import org.apache.shiro.SecurityUtils;
 import org.slf4j.Logger;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+
 import pl.gisexpert.cms.data.AccountRepository;
 import pl.gisexpert.cms.data.OrderRepository;
+import pl.gisexpert.cms.data.RoleRepository;
 import pl.gisexpert.cms.model.Account;
 import pl.gisexpert.cms.model.Order;
 import pl.gisexpert.cms.model.OrderStatus;
+import pl.gisexpert.cms.model.PremiumPlanType;
+import pl.gisexpert.cms.model.Role;
+import pl.gisexpert.cms.service.AccountService;
 import pl.gisexpert.cms.service.BillingService;
+import pl.gisexpert.cms.service.PremiumPlanService;
 import pl.gisexpert.payu.client.PayUClient;
 import pl.gisexpert.payu.model.Buyer;
 import pl.gisexpert.payu.model.CreateOrderNotify;
@@ -54,22 +65,31 @@ import pl.gisexpert.service.GlobalConfigService.PayU;
 public class BillingRESTService {
 
 	@Inject
-	AccountRepository accountRepository;
+	private AccountRepository accountRepository;
 
 	@Inject
-	OrderRepository orderRepository;
+	private AccountService accountService;
 
 	@Inject
-	BillingService billingService;
+	private OrderRepository orderRepository;
 
 	@Inject
-	GlobalConfigService appConfig;
+	private BillingService billingService;
 
 	@Inject
-	PayUClient payuClient;
+	private PremiumPlanService premiumPlanService;
 
 	@Inject
-	Logger log;
+	private RoleRepository roleRepository;
+
+	@Inject
+	private GlobalConfigService appConfig;
+
+	@Inject
+	private PayUClient payuClient;
+
+	@Inject
+	private Logger log;
 
 	@POST
 	@Path("/add_credit")
@@ -79,40 +99,57 @@ public class BillingRESTService {
 
 		PayU payUSettings = appConfig.getPayu();
 
-		Account buyerAccount = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal(), true);
+		Account buyerAccount = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal(),
+				true);
 
 		OrderBase createOrderForm = new OrderBase();
 		createOrderForm.setCurrencyCode("PLN");
-		
-		String customerIpAddress = request.getHeader("X-Forwarded-For");  
-        if (customerIpAddress == null || customerIpAddress.length() == 0 || "unknown".equalsIgnoreCase(customerIpAddress)) {  
-            customerIpAddress = request.getHeader("Proxy-Client-IP");  
-        }  
-        if (customerIpAddress == null || customerIpAddress.length() == 0 || "unknown".equalsIgnoreCase(customerIpAddress)) {  
-            customerIpAddress = request.getHeader("WL-Proxy-Client-IP");  
-        }  
-        if (customerIpAddress == null || customerIpAddress.length() == 0 || "unknown".equalsIgnoreCase(customerIpAddress)) {  
-            customerIpAddress = request.getHeader("HTTP_CLIENT_IP");  
-        }  
-        if (customerIpAddress == null || customerIpAddress.length() == 0 || "unknown".equalsIgnoreCase(customerIpAddress)) {  
-            customerIpAddress = request.getHeader("HTTP_X_FORWARDED_FOR");  
-        }  
-        if (customerIpAddress == null || customerIpAddress.length() == 0 || "unknown".equalsIgnoreCase(customerIpAddress)) {  
-            customerIpAddress = request.getRemoteAddr();  
-        }  
-        
-        StringTokenizer stk = new StringTokenizer(customerIpAddress, ":");
+
+		String customerIpAddress = request.getHeader("X-Forwarded-For");
+		if (customerIpAddress == null || customerIpAddress.length() == 0
+				|| "unknown".equalsIgnoreCase(customerIpAddress)) {
+			customerIpAddress = request.getHeader("Proxy-Client-IP");
+		}
+		if (customerIpAddress == null || customerIpAddress.length() == 0
+				|| "unknown".equalsIgnoreCase(customerIpAddress)) {
+			customerIpAddress = request.getHeader("WL-Proxy-Client-IP");
+		}
+		if (customerIpAddress == null || customerIpAddress.length() == 0
+				|| "unknown".equalsIgnoreCase(customerIpAddress)) {
+			customerIpAddress = request.getHeader("HTTP_CLIENT_IP");
+		}
+		if (customerIpAddress == null || customerIpAddress.length() == 0
+				|| "unknown".equalsIgnoreCase(customerIpAddress)) {
+			customerIpAddress = request.getHeader("HTTP_X_FORWARDED_FOR");
+		}
+		if (customerIpAddress == null || customerIpAddress.length() == 0
+				|| "unknown".equalsIgnoreCase(customerIpAddress)) {
+			customerIpAddress = request.getRemoteAddr();
+		}
+
+		StringTokenizer stk = new StringTokenizer(customerIpAddress, ":");
 		if (stk.hasMoreTokens()) {
 			customerIpAddress = stk.nextToken();
 		}
 
-		createOrderForm.setCustomerIp(customerIpAddress);
+		String productName;
+		switch (formData.getAmount()) {
+		case 50:
+			productName = "Geoanalizy - aktywacja / przedłużenie planu standardowego";
+			break;
+		case 100:
+			productName = "Geoanalizy - aktywacja / przedłużenie planu zaawansowanego";
+			break;
+		default:
+			return Response.status(Response.Status.UNAUTHORIZED).entity(null).build();
+		}
 		createOrderForm.setDescription("Środki do wykorzystania w portalu Geoanalizy");
+		createOrderForm.setCustomerIp(customerIpAddress);
 		createOrderForm.setMerchantPosId(payUSettings.getPosId());
 		createOrderForm.setNotifyUrl("http://mapy.gis-expert.pl/geoanalityka-web/rest/billing/payu_notify");
 
 		List<Product> products = new ArrayList<>();
-		Product product = new Product("1 gr. do wykorzystania w serwisie Geoanalizy", 1, formData.getAmount() * 100);
+		Product product = new Product(productName, formData.getAmount() * 100, 1);
 		products.add(product);
 
 		createOrderForm.setProducts(products);
@@ -133,11 +170,11 @@ public class BillingRESTService {
 		createOrderForm.setBuyer(payuBuyer);
 
 		String payuRedirectUrl = payuClient.createOrder(createOrderForm);
-		
+
 		if (payuRedirectUrl == null) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(null).build();
 		}
-		
+
 		BaseResponse responseEntity = new BaseResponse();
 		responseEntity.message = payuRedirectUrl;
 		responseEntity.responseStatus = Response.Status.OK;
@@ -149,7 +186,7 @@ public class BillingRESTService {
 	@Path("/payu_notify")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response payuNotify(CreateOrderNotify data) {
-		
+
 		// Extract IP address from an IP:PORT string
 		StringTokenizer astk = new StringTokenizer(data.getOrder().getExtOrderId(), "_");
 		Long orderId = null;
@@ -158,7 +195,8 @@ public class BillingRESTService {
 		}
 
 		if (orderId == null) {
-			log.warn("Incomming order update from PayU. Received invalid order ID: (" + data.getOrder().getExtOrderId() + ")");
+			log.warn("Incomming order update from PayU. Received invalid order ID: (" + data.getOrder().getExtOrderId()
+					+ ")");
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
 
@@ -170,8 +208,20 @@ public class BillingRESTService {
 			case "COMPLETED":
 				order.setStatus(OrderStatus.COMPLETED);
 				Account buyer = order.getBuyer();
-				buyer.setCredits(buyer.getCredits() + (order.getAmount() * 100));
-				accountRepository.edit(buyer);
+
+				switch (data.getOrder().getProducts().get(0).getUnitPrice()) {
+				case 5000:
+					buyer.setCredits(buyer.getCredits() + 10);
+					premiumPlanService.activatePlan(buyer, PremiumPlanType.PLAN_STANDARDOWY);
+					log.debug("Added 10 credits to account: " + buyer.getUsername() + ". PLAN_STANDARDOWY activated.");
+					break;
+				case 10000:
+					buyer.setCredits(buyer.getCredits() + 30);
+					premiumPlanService.activatePlan(buyer, PremiumPlanType.PLAN_ZAAWANSOWANY);
+					log.debug("Added 30 credits to account: " + buyer.getUsername() + ". PLAN_ZAAWANSOWANY activated.");
+					break;
+				}
+
 				break;
 			case "CANCELED":
 				order.setStatus(OrderStatus.CANCELED);
@@ -183,6 +233,7 @@ public class BillingRESTService {
 				order.setStatus(OrderStatus.REJECTED);
 				break;
 			}
+
 		}
 
 		orderRepository.edit(order);
@@ -190,6 +241,29 @@ public class BillingRESTService {
 		log.info("Incomming order update from PayU. Order " + order.getId() + " has been updated with status: "
 				+ order.getStatus().name());
 
+		return Response.status(Response.Status.OK).build();
+	}
+
+	@GET
+	@Path("/unqueue_payment")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response unqueuePayment() {
+
+		try {
+			Account account = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal(),
+					true);
+
+			account.setQueuedPayment(null);
+			accountRepository.edit(account);
+			
+			log.debug("Removed queued payment from account: " + account.getUsername());
+			
+		} catch (Exception e) {
+			log.debug("Failed to remove queued payment from an account.");
+			return Response.status(Response.Status.UNAUTHORIZED).build();
+		}
+		
+		
 		return Response.status(Response.Status.OK).build();
 	}
 }

@@ -2,6 +2,7 @@
 package pl.gisexpert.cms.model;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Objects;
 
 import javax.persistence.Column;
@@ -9,14 +10,12 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.NamedNativeQueries;
-import javax.persistence.NamedNativeQuery;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
 
 @Entity
 @Table(name = "roles")
-
 public class Role implements Serializable {
     private static final long serialVersionUID = -4767712582624098830L;
     
@@ -26,6 +25,9 @@ public class Role implements Serializable {
     
     @Column
     private String name;
+    
+    @ManyToMany(mappedBy = "roles")
+    private List<Account> accounts;
    
     
     public String getName() {
@@ -65,6 +67,13 @@ public class Role implements Serializable {
         }
         return true;
     }
+
+	@Override
+	public String toString() {
+		return "Role [name=" + name + "]";
+	}
+    
+    
     
     
 

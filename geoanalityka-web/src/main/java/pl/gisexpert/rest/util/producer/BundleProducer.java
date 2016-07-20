@@ -1,4 +1,4 @@
-package pl.gisexpert.util.producer;
+package pl.gisexpert.rest.util.producer;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.ext.Provider;
 
-import pl.gisexpert.util.producer.qualifier.RESTI18n;
+import pl.gisexpert.rest.util.producer.qualifier.RESTI18n;
 
 @Provider
 public class BundleProducer {

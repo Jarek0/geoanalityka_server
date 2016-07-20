@@ -29,18 +29,19 @@ public class AnalysisCostCalculator {
 	}
 
 	private Double calculateSimpleDemographic(SimpleDemographicAnalysis analysis) {
-		Integer radius = analysis.getRadius();
+		/*Integer radius = analysis.getRadius();
 		if (radius <= 2000) {
 			return BASE_VALUE;
 		} else {
 			return Math.round((radius.doubleValue() / 1000.0) / (Math.log(radius / 1000.0) / Math.log(2.0)))
 					* BASE_VALUE;
-		}
+		}*/
+		return 1.0;
 	}
 
 	private Double calculateAdvancedDemographic(AdvancedDemographicAnalysis analysis) {
 
-		Integer radius = analysis.getRadius();
+		/*Integer radius = analysis.getRadius();
 		List<String> ageRanges = Lists.newArrayList(Splitter.on("-").split(analysis.getAgeRange()));
 		Integer numAgeRanges = (int) Math
 				.ceil((Integer.parseInt(ageRanges.get(1)) - Integer.parseInt(ageRanges.get(0))) / 5.0);
@@ -49,6 +50,8 @@ public class AnalysisCostCalculator {
 		} else {
 			return Math.round(((radius.doubleValue() / 1000.0) / (Math.log(radius / 1000.0) / Math.log(2.0)))
 					* numAgeRanges.doubleValue()) * BASE_VALUE;
-		}
+		}*/
+		
+		return 2.0;
 	}
 }

@@ -1,67 +1,56 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:ui="http://java.sun.com/jsf/facelets"
-	xmlns:f="http://java.sun.com/jsf/core"
-	xmlns:h="http://java.sun.com/jsf/html"
-	template="/WEB-INF/templates/default.xhtml">
-	<ui:define name="content">
-		<h1>Test form</h1>
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                template="./templates/admin.xhtml">
 
-		<h:form id="reg">
-			<h2>Adding layer info</h2>
-			<p>Enforces annotation-based constraints defined on the model
-				class.</p>
-			<h:panelGrid columns="3" columnClasses="titleCell">
-				<h:outputLabel for="name" value="Name:" />
-				<h:inputText id="name"
-					value="#{layerInfoController.newLayerInfo.name}" />
-				<h:message for="name" errorClass="invalid" />
 
-				<h:outputLabel for="layerType" value="#{i18n['layer.type']}:" />
-				<h:selectOneMenu id="layerType" value="#{layerInfoController.newLayerInfo.type}">
-					<f:selectItems var="layerType"
-						value="#{layerInfoController.layerTypes}" itemValue="#{layerType}"
-						itemLabel="#{i18n['layer.type.' += layerType]}" />
-				</h:selectOneMenu>
-				<h:message for="layerType" errorClass="invalid" />
-			</h:panelGrid>
+    <ui:define name="content">
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="page-header">#{i18n['dashboard']}</h1>
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+        <!-- /.row -->
+        <div class="row">
+            <ui:fragment rendered="#{request.isUserInRole('Administrator')}">
+                <h:link outcome="pretty:admin_users" styleClass="col-lg-3 col-md-6 panel-button">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <div class="row">
+                                <div class="col-xs-3">
+                                    <i class="glyphicon glyphicon-user fa-5x" style="/*font-size: 5em;*/"></i>
+                                </div>
+                                <div class="col-xs-9 text-right">
+                                    <div class="huge"></div>
+                                    <div>#{i18n['accounts']}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </h:link>
 
-			<p>
-				<h:panelGrid columns="2">
-					<h:commandButton id="register"
-						action="#{layerInfoController.add}" value="#{i18n['common.add']}"
-						styleClass="register" />
-					<h:messages styleClass="messages" errorClass="invalid"
-						infoClass="valid" warnClass="warning" globalOnly="true" />
-				</h:panelGrid>
-			</p>
-		</h:form>
-		<h2>Layer infos</h2>
-		<h:panelGroup rendered="#{empty layerInfoProducer.layerInfos}">
-			<em>No layer infos.</em>
-		</h:panelGroup>
-		<h:dataTable var="_layerInfo" value="#{layerInfoProducer.layerInfos}"
-			rendered="#{not empty layerInfoProducer.layerInfos}" styleClass="simpletablestyle">
-			<h:column>
-				<f:facet name="header">Id</f:facet>
-                #{_layerInfo.id}
-            </h:column>
-			<h:column>
-				<f:facet name="header">Name</f:facet>
-                #{_layerInfo.name}
-            </h:column>
-			<h:column>
-				<f:facet name="header">Type</f:facet>
-                #{_layerInfo.type}
-            </h:column>
-			<h:column>
-				<f:facet name="header">REST URL</f:facet>
-				<a href="#{request.contextPath}/rest/layerinfos/#{_layerInfo.id}">/rest/layerinfos/#{_layerInfo.id}</a>
-			</h:column>
-			<f:facet name="footer">
-            REST URL for all layer infos: <a
-					href="#{request.contextPath}/rest/layerinfos">/rest/layerinfos</a>
-			</f:facet>
-		</h:dataTable>
-	</ui:define>
+                <h:link outcome="pretty:admin_roles" styleClass="col-lg-3 col-md-6 panel-button">
+                    <div class="panel panel-yellow">
+                        <div class="panel-heading">
+                            <div class="row">
+                                <div class="col-xs-3">
+                                    <i class="fa fa-users fa-5x"></i>
+                                </div>
+                                <div class="col-xs-9 text-right">
+                                    <div class="huge"></div>
+                                    <div>#{i18n['roles']}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </h:link>
+
+            </ui:fragment>
+
+        </div>
+    </ui:define>
+
 </ui:composition>

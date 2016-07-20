@@ -1,5 +1,5 @@
 
-package  pl.gisexpert.account.controller;
+package  pl.gisexpert.cms.account.controller;
 
 import javax.enterprise.context.RequestScoped;
 import javax.faces.application.FacesMessage;
@@ -21,7 +21,7 @@ public class ChangePasswordController {
     private AccountController accountController;
     
     @Inject
-    private AccountRepository accountFacade;
+    private AccountRepository accountRapository;
     
     private String currentPassword;
     
@@ -40,7 +40,7 @@ public class ChangePasswordController {
         FacesContext context = FacesContext.getCurrentInstance();
         if (passwordService.passwordsMatch(currentPassword, account.getPassword())){
             account.setPassword(passwordService.encryptPassword(newPassword));
-            accountFacade.edit(account);
+            accountRapository.edit(account);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Hasło zostało zmienione", null);
             context.addMessage(null, message);
         }

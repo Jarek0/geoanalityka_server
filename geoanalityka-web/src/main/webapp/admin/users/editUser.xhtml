@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
+                template="../../templates/admin.xhtml">
+
+    <f:metadata>
+        <f:viewParam required="true"
+                     name="username"
+                     value="#{editUserController.account}"
+                     converter="#{accountConverter}"
+                     >
+        </f:viewParam>
+        <f:event type="preRenderView" listener="#{editUserController.init()}"/>
+    </f:metadata>
+
+    <ui:define name="content">
+
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="page-header">#{i18n['account']} <em>#{editUserController.account.username}</em></h1>
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+        <!-- /.row -->
+
+        <div class="panel panel-info" >
+            <div class="panel-heading">
+                <div class="panel-title">#{i18n['editaccount.formtitle']}</div>
+            </div>     
+
+            <div style="padding-top:30px" class="panel-body" >
+
+                <div style="display:none" id="login-alert" class="alert alert-danger col-sm-12"></div>
+
+                <h:form id="editUser" styleClass="form-horizontal" role="form">
+                    <p:messages />
+
+                    <div class="form-group col-sm-12 col-lg-8">
+                        <p:outputLabel for="account-email" value="#{i18n['account.email']}" styleClass="control-label col-sm-4"/>
+                        <div class="col-sm-8">
+                            <p:inputText id="account-email" styleClass="form-control" value="#{editUserController.newEmail}" pt:placeholder="#{i18n['account.email']}">
+                                <f:validator binding="#{emailUnicityValidator}" id="emailUnicityValidator" />
+                                <f:attribute name="userId" value="#{editUserController.account.id}" />
+                            </p:inputText>
+                        </div>
+                    </div>
+
+                    <hr class="col-sm-12 col-lg-8" />
+
+                    <div class="form-group col-sm-12 col-lg-8">
+                        <p:outputLabel for="account-newpassword" value="#{i18n['account.changepassword.new']}" styleClass="control-label col-sm-4"/>
+                        <div class="col-sm-8">
+                            <p:password id="account-newpassword" styleClass="form-control" value="#{editUserController.newPassword}" pt:placeholder="#{i18n['account.changepassword.new']}"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-12 col-lg-8">
+                        <p:outputLabel for="account-newpasswordrepeat" value="#{i18n['account.changepassword.repeatnew']}" styleClass="control-label col-sm-4"/>
+                        <div class="col-sm-8">
+                            <p:password id="account-newpasswordrepeat" styleClass="form-control" pt:placeholder="#{i18n['account.changepassword.repeatnew']}">
+                                <f:validator validatorId="duplicateFieldValidator" />
+                                <f:attribute name="field1Id" value="#{component.parent.clientId}:account-newpassword" />
+                            </p:password>
+                        </div>
+                    </div>
+
+                    <hr class="col-sm-12 col-lg-8" />
+
+                    <div class="form-group col-sm-12 col-lg-8">
+                        <div class="col-md-4"></div>
+                        <div class="col-md-8">
+                            <h4>#{i18n['roles']}</h4>
+                            <p:pickList id="pickList"
+                                        value="#{editUserController.roles}"
+                                        var="role"
+                                        itemLabel="#{role.name}"
+                                        itemValue="#{role}"
+                                        converter="entityConverter"/>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:10px" class="form-group">
+                        <!-- Button -->
+
+                        <div class="col-sm-12 controls">
+                            <p:commandButton update="editUser" styleClass="btn btn-success" actionListener="#{editUserController.save()}" value="#{i18n['common.change']}"></p:commandButton>
+                        </div>
+                    </div>
+
+
+
+                </h:form>     
+
+
+
+            </div>                     
+        </div> 
+    </ui:define>
+
+
+</ui:composition>

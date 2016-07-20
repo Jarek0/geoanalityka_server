@@ -1,6 +1,8 @@
 package pl.gisexpert.cms.data;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -98,7 +100,7 @@ public class AccountRepository extends AbstractRepository<Account> {
 		CriteriaQuery<Account> cq = cb.createQuery(Account.class);
 		Root<Account> account = cq.from(Account.class);
 		cq.select(account);
-		cq.where(cb.equal(account.get("resetPassword").get("reset_pass_token"), token));
+		cq.where(cb.equal(account.get("resetPassword").get("token"), token));
 		TypedQuery<Account> q = getEntityManager().createQuery(cq);
 
 		try {
@@ -107,6 +109,18 @@ public class AccountRepository extends AbstractRepository<Account> {
 		} catch (Exception e) {
 			return null;
 		}
+	}
+	
+	@Override
+	@Transactional
+	public void create(Account account){
+		if (account.getRoles() == null) {
+			List<Role> roles = new ArrayList<>();
+			Role role = new Role();
+			role.setName("PLAN_TESTOWY");
+			account.setRoles(roles);
+		}
+		em.persist(account);
 	}
 
 }

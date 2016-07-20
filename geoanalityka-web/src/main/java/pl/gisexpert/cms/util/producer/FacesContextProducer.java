@@ -1,4 +1,4 @@
-package pl.gisexpert.util.producer;
+package pl.gisexpert.cms.util.producer;
 
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.Produces;

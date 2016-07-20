@@ -16,17 +16,16 @@
  */
 package pl.gisexpert.cms.service;
 
-import java.util.Date;
+import java.util.List;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 
-import pl.gisexpert.cms.data.AccessTokenRepository;
-import pl.gisexpert.cms.data.AccountRepository;
-import pl.gisexpert.cms.model.AccessToken;
 import pl.gisexpert.cms.model.Account;
+import pl.gisexpert.cms.model.Role;
 import pl.gisexpert.cms.qualifier.CMSEntityManager;
 
 
@@ -37,20 +36,36 @@ public class AccountService {
     @Inject
     @CMSEntityManager
     private EntityManager em;
-
-    @Inject
-    private AccountRepository accountRepository;
-    
-    @Inject
-    private AccessTokenRepository accessTokenRepository;
     
     @Transactional
-    public Account addToken(Account account, AccessToken token){
+    public List<Role> getRoles(Account account) {
     	
+    	TypedQuery<Role> query = em.createNamedQuery("Account.getRoles", Role.class);
+    	query.setParameter("username", account.getUsername());
     	
+    	List<Role> accountRoles = query.getResultList();
+    	return accountRoles;
     	
-
-    	return account;
     }
 
+    @Transactional
+    public void setRoles(Account account, List<Role> roles) {
+    	account.setRoles(roles);
+    	em.merge(account);
+    }
+    
+    public boolean hasRole(Account account, Role role) {
+    	return hasRole(account, role.getName());
+    }
+    
+    public boolean hasRole(Account account, String roleName) {
+    	TypedQuery<Integer> query = em.createNamedQuery("Account.hasRole", Integer.class);
+    	query.setParameter("username", account.getUsername());
+    	query.setParameter("role", roleName);
+    	
+    	Integer result = query.getSingleResult();
+    	
+    	return result > 0;
+    }
+    
 }

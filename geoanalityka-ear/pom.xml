@@ -66,25 +66,18 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.apache.shiro</groupId>
-			<artifactId>shiro-core</artifactId>
-			<version>1.2.3</version>
-			<scope>compile</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.shiro</groupId>
-			<artifactId>shiro-web</artifactId>
-			<version>1.2.3</version>
-			<scope>compile</scope>
-		</dependency>
-
-		<dependency>
 			<groupId>org.primefaces</groupId>
 			<artifactId>primefaces</artifactId>
 			<version>5.2</version>
 			<scope>compile</scope>
 		</dependency>
+		
+		<dependency>  
+            <groupId>org.primefaces.themes</groupId>  
+            <artifactId>bootstrap</artifactId>  
+            <version>1.0.10</version> 
+            <scope>compile</scope> 
+        </dependency>
 
 		<dependency>
 			<groupId>org.jboss.weld</groupId>
@@ -92,6 +85,19 @@
 			<version>1.0.0-CR2</version>
 			<scope>compile</scope>
 		</dependency>
+		
+		<dependency>
+            <groupId>org.apache.shiro</groupId>
+            <artifactId>shiro-core</artifactId>
+            <version>1.2.3</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.shiro</groupId>
+            <artifactId>shiro-web</artifactId>
+            <version>1.2.3</version>
+            <scope>compile</scope>
+        </dependency>
 
 	</dependencies>
 

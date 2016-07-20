@@ -1,4 +1,4 @@
-package pl.gisexpert.account.controller;
+package pl.gisexpert.cms.account.controller;
 
 import java.io.Serializable;
 import java.text.MessageFormat;
@@ -17,10 +17,12 @@ import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.apache.shiro.crypto.hash.DefaultHashService;
 import org.hibernate.validator.constraints.Email;
 import org.omnifaces.cdi.ViewScoped;
+import org.omnifaces.util.Faces;
 
 import pl.gisexpert.cms.data.AccountRepository;
 import pl.gisexpert.cms.model.Account;
 import pl.gisexpert.cms.model.ResetPassword;
+import pl.gisexpert.cms.util.producer.qualifier.I18n;
 import pl.gisexpert.service.MailService;
 import pl.gisexpert.util.RandomTokenGenerator;
 
@@ -33,7 +35,11 @@ public class ResetPasswordController implements Serializable {
 	private String email;
 
 	@Inject
-	MailService mailService;
+	private MailService mailService;
+	
+	@Inject
+	@I18n
+	private transient ResourceBundle i18n;
 
 	private String resetPasswordToken;
 	private Boolean tokenValid;
@@ -48,10 +54,8 @@ public class ResetPasswordController implements Serializable {
 
 	public void resetPassword() {
 
-		FacesContext context = FacesContext.getCurrentInstance();
-		ResourceBundle i18n = context.getApplication().evaluateExpressionGet(context, "#{i18n}", ResourceBundle.class);
-
-		String subject = "Geoportal - reset hasła";
+		String subject = i18n.getString("account.resetpassword.emailtitle");
+		FacesContext context = Faces.getContext();
 
 		Account account = accountFacade.findByEmail(email);
 		if (account != null) {
@@ -73,7 +77,7 @@ public class ResetPasswordController implements Serializable {
 			MessageFormat formatter = new MessageFormat("");
 			formatter.setLocale(i18n.getLocale());
 
-			formatter.applyPattern(i18n.getString("account.resetpassword.email"));
+			formatter.applyPattern(i18n.getString("account.resetpassword.emailtext"));
 			HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
 			String url = request.getRequestURL().toString();
 			String baseURL = url.substring(0, url.length() - request.getRequestURI().length())

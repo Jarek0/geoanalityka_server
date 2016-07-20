@@ -46,6 +46,7 @@ import pl.gisexpert.cms.model.analysis.AnalysisStatus;
 import pl.gisexpert.cms.model.analysis.demographic.AdvancedDemographicAnalysis;
 import pl.gisexpert.cms.model.analysis.demographic.DemographicAnalysis;
 import pl.gisexpert.cms.model.analysis.demographic.SimpleDemographicAnalysis;
+import pl.gisexpert.cms.service.AccountService;
 import pl.gisexpert.cms.service.AnalysisService;
 import pl.gisexpert.rest.model.BaseResponse;
 import pl.gisexpert.rest.model.analysis.AdvancedDemographicAnalysisDetails;
@@ -54,9 +55,9 @@ import pl.gisexpert.rest.model.analysis.DemographicAnalysisDetails;
 import pl.gisexpert.rest.model.analysis.SimpleDemographicAnalysisDetails;
 import pl.gisexpert.rest.model.analysis.demographic.SumAllInRadiusForm;
 import pl.gisexpert.rest.model.analysis.demographic.SumRangeInRadiusForm;
+import pl.gisexpert.rest.util.producer.qualifier.RESTI18n;
 import pl.gisexpert.service.AnalysisCostCalculator;
 import pl.gisexpert.stat.data.AddressStatRepository;
-import pl.gisexpert.util.producer.qualifier.RESTI18n;
 
 @Path("/analysis/demographic")
 public class DemographicAnalysisRESTService {
@@ -67,6 +68,9 @@ public class DemographicAnalysisRESTService {
 	@Inject
 	private AccountRepository accountRepository;
 
+	@Inject
+	private AccountService accountService;
+	
 	@Inject
 	private AnalysisService analysisService;
 
@@ -97,6 +101,13 @@ public class DemographicAnalysisRESTService {
 		SimpleDemographicAnalysis analysis = new SimpleDemographicAnalysis();
 		Account creator = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal());
 
+		if (accountService.hasRole(creator, "PLAN_TESTOWY") && sumAllInRadiusForm.getRadius() > 2000) {
+			BaseResponse response = new BaseResponse();
+			response.responseStatus = Response.Status.NOT_FOUND;
+			response.message = "Analizowanie obszaru o promieniu większym niż 2 km możliwe jest w planie standardowym lub wyższym.";
+			return Response.status(Response.Status.NOT_FOUND).entity(response).build();
+		}
+		
 		analysis.setCreator(creator);
 		analysis.setDateStarted(new Date());
 		analysis.setRadius(sumAllInRadiusForm.getRadius());
@@ -165,6 +176,13 @@ public class DemographicAnalysisRESTService {
 		AdvancedDemographicAnalysis analysis = new AdvancedDemographicAnalysis();
 		Account creator = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal());
 
+		if (accountService.hasRole(creator, "PLAN_TESTOWY") && sumRangeInRadiusForm.getRadius() > 2000) {
+			BaseResponse response = new BaseResponse();
+			response.responseStatus = Response.Status.NOT_FOUND;
+			response.message = "Analizowanie obszaru o promieniu większym niż 2 km możliwe jest w planie standardowym lub wyższym.";
+			return Response.status(Response.Status.NOT_FOUND).entity(response).build();
+		}
+		
 		analysis.setCreator(creator);
 		analysis.setDateStarted(new Date());
 		analysis.setRadius(sumRangeInRadiusForm.getRadius());

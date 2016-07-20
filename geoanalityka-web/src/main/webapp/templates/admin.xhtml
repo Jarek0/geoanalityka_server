@@ -89,44 +89,7 @@
                             <li>
                                 <h:link outcome="pretty:admin_roles" styleClass="#{view.viewId == '/admin/roles/roles.xhtml' ? 'active' : ''}"><i class="fa fa-users fa-fw"></i> #{i18n['roles']}</h:link>
                             </li>
-                            <li>
-                                <a href="#"><i class="glyphicon glyphicon-globe"></i> #{i18n['maps']}<span class="fa arrow"></span></a>
-                                <ul class="nav nav-second-level">
-
-
-                                    <li>
-                                        <a href="#"><i class="fa fa-puzzle-piece"></i> #{i18n['mapmodules']}<span class="fa arrow"></span></a>
-                                        <ul class="nav nav-third-level">
-                                            <li>
-                                                <h:link outcome="pretty:admin_mapmodules" styleClass="#{view.viewId == '/admin/map_modules/mapModules.xhtml' ? 'active' : ''}">#{i18n['common.browse']}</h:link>
-                                            </li>
-
-                                            <li>
-                                                <h:link outcome="pretty:admin_mapmodules_add" styleClass="#{view.viewId == '/admin/map_modules/addMapModule.xhtml' ? 'active' : ''}">#{i18n['common.add']}</h:link>
-                                            </li>
-
-                                        </ul>
-                                        <!-- /.nav-second-level -->
-                                    </li>
-
-                                    <li>
-                                        <a href="#"><i class="glyphicon glyphicon-folder-open"></i> #{i18n['map.layers']}<span class="fa arrow"></span></a>
-                                        <ul class="nav nav-third-level">
-                                            <li>
-                                                <h:link outcome="pretty:admin_mapmodules_layers" styleClass="#{view.viewId == '/admin/map_modules/layers.xhtml' ? 'active' : ''}">#{i18n['common.browse']}</h:link>
-                                            </li>
-
-                                            <li>
-                                                <h:link outcome="pretty:admin_mapmodules_addlayer" styleClass="#{view.viewId == '/admin/map_modules/addLayer.xhtml' ? 'active' : ''}">#{i18n['common.add']}</h:link>
-                                            </li>
-
-                                        </ul>
-                                        <!-- /.nav-second-level -->
-                                    </li>
-
-                                </ul>
-                                <!-- /.nav-second-level -->
-                            </li>
+                            
                             <ui:fragment rendered="#{request.isUserInRole('Redaktor')}">
                             <li>
                                 <h:link outcome="pretty:admin_landing" styleClass="#{view.viewId == '/admin/landing_page/landingPage.xhtml' ? 'active' : ''}"><i class="glyphicon glyphicon-home"></i> #{i18n['landing']}</h:link>

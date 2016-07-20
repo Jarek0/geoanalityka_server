@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:pretty="http://ocpsoft.com/prettyfaces"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
+                template="../../templates/admin.xhtml">
+
+    <ui:define name="content">
+
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="page-header">#{i18n['roles']}</h1>
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+        <!-- /.row -->
+
+        <div class="row">
+            <div class="col-lg-12">
+                <h:form id="roles">
+                    <p:dataTable styleClass="uk-table" var="role" value="#{browseRolesController.roles}" paginator="false" rows="50" id="rolesTable">
+                        <p:column headerText="#{i18n['common.name']}">
+                            <h:outputText value="#{role.name}" />
+                        </p:column>
+                        <p:column width="100" style="text-align: center;" rendered="#{request.isUserInRole('Administrator')}">
+                            <pretty:link mappingId="admin_roles_edit" styleClass="btn btn-primary btn-xs" rendered="#{role.name != 'Administrator' and role.name != 'Użytkownik'}">
+                                <f:param value="#{role.name}"/>
+                                #{i18n['common.edit']}
+                            </pretty:link>
+                        </p:column>
+                        <p:column width="80" style="text-align: center;" rendered="#{role.name != 'Administrator' and role.name != 'Użytkownik'}">
+                            <!-- Button trigger modal -->
+                            <p:commandLink ajax="true" update="deleteForm" pt:data-toggle="modal" pt:data-target="#deleteConfirmationModal" action="#{deleteRoleController.setRoleId(role.id)}" pt:title="#{i18n['common.delete']}" value="#{i18n['common.delete']}" styleClass="btn btn-danger btn-xs"></p:commandLink>
+                        </p:column>
+                    </p:dataTable>
+                </h:form>
+            </div>
+        </div>
+        <!-- /.row -->
+
+        <ui:fragment rendered="#{request.isUserInRole('Administrator')}">
+            <hr />
+
+            <div class="panel panel-info" >
+                <div class="panel-heading">
+                    <div class="panel-title">#{i18n['common.add']}</div>
+                </div>
+
+                <div style="padding-top:30px" class="panel-body" >
+
+                    <div style="display:none" id="login-alert" class="alert alert-danger col-sm-12"></div>
+
+                    <h:form id="addRole" styleClass="form-horizontal" role="form">
+                        <p:messages/>
+                        <div class="form-group col-sm-12 col-lg-8">
+                            <p:outputLabel for="role-name" value="#{i18n['common.name']}" styleClass="control-label col-sm-4"/>
+                            <div class="col-sm-8">
+                                <p:inputText id="role-name" styleClass="form-control" value="#{browseRolesController.newRole.name}" pt:placeholder="#{i18n['common.name']}" required="true">
+                                    <f:validator binding="#{roleUnicityValidator}" id="roleUnicityValidator" />
+                                </p:inputText>
+                            </div>
+
+                        </div>
+
+                        <div style="margin-top:10px" class="form-group">
+                            <!-- Button -->
+
+                            <div class="col-sm-12 controls">
+                                <p:commandButton update="roles:rolesTable" styleClass="btn btn-success" actionListener="#{browseRolesController.addRole()}" value="#{i18n['common.add']}"></p:commandButton>
+                            </div>
+                        </div>
+
+                    </h:form>     
+                </div>                     
+            </div> 
+        </ui:fragment>
+
+        <!-- Modal -->
+        <div class="modal fade" id="deleteConfirmationModal" pt:tabindex="-1" pt:role="dialog" pt:aria-labelledby="deleteConfirmation">
+            <div class="modal-dialog" pt:role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" pt:data-dismiss="modal" pt:aria-label="Close"><span pt:aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        #{i18n['role.delete.confirm']}
+                    </div>
+                    <div class="modal-footer">
+                        <h:form id="deleteForm">
+                            <h:commandLink styleClass="btn btn-danger" action="#{deleteRoleController.delete()}" value="#{i18n['common.accept']}"></h:commandLink>
+                        </h:form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ui:define>
+
+
+</ui:composition>

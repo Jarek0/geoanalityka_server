@@ -1,3 +1,4 @@
+package pl.gisexpert.cms;
 
 public class InsufficientCreditsException extends Exception {
 

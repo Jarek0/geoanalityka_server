@@ -13,17 +13,14 @@ public class BearerTokenAuthenticatingFilter extends AuthenticatingFilter {
 	
 	@Override
 	protected AuthenticationToken createToken(ServletRequest sr, ServletResponse sr1) throws Exception {		
-		
 		HttpServletRequest request = (HttpServletRequest) sr;
 		String token = request.getHeader("Access-Token");
 		
-		AuthenticationToken authToken = new BearerAuthenticationToken(token);
-		return authToken;
+		return new BearerAuthenticationToken(token);
 	}
 
 	@Override
 	protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {
-		
 		if (executeLogin(request, response)) {
 			return true;
 		}

@@ -1,4 +1,4 @@
-package pl.gisexpert.util.producer.qualifier;
+package pl.gisexpert.rest.util.producer.qualifier;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

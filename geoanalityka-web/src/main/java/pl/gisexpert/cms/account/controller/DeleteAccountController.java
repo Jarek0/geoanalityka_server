@@ -1,4 +1,4 @@
-package  pl.gisexpert.account.controller;
+package  pl.gisexpert.cms.account.controller;
 
 import java.io.Serializable;
 

@@ -7,6 +7,7 @@ public class RegisterForm extends BaseForm  {
 	private String password;
 	private String confirmPassword;
 	private String email;
+	private Double queuedPayment;
 	
 	private CompanyAddressForm companyAddress;
 
@@ -56,6 +57,14 @@ public class RegisterForm extends BaseForm  {
 
 	public void setCompanyAddress(CompanyAddressForm companyAddress) {
 		this.companyAddress = companyAddress;
+	}
+
+	public Double getQueuedPayment() {
+		return queuedPayment;
+	}
+
+	public void setQueuedPayment(Double queuedPayment) {
+		this.queuedPayment = queuedPayment;
 	}
 
 	
