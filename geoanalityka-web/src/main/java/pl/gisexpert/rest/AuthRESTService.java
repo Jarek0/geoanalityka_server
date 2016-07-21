@@ -54,6 +54,7 @@ import pl.gisexpert.cms.model.AccountConfirmation;
 import pl.gisexpert.cms.model.AccountStatus;
 import pl.gisexpert.cms.model.Address;
 import pl.gisexpert.cms.model.LoginAttempt;
+import pl.gisexpert.cms.service.AccountService;
 import pl.gisexpert.cms.service.LoginAttemptService;
 import pl.gisexpert.rest.model.AccountInfo;
 import pl.gisexpert.rest.model.BaseResponse;
@@ -71,6 +72,9 @@ public class AuthRESTService {
 
 	@Inject
 	private AccountRepository accountRepository;
+	
+	@Inject
+	private AccountService accountService;
 
 	@Inject
 	private AccessTokenRepository accessTokenRepository;
@@ -302,7 +306,7 @@ public class AuthRESTService {
 		AccessToken accessToken = accessTokenRepository.findByToken(token);
 		
 		if (accessToken == null) {
-			log.debug("Failed to renew token: " + accessToken.getToken());
+			log.debug("Failed to renew token: " + token);
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
 		
@@ -352,8 +356,8 @@ public class AuthRESTService {
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
 		Account account = accountRepository.findByUsername(username, true);
-		AccountInfo accountInfo = new AccountInfo(account);
 		
+		AccountInfo accountInfo = new AccountInfo(account, accountService.getRoles(account));
 		
 		String token = request.getHeader("Access-Token");
 		

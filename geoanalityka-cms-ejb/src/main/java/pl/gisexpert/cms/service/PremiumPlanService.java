@@ -17,6 +17,7 @@
 package pl.gisexpert.cms.service;
 
 import java.util.List;
+import java.util.List;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -67,6 +68,26 @@ public class PremiumPlanService {
 		
     	account.setRoles(newRoles);
     	em.merge(account);
+    }
+    
+    @Transactional
+    public PremiumPlanType getActivePlan(Account account) {
+    	List<Role> roles = account.getRoles();
+    	List<Role> planRoles = Lists.newArrayList(Iterables.filter(roles,new Predicate<Role>() {
+			@Override
+			public boolean apply(Role input) {
+				return (input.getName().equals("PLAN_STANDARDOWY") ||
+						input.getName().equals("PLAN_ZAAWANSOWANY") ||
+						input.getName().equals("PLAN_DEDYKOWANY") ||
+						input.getName().equals("PLAN_TESTOWY"));
+			}
+		}));
+    	
+    	if (planRoles.size() > 0) {
+    		return PremiumPlanType.valueOf(planRoles.get(0).getName());
+    	}
+    	
+    	return null;
     }
     
 }

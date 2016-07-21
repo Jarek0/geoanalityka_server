@@ -1,7 +1,7 @@
 package pl.gisexpert.cms.model;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.List;
 import java.util.Date;
 import java.util.Objects;
 
@@ -66,7 +66,7 @@ public class Account implements Serializable {
 			@JoinColumn(name = "username", referencedColumnName = "username") }, inverseJoinColumns = {
 					@JoinColumn(name = "role", referencedColumnName = "name") }, indexes = {
 							@Index(name = "role_username_index", columnList = "username", unique = false) })
-	private Collection<Role> roles;
+	private List<Role> roles;
 
 	@Email
 	@Column(name = "email_address", nullable = false, length = 80)
@@ -101,10 +101,10 @@ public class Account implements Serializable {
 	private AccountConfirmation accountConfirmation;
 
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, mappedBy = "account")
-	private Collection<AccessToken> tokens;
+	private List<AccessToken> tokens;
 
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, mappedBy = "buyer")
-	private Collection<Order> orders;
+	private List<Order> orders;
 
 	public String hashPassword(String password) {
 		DefaultPasswordService passwordService = new DefaultPasswordService();
@@ -141,11 +141,11 @@ public class Account implements Serializable {
 		this.password = password;
 	}
 
-	public Collection<Role> getRoles() {
+	public List<Role> getRoles() {
 		return roles;
 	}
 
-	public void setRoles(Collection<Role> roles) {
+	public void setRoles(List<Role> roles) {
 		this.roles = roles;
 	}
 
@@ -205,11 +205,11 @@ public class Account implements Serializable {
 		this.accountStatus = accountStatus;
 	}
 
-	public Collection<AccessToken> getTokens() {
+	public List<AccessToken> getTokens() {
 		return tokens;
 	}
 
-	public void setTokens(Collection<AccessToken> tokens) {
+	public void setTokens(List<AccessToken> tokens) {
 		this.tokens = tokens;
 	}
 
@@ -221,11 +221,11 @@ public class Account implements Serializable {
 		this.credits = credits;
 	}
 
-	public Collection<Order> getOrders() {
+	public List<Order> getOrders() {
 		return orders;
 	}
 
-	public void setOrders(Collection<Order> orders) {
+	public void setOrders(List<Order> orders) {
 		this.orders = orders;
 	}
 

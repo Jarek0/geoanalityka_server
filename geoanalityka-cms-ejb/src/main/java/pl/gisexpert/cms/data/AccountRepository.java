@@ -1,7 +1,7 @@
 package pl.gisexpert.cms.data;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -84,7 +84,7 @@ public class AccountRepository extends AbstractRepository<Account> {
 		}
 	}
 
-	public void removeRoles(Account account, Collection<Role> roles) {
+	public void removeRoles(Account account, List<Role> roles) {
 
 		for (Role role : roles) {
 			Query query = getEntityManager().createNamedQuery("Account.removeRole");

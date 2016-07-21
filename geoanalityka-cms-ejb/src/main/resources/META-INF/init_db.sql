@@ -11,13 +11,13 @@ INSERT INTO accounts (confirmation_token, account_status, credits, date_register
 INSERT INTO accounts (confirmation_token, account_status, credits, date_registered, email_address, date_last_login, password, reset_pass_token_exp, reset_pass_token, username, address_id) VALUES (NULL, 1, 5, '2016-06-14 10:23:01.13', 'plan@dedykowany.xx', NULL, '$shiro1$SHA-256$5$lrLKrXNW6wp5i6YnOcrDXA==$DhQ/QFPidtp3qJhlbgCnTes4k0E1Bl0g66v+0cS2Vto=', NULL, NULL, 'plan@dedykowany.xx', 4);
 INSERT INTO accounts (confirmation_token, account_status, credits, date_registered, email_address, date_last_login, password, reset_pass_token_exp, reset_pass_token, username, address_id) VALUES (NULL, 1, 5, '2016-06-14 10:23:01.13', 'plan@testowy.xx', NULL, '$shiro1$SHA-256$5$lrLKrXNW6wp5i6YnOcrDXA==$DhQ/QFPidtp3qJhlbgCnTes4k0E1Bl0g66v+0cS2Vto=', NULL, NULL, 'plan@testowy.xx', 5);
 
-INSERT INTO roles (name) VALUES ('Administrator');
+INSERT INTO roles (name) VALUES ('ADMINISTRATOR');
 INSERT INTO roles (name) VALUES ('PLAN_STANDARDOWY');
 INSERT INTO roles (name) VALUES ('PLAN_ZAAWANSOWANY');
 INSERT INTO roles (name) VALUES ('PLAN_DEDYKOWANY');
 INSERT INTO roles (name) VALUES ('PLAN_TESTOWY');
 
-INSERT INTO account_roles (username, role) VALUES ('jmalec@gis-expert.pl', 'Administrator');
+INSERT INTO account_roles (username, role) VALUES ('jmalec@gis-expert.pl', 'ADMINISTRATOR');
 INSERT INTO account_roles (username, role) VALUES ('plan@zaawansowany.xx', 'PLAN_ZAAWANSOWANY');
 INSERT INTO account_roles (username, role) VALUES ('plan@standardowy.xx', 'PLAN_STANDARDOWY');
 INSERT INTO account_roles (username, role) VALUES ('plan@dedykowany.xx', 'PLAN_DEDYKOWANY');
