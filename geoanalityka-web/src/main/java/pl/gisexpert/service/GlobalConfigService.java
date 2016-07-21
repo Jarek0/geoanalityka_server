@@ -77,7 +77,8 @@ public class GlobalConfigService {
 	
 	public class Settings {
 		private Integer baseCredits;
-
+		private String contactFormTarget;
+		
 		public Integer getBaseCredits() {
 			return baseCredits;
 		}
@@ -85,6 +86,15 @@ public class GlobalConfigService {
 		public void setBaseCredits(Integer baseCredits) {
 			this.baseCredits = baseCredits;
 		}
+
+		public String getContactFormTarget() {
+			return contactFormTarget;
+		}
+
+		public void setContactFormTarget(String contactFormTarget) {
+			this.contactFormTarget = contactFormTarget;
+		}
+		
 	}
 
 	private Clients clients;
@@ -112,6 +122,7 @@ public class GlobalConfigService {
 			
 			settings = new Settings();
 			settings.setBaseCredits(config.get("settings", "base_credits", Integer.class));
+			settings.setContactFormTarget(config.get("settings", "contact_form_target", String.class));
 
 		} catch (IOException ex) {
 			log.error(null, ex);
