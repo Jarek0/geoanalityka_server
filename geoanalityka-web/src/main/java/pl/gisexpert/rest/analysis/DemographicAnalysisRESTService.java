@@ -103,8 +103,8 @@ public class DemographicAnalysisRESTService {
 
 		if (accountService.hasRole(creator, "PLAN_TESTOWY") && sumAllInRadiusForm.getRadius() > 2000) {
 			BaseResponse response = new BaseResponse();
-			response.responseStatus = Response.Status.NOT_FOUND;
-			response.message = "Analizowanie obszaru o promieniu większym niż 2 km możliwe jest w planie standardowym lub wyższym.";
+			response.setResponseStatus(Response.Status.NOT_FOUND);
+			response.setMessage("Analizowanie obszaru o promieniu większym niż 2 km możliwe jest w planie standardowym lub wyższym.");
 			return Response.status(Response.Status.NOT_FOUND).entity(response).build();
 		}
 		
@@ -119,8 +119,8 @@ public class DemographicAnalysisRESTService {
 		Double analysisCost = analysisCostCalculator.calculate(analysis);
 		if (creator.getCredits() < analysisCost) {
 			BaseResponse response = new BaseResponse();
-			response.responseStatus = Response.Status.UNAUTHORIZED;
-			response.message = "Insufficient credits";
+			response.setResponseStatus(Response.Status.UNAUTHORIZED);
+			response.setMessage("Insufficient credits");
 			return Response.status(Response.Status.UNAUTHORIZED).entity(response).build();
 		}
 
@@ -129,13 +129,13 @@ public class DemographicAnalysisRESTService {
 		
 		if (!isPopulationHighEnough(sum)) {
 			BaseResponse response = new BaseResponse();
-			response.responseStatus = Response.Status.NOT_FOUND;
+			response.setResponseStatus(Response.Status.NOT_FOUND);
 			
 			Object[] messageArguments = { MIN_VALID_POPULATION };
 			String pattern = i18n.getString("analysis.demographic.lowpopulation");
 			MessageFormat formatter = new MessageFormat(pattern);
 		    formatter.setLocale(i18n.getLocale());		    
-			response.message = formatter.format(messageArguments);
+			response.setMessage(formatter.format(messageArguments));
 			
 			return Response.status(Response.Status.NOT_FOUND).entity(response).build();
 		}
@@ -152,7 +152,7 @@ public class DemographicAnalysisRESTService {
 		accountRepository.edit(creator);
 
 		AnalysisHashResponse responseValue = new AnalysisHashResponse();
-		responseValue.responseStatus = Response.Status.OK;
+		responseValue.setResponseStatus(Response.Status.OK);
 		responseValue.setHash(analysis.getHash().toString());
 
 		return Response.status(Response.Status.OK).entity(responseValue).build();
@@ -178,8 +178,8 @@ public class DemographicAnalysisRESTService {
 
 		if (accountService.hasRole(creator, "PLAN_TESTOWY") && sumRangeInRadiusForm.getRadius() > 2000) {
 			BaseResponse response = new BaseResponse();
-			response.responseStatus = Response.Status.NOT_FOUND;
-			response.message = "Analizowanie obszaru o promieniu większym niż 2 km możliwe jest w planie standardowym lub wyższym.";
+			response.setResponseStatus(Response.Status.NOT_FOUND);
+			response.setMessage("Analizowanie obszaru o promieniu większym niż 2 km możliwe jest w planie standardowym lub wyższym.");
 			return Response.status(Response.Status.NOT_FOUND).entity(response).build();
 		}
 		
@@ -197,8 +197,8 @@ public class DemographicAnalysisRESTService {
 		Double analysisCost = analysisCostCalculator.calculate(analysis);
 		if (creator.getCredits() < analysisCost) {
 			BaseResponse response = new BaseResponse();
-			response.responseStatus = Response.Status.UNAUTHORIZED;
-			response.message = "Insufficient credits";
+			response.setResponseStatus(Response.Status.UNAUTHORIZED);
+			response.setMessage("Insufficient credits");
 			return Response.status(Response.Status.UNAUTHORIZED).entity(response).build();
 		}
 
@@ -207,13 +207,13 @@ public class DemographicAnalysisRESTService {
 		
 		if (!isPopulationHighEnough(kobietyAndMezczyzniByAgeRanges)) {
 			BaseResponse response = new BaseResponse();
-			response.responseStatus = Response.Status.NOT_FOUND;
+			response.setResponseStatus(Response.Status.NOT_FOUND);
 			
 			Object[] messageArguments = { MIN_VALID_POPULATION };
 			String pattern = i18n.getString("analysis.demographic.lowpopulation");
 			MessageFormat formatter = new MessageFormat(pattern);
 		    formatter.setLocale(i18n.getLocale());		    
-			response.message = formatter.format(messageArguments);
+			response.setMessage(formatter.format(messageArguments));
 			
 			return Response.status(Response.Status.NOT_FOUND).entity(response).build();
 		}
@@ -231,7 +231,7 @@ public class DemographicAnalysisRESTService {
 
 		AnalysisHashResponse responseValue = new AnalysisHashResponse();
 		responseValue.setHash(analysis.getHash().toString());
-		responseValue.responseStatus = Response.Status.OK;
+		responseValue.setResponseStatus(Response.Status.OK);
 
 		return Response.status(Response.Status.OK).entity(responseValue).build();
 	}
@@ -248,8 +248,8 @@ public class DemographicAnalysisRESTService {
 		Double cost = analysisCostCalculator.calculate(analysis);
 
 		BaseResponse response = new BaseResponse();
-		response.message = String.valueOf(cost.intValue());
-		response.responseStatus = Response.Status.OK;
+		response.setMessage(String.valueOf(cost.intValue()));
+		response.setResponseStatus(Response.Status.OK);
 
 		return Response.status(Response.Status.OK).entity(response).build();
 	}
@@ -268,8 +268,8 @@ public class DemographicAnalysisRESTService {
 		Double cost = analysisCostCalculator.calculate(analysis);
 
 		BaseResponse response = new BaseResponse();
-		response.message = String.valueOf(cost.intValue());
-		response.responseStatus = Response.Status.OK;
+		response.setMessage(String.valueOf(cost.intValue()));
+		response.setResponseStatus(Response.Status.OK);
 
 		return Response.status(Response.Status.OK).entity(response).build();
 	}
@@ -314,8 +314,8 @@ public class DemographicAnalysisRESTService {
 			return Response.status(Response.Status.OK).entity(details).build();
 		} else {
 			BaseResponse response = new BaseResponse();
-			response.message = "Analysis not found";
-			response.responseStatus = Response.Status.NOT_FOUND;
+			response.setMessage("Analysis not found");
+			response.setResponseStatus(Response.Status.NOT_FOUND);
 			return Response.status(Response.Status.NOT_FOUND).entity(response).build();
 		}
 	}

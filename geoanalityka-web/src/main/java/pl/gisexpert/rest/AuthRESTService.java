@@ -139,8 +139,8 @@ public class AuthRESTService {
 		} catch (Exception e) {
 
 			BaseResponse errorStatus = new BaseResponse();
-			errorStatus.message = "Invalid parameters.";
-			errorStatus.responseStatus = Status.BAD_REQUEST;
+			errorStatus.setMessage("Invalid parameters.");
+			errorStatus.setResponseStatus(Status.BAD_REQUEST);
 			return Response.status(Response.Status.BAD_REQUEST).entity(errorStatus).build();
 		}
 
@@ -163,10 +163,10 @@ public class AuthRESTService {
 		mailService.sendMail(subject, emailText, account.getEmailAddress());
 
 		RegisterResponse registerStatus = new RegisterResponse();
-		registerStatus.message = "Account created. Confirmation link has been sent to your E-Mail address. Use it to complete the registration.";
-		registerStatus.responseStatus = Status.OK;
-		registerStatus.username = account.getUsername();
-		registerStatus.email = account.getEmailAddress();
+		registerStatus.setMessage("Account created. Confirmation link has been sent to your E-Mail address. Use it to complete the registration.");
+		registerStatus.setResponseStatus(Status.OK);
+		registerStatus.setUsername(account.getUsername());
+		registerStatus.setEmail(account.getEmailAddress());
 
 		return Response.status(Response.Status.OK).entity(registerStatus).build();
 	}
@@ -182,8 +182,8 @@ public class AuthRESTService {
 		BaseResponse requestStatus = new BaseResponse();
 
 		if (account.getAccountConfirmation().getToken().equals(confirmationToken)) {
-			requestStatus.message = "Account confirmed successfully.";
-			requestStatus.responseStatus = Response.Status.OK;
+			requestStatus.setMessage("Account confirmed successfully.");
+			requestStatus.setResponseStatus(Response.Status.OK);
 
 			account.setAccountConfirmation(null);
 			account.setAccountStatus(AccountStatus.CONFIRMED);
@@ -204,8 +204,8 @@ public class AuthRESTService {
 			}
 		}
 
-		requestStatus.message = "Account confirmation failed.";
-		requestStatus.responseStatus = Response.Status.UNAUTHORIZED;
+		requestStatus.setMessage("Account confirmation failed.");
+		requestStatus.setResponseStatus(Response.Status.UNAUTHORIZED);
 
 		return Response.status(Response.Status.UNAUTHORIZED).entity(requestStatus).build();
 	}
@@ -220,27 +220,27 @@ public class AuthRESTService {
 
 		BaseResponse rs = new BaseResponse();
 		if (account == null) {
-			rs.message =  i18n.getString("account.validation.usernamenotexists");
-			rs.responseStatus = Response.Status.UNAUTHORIZED;
+			rs.setMessage( i18n.getString("account.validation.usernamenotexists"));
+			rs.setResponseStatus(Response.Status.UNAUTHORIZED);
 			return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();
 		}
 
 		if (account.getAccountStatus() == AccountStatus.UNCONFIRMED) {
-			rs.message = i18n.getString("account.validation.notconfirmed");
-			rs.responseStatus = Response.Status.UNAUTHORIZED;
+			rs.setMessage(i18n.getString("account.validation.notconfirmed"));
+			rs.setResponseStatus(Response.Status.UNAUTHORIZED);
 			return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();
 		}
 
 		if (account.getAccountStatus() == AccountStatus.DISABLED) {
-			rs.message = i18n.getString("account.validation.disabled");
-			rs.responseStatus = Response.Status.UNAUTHORIZED;
+			rs.setMessage(i18n.getString("account.validation.disabled"));
+			rs.setResponseStatus(Response.Status.UNAUTHORIZED);
 			return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();
 		}
 		
 		List<LoginAttempt> recentLoginAttempts = loginAttemptService.findRecentLoginAttempts(5, account, 100);
 		if (recentLoginAttempts != null && recentLoginAttempts.size() == 20) {
-			rs.message = i18n.getString("account.validation.toomanyloginattempts");
-			rs.responseStatus = Response.Status.FORBIDDEN;
+			rs.setMessage(i18n.getString("account.validation.toomanyloginattempts"));
+			rs.setResponseStatus(Response.Status.FORBIDDEN);
 			return Response.status(Response.Status.FORBIDDEN).entity(rs).build();
 		}
 		
@@ -275,10 +275,10 @@ public class AuthRESTService {
 			accessToken = accessTokenRepository.create(accessToken,true);
 
 			GetTokenResponse getTokenStatus = new GetTokenResponse();
-			getTokenStatus.message = "Successfully generated token";
-			getTokenStatus.token = token;
-			getTokenStatus.responseStatus = Response.Status.OK;
-			getTokenStatus.expires = date;
+			getTokenStatus.setMessage("Successfully generated token");
+			getTokenStatus.setToken(token);
+			getTokenStatus.setResponseStatus(Response.Status.OK);
+			getTokenStatus.setExpires(date);
 			
 			loginAttempt.setSuccessful(true);
 			account.setLastLoginDate(new Date());
@@ -291,8 +291,8 @@ public class AuthRESTService {
 		loginAttempt.setSuccessful(false);
 		loginAttemptRepository.create(loginAttempt);
 
-		rs.message = i18n.getString("account.validation.authfailed");
-		rs.responseStatus = Response.Status.UNAUTHORIZED;
+		rs.setMessage(i18n.getString("account.validation.authfailed"));
+		rs.setResponseStatus(Response.Status.UNAUTHORIZED);
 
 		return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();
 	}

@@ -176,8 +176,8 @@ public class BillingRESTService {
 		}
 
 		BaseResponse responseEntity = new BaseResponse();
-		responseEntity.message = payuRedirectUrl;
-		responseEntity.responseStatus = Response.Status.OK;
+		responseEntity.setMessage(payuRedirectUrl);
+		responseEntity.setResponseStatus(Response.Status.OK);
 
 		return Response.status(Response.Status.OK).entity(responseEntity).build();
 	}

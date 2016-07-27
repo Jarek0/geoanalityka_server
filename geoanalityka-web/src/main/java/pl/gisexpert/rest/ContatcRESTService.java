@@ -51,8 +51,8 @@ public class ContatcRESTService {
 		mailService.sendMail(subject, message, appConfig.getSettings().getContactFormTarget());
 		
 		BaseResponse response = new BaseResponse();
-		response.message = "Message sent";
-		response.responseStatus = Response.Status.OK;
+		response.setMessage("Message sent");
+		response.setResponseStatus(Response.Status.OK);
 		return Response.status(Response.Status.OK).entity(response).build();
 	}
 

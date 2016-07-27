@@ -50,13 +50,13 @@ public class ValidationRESTService {
 		BaseResponse requestStatus = new BaseResponse();
 		if (account == null){
 			status = Response.Status.OK;
-			requestStatus.message = i18n.getString("account.validation.usernameavailable");
-			requestStatus.responseStatus = Response.Status.OK;	
+			requestStatus.setMessage(i18n.getString("account.validation.usernameavailable"));
+			requestStatus.setResponseStatus(Response.Status.OK);	
 		}
 		else {
 			status = Response.Status.NOT_FOUND;
-			requestStatus.message = i18n.getString("account.validation.usernameunavailable");
-			requestStatus.responseStatus = Response.Status.NOT_FOUND;
+			requestStatus.setMessage(i18n.getString("account.validation.usernameunavailable"));
+			requestStatus.setResponseStatus(Response.Status.NOT_FOUND);
 		}
 	
 		
@@ -76,13 +76,13 @@ public class ValidationRESTService {
 		BaseResponse requestStatus = new BaseResponse();
 		if (account != null){
 			status = Response.Status.OK;
-			requestStatus.message = i18n.getString("account.validation.usernameexists");
-			requestStatus.responseStatus = Response.Status.OK;
+			requestStatus.setMessage(i18n.getString("account.validation.usernameexists"));
+			requestStatus.setResponseStatus(Response.Status.OK);
 		}
 		else {
 			status = Response.Status.NOT_FOUND;
-			requestStatus.message = i18n.getString("account.validation.usernamenotexists");
-			requestStatus.responseStatus = Response.Status.NOT_FOUND;
+			requestStatus.setMessage(i18n.getString("account.validation.usernamenotexists"));
+			requestStatus.setResponseStatus(Response.Status.NOT_FOUND);
 		}
 	
 		
