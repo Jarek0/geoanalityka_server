@@ -24,10 +24,11 @@ public class DeleteAccountController implements Serializable {
     @Inject
     private AccountRepository accountFacade;
 
-    public void delete() {
+    public String delete() {
         Account accountToBeDeleted = accountFacade.find(accountId);
         accountFacade.remove(accountToBeDeleted);
         log.info("Account with username: " + accountToBeDeleted.getUsername() + " has been deleted.");
+        return null;
     }
     
     public void setAccountId(Long accountId) {
