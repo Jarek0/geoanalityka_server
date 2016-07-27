@@ -1,4 +1,4 @@
-package  pl.gisexpert.cms.account.controller;
+package pl.gisexpert.cms.account.controller;
 
 import java.io.Serializable;
 
@@ -16,27 +16,26 @@ import pl.gisexpert.cms.model.Account;
 @ViewScoped
 public class DeleteAccountController implements Serializable {
 
-    private static final Logger log = LoggerFactory.getLogger(DeleteAccountController.class);
-    private static final long serialVersionUID = -5742015628185704799L;
+	private static final Logger log = LoggerFactory.getLogger(DeleteAccountController.class);
+	private static final long serialVersionUID = -5742015628185704799L;
 
-    private Long accountId;
-    
-    @Inject
-    private AccountRepository accountFacade;
+	private Long accountId;
 
-    public String delete() {
-        Account accountToBeDeleted = accountFacade.find(accountId);
-        accountFacade.remove(accountToBeDeleted);
-        log.info("Account with username: " + accountToBeDeleted.getUsername() + " has been deleted.");
-        return null;
-    }
-    
-    public void setAccountId(Long accountId) {
-        this.accountId = accountId;
-    }
+	@Inject
+	private AccountRepository accountFacade;
 
-    public Long getAccountId() {
-        return accountId;
-    }
+	public void delete() {
+		Account accountToBeDeleted = accountFacade.find(accountId);
+		accountFacade.remove(accountToBeDeleted);
+		log.info("Account with username: " + accountToBeDeleted.getUsername() + " has been deleted.");
+	}
+
+	public void setAccountId(Long accountId) {
+		this.accountId = accountId;
+	}
+
+	public Long getAccountId() {
+		return accountId;
+	}
 
 }

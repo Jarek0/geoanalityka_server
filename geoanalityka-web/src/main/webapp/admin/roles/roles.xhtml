@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 xmlns:h="http://java.sun.com/jsf/html"
@@ -27,12 +26,14 @@
                             <h:outputText value="#{role.name}" />
                         </p:column>
                         <p:column width="100" style="text-align: center;" rendered="#{request.isUserInRole('Administrator')}">
-                            <pretty:link mappingId="admin_roles_edit" styleClass="btn btn-primary btn-xs" rendered="#{role.name != 'Administrator' and role.name != 'Użytkownik'}">
+                            <pretty:link mappingId="admin_roles_edit" styleClass="btn btn-primary btn-xs" rendered="#{role.name != 'Administrator' and role.name != 'Użytkownik' and role.name != 'PLAN_TESTOWY'
+                                and role.name != 'PLAN_STANDARDOWY' and role.name != 'PLAN_ZAAWANSOWANY' and role.name != 'PLAN_DEDYKOWANY'}">
                                 <f:param value="#{role.name}"/>
                                 #{i18n['common.edit']}
                             </pretty:link>
                         </p:column>
-                        <p:column width="80" style="text-align: center;" rendered="#{role.name != 'Administrator' and role.name != 'Użytkownik'}">
+                        <p:column width="80" style="text-align: center;" rendered="#{role.name != 'Administrator' and role.name != 'Użytkownik' and role.name != 'PLAN_TESTOWY'
+                             and role.name != 'PLAN_STANDARDOWY' and role.name != 'PLAN_ZAAWANSOWANY' and role.name != 'PLAN_DEDYKOWANY'}">
                             <!-- Button trigger modal -->
                             <p:commandLink ajax="true" update="deleteForm" pt:data-toggle="modal" pt:data-target="#deleteConfirmationModal" action="#{deleteRoleController.setRoleId(role.id)}" pt:title="#{i18n['common.delete']}" value="#{i18n['common.delete']}" styleClass="btn btn-danger btn-xs"></p:commandLink>
                         </p:column>
@@ -84,7 +85,7 @@
             <div class="modal-dialog" pt:role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <button type="button" class="close" pt:data-dismiss="modal" pt:aria-label="Close"><span pt:aria-hidden="true">&times;</span></button>
+                        <button type="button" class="close" pt:data-dismiss="modal" pt:aria-label="Close"><span pt:aria-hidden="true">&#xd7;</span></button>
                     </div>
                     <div class="modal-body">
                         #{i18n['role.delete.confirm']}

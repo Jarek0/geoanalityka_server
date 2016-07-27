@@ -25,7 +25,7 @@ import pl.gisexpert.model.gis.Coordinate;
 		@Index(name = "demographic_analysis_account_index", columnList = "account_id", unique = false),
 		@Index(name = "demographic_analysis_hash_index", columnList = "hash", unique = true) })
 @NamedQueries({
-		@NamedQuery(name = "DemographicAnalysis.findRecentAnalysesFroAccount", query = "SELECT analysis FROM DemographicAnalysis analysis AS analysis LEFT OUTER JOIN analysis.creator AS creator WHERE creator = :account") })
+		@NamedQuery(name = "DemographicAnalysis.findRecentAnalysesFroAccount", query = "SELECT analysis FROM DemographicAnalysis analysis LEFT OUTER JOIN analysis.creator creator WHERE creator = :account") })
 public class DemographicAnalysis extends Analysis implements Serializable {
 
 	private static final long serialVersionUID = -4420992994918486571L;
