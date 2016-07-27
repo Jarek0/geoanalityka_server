@@ -35,20 +35,12 @@ import javax.ws.rs.core.Response;
 import org.apache.shiro.SecurityUtils;
 import org.slf4j.Logger;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-
 import pl.gisexpert.cms.data.AccountRepository;
 import pl.gisexpert.cms.data.OrderRepository;
-import pl.gisexpert.cms.data.RoleRepository;
 import pl.gisexpert.cms.model.Account;
 import pl.gisexpert.cms.model.Order;
 import pl.gisexpert.cms.model.OrderStatus;
 import pl.gisexpert.cms.model.PremiumPlanType;
-import pl.gisexpert.cms.model.Role;
-import pl.gisexpert.cms.service.AccountService;
 import pl.gisexpert.cms.service.BillingService;
 import pl.gisexpert.cms.service.PremiumPlanService;
 import pl.gisexpert.payu.client.PayUClient;
@@ -68,9 +60,6 @@ public class BillingRESTService {
 	private AccountRepository accountRepository;
 
 	@Inject
-	private AccountService accountService;
-
-	@Inject
 	private OrderRepository orderRepository;
 
 	@Inject
@@ -78,9 +67,6 @@ public class BillingRESTService {
 
 	@Inject
 	private PremiumPlanService premiumPlanService;
-
-	@Inject
-	private RoleRepository roleRepository;
 
 	@Inject
 	private GlobalConfigService appConfig;

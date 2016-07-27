@@ -99,9 +99,7 @@ public class BearerAuthenticationRealm extends AuthorizingRealm {
             ps.setString(1, token);
             rs = ps.executeQuery();
             
-            int count = 0;
             while (rs.next()) {
-            	count++;
                 accountInfo.id = rs.getLong("id");
                 accountInfo.username = rs.getString("username");
                 accountInfo.expires = rs.getTimestamp("expires");

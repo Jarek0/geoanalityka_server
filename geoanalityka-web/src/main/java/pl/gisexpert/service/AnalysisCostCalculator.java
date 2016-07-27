@@ -1,12 +1,8 @@
 package pl.gisexpert.service;
 
 import java.security.InvalidParameterException;
-import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
-
-import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
 
 import pl.gisexpert.cms.model.analysis.Analysis;
 import pl.gisexpert.cms.model.analysis.demographic.AdvancedDemographicAnalysis;
