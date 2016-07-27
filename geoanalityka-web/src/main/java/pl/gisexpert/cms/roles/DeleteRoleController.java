@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import pl.gisexpert.cms.data.RoleRepository;
 import pl.gisexpert.cms.model.Role;
+import pl.gisexpert.cms.service.RoleService;
 
 
 @Named
@@ -24,10 +25,13 @@ public class DeleteRoleController implements Serializable {
     
     @Inject
     private RoleRepository roleRepository;
+    
+    @Inject
+    private RoleService roleService;
 
     public void delete() {
         Role roleToBeDeleted = roleRepository.find(roleId);
-        roleRepository.removeRoleFromAllAccounts(roleToBeDeleted);
+        roleService.removeRoleFromAllAccounts(roleToBeDeleted);
         roleRepository.remove(roleToBeDeleted);
         
         log.info("Role: " + roleToBeDeleted.getName() + " has been deleted.");

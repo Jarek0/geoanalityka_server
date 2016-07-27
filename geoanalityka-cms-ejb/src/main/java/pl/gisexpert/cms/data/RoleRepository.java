@@ -45,12 +45,4 @@ public class RoleRepository extends AbstractRepository<Role> {
 		}
 	}
 
-	public void removeRoleFromAllAccounts(Role role) {
-		Query query = getEntityManager().createNamedQuery("Role.removeRoleFromAllAccounts");
-		query.setParameter(1, role.getName());
-		query.executeUpdate();
-
-		getEntityManager().getEntityManagerFactory().getCache().evict(Account.class);
-	}
-
 }
