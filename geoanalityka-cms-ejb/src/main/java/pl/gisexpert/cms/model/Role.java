@@ -15,8 +15,13 @@ import javax.persistence.NamedNativeQueries;
 import javax.persistence.NamedNativeQuery;
 import javax.persistence.Table;
 
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
+import org.hibernate.envers.RelationTargetAuditMode;
+
 
 @Entity
+@Audited
 @Table(name = "roles")
 @NamedNativeQueries({@NamedNativeQuery(name = "Role.removeRoleFromAllAccounts", query = "DELETE FROM account_roles WHERE role = ?")})
 public class Role implements Serializable {
@@ -24,11 +29,13 @@ public class Role implements Serializable {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @NotAudited
     private Long id;
     
     @Column
     private String name;
     
+    @NotAudited
     @ManyToMany(mappedBy = "roles")
     private List<Account> accounts;
    

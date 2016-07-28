@@ -38,12 +38,12 @@ public class AccountRepository extends AbstractRepository<Account> {
 	}
 
 	@Transactional
-	public Account findByUsername(String username, Boolean fetchAddress, Boolean fetchTokens) {
+	public Account findByUsername(String username, Boolean fetchCompany, Boolean fetchTokens) {
 		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
 		CriteriaQuery<Account> cq = cb.createQuery(Account.class);
 		Root<Account> account = cq.from(Account.class);
-		if (fetchAddress) {
-			account.fetch("address", JoinType.INNER);
+		if (fetchCompany) {
+			account.fetch("company", JoinType.INNER);
 		}
 		cq.select(account);
 		cq.where(cb.equal(account.get("username"), username));

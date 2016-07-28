@@ -1,8 +1,8 @@
 package pl.gisexpert.cms.model;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 import javax.persistence.CascadeType;
@@ -32,18 +32,18 @@ import javax.validation.constraints.Size;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.apache.shiro.crypto.SecureRandomNumberGenerator;
 import org.apache.shiro.crypto.hash.DefaultHashService;
+import org.hibernate.envers.AuditJoinTable;
+import org.hibernate.envers.Audited;
 import org.hibernate.validator.constraints.Email;
 
 @Entity
 @Table(name = "accounts", indexes = { @Index(name = "username_index", columnList = "username", unique = true) })
-@SqlResultSetMappings({
-    @SqlResultSetMapping(name = "Account.sumMapping", columns = {
-        @ColumnResult(name = "items_count", type = Integer.class)})
-})
+@SqlResultSetMappings({ @SqlResultSetMapping(name = "Account.sumMapping", columns = {
+		@ColumnResult(name = "items_count", type = Integer.class) }) })
 @NamedNativeQueries({
 		@NamedNativeQuery(name = "Account.removeRole", query = "DELETE FROM account_roles WHERE username = ? AND role = ?"),
 		@NamedNativeQuery(name = "Account.getRoles", query = "SELECT roles.* FROM roles, account_roles WHERE account_roles.username = :username AND roles.name = account_roles.role", resultClass = Role.class),
-		@NamedNativeQuery(name = "Account.hasRole", query = "SELECT COUNT(*) as items_count FROM account_roles WHERE username = :username AND role = :role", resultSetMapping = "Account.sumMapping")})
+		@NamedNativeQuery(name = "Account.hasRole", query = "SELECT COUNT(*) as items_count FROM account_roles WHERE username = :username AND role = :role", resultSetMapping = "Account.sumMapping") })
 public class Account implements Serializable {
 
 	private static final long serialVersionUID = 1033705321916453635L;
@@ -61,6 +61,17 @@ public class Account implements Serializable {
 	@NotNull
 	private String password;
 
+	@Column(name = "first_name", nullable = false, length = 50)
+	@NotNull
+	@Size(min = 1, max = 50)
+	private String firstName;
+
+	@Column(name = "last_name", nullable = false, length = 30)
+	@NotNull
+	@Size(min = 1, max = 30)
+	private String lastName;
+
+	@Audited
 	@ManyToMany
 	@JoinTable(name = "account_roles", joinColumns = {
 			@JoinColumn(name = "username", referencedColumnName = "username") }, inverseJoinColumns = {
@@ -72,10 +83,6 @@ public class Account implements Serializable {
 	@Column(name = "email_address", nullable = false, length = 80)
 	@NotNull
 	private String emailAddress;
-
-	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	@JoinColumn(name = "address_id")
-	private Address address;
 
 	@Column(nullable = false, name = "date_registered")
 	@Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -93,6 +100,12 @@ public class Account implements Serializable {
 
 	@Column(name = "queued_payment")
 	private Double queuedPayment;
+	
+	@Audited
+	@AuditJoinTable(name = "account_companies_aud")
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "company_id")
+	private Company company;
 
 	@Embedded
 	private ResetPassword resetPassword;
@@ -155,14 +168,6 @@ public class Account implements Serializable {
 
 	public void setEmailAddress(String emailAddress) {
 		this.emailAddress = emailAddress;
-	}
-
-	public Address getAddress() {
-		return address;
-	}
-
-	public void setAddress(Address address) {
-		this.address = address;
 	}
 
 	public Date getDateRegistered() {
@@ -235,6 +240,30 @@ public class Account implements Serializable {
 
 	public void setQueuedPayment(Double queuedPayment) {
 		this.queuedPayment = queuedPayment;
+	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public Company getCompany() {
+		return company;
+	}
+
+	public void setCompany(Company company) {
+		this.company = company;
 	}
 
 	@Override

@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 
 import pl.gisexpert.cms.model.Account;
 import pl.gisexpert.cms.model.Address;
+import pl.gisexpert.cms.model.Company;
 import pl.gisexpert.cms.model.Role;
 
 public class AccountInfo {
@@ -34,12 +35,11 @@ public class AccountInfo {
 		lastLogin = account.getLastLoginDate();
 		credits = account.getCredits();
 		queuedPayment = account.getQueuedPayment();
+		firstName = account.getFirstName();
+		lastName = account.getLastName();
 		
-		Address address = account.getAddress();
-		firstName = address.getFirstName();
-		lastName = address.getLastName();
-		companyName = address.getCompanyName();
-		
+		Company company = account.getCompany();		
+		companyName = company.getCompanyName();
 	
 		this.roles = Lists.transform(roles, new Function<Role, String>(){
 			@Override

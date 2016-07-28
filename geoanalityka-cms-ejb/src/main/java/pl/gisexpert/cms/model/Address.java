@@ -2,6 +2,7 @@ package pl.gisexpert.cms.model;
 
 import java.io.Serializable;
 import java.util.Objects;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -11,25 +12,20 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
+
 @Entity
+@Audited
 @Table(name = "addresses")
 public class Address implements Serializable {
 
     private static final long serialVersionUID = -6442068216931841076L;
 
     @Id
+    @NotAudited
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "first_name", nullable = false, length = 50)
-    @NotNull
-    @Size(min = 1, max = 50)
-    private String firstName;
-
-    @Column(name = "last_name", nullable = false, length = 30)
-    @NotNull
-    @Size(min = 1, max = 30)
-    private String lastName;
 
     @Column(nullable = false, length = 12)
     @NotNull
@@ -52,15 +48,6 @@ public class Address implements Serializable {
     @Column(name = "flat_number", length = 12)
     private String flatNumber;
 
-    @Column
-    private String phone;
-    
-    @Column(name = "company_name", nullable = false, length = 100)
-    private String companyName;
-    
-    @Column(name = "tax_id", nullable = false, length = 20)
-    private String taxId;
-
     public Address() {
     }
 
@@ -70,22 +57,6 @@ public class Address implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
     }
 
     public String getZipcode() {
@@ -126,30 +97,6 @@ public class Address implements Serializable {
 
 	public void setFlatNumber(String flatNumber) {
 		this.flatNumber = flatNumber;
-	}
-
-	public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getCompanyName() {
-		return companyName;
-	}
-
-	public void setCompanyName(String companyName) {
-		this.companyName = companyName;
-	}
-
-	public String getTaxId() {
-		return taxId;
-	}
-
-	public void setTaxId(String taxId) {
-		this.taxId = taxId;
 	}
 
 	@Override

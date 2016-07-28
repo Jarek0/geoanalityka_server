@@ -17,9 +17,9 @@ public class Buyer {
 	
 	public Buyer(Account account) {
 		this.email = account.getEmailAddress();
-		this.phone = account.getAddress().getPhone();
-		this.firstName = account.getAddress().getFirstName();
-		this.lastName = account.getAddress().getLastName();
+		this.phone = account.getCompany().getPhone();
+		this.firstName = account.getFirstName();
+		this.lastName = account.getLastName();
 	}
 
 	public String getEmail() {

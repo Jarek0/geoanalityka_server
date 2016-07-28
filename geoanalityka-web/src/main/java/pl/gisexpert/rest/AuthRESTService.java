@@ -47,17 +47,23 @@ import org.slf4j.Logger;
 
 import pl.gisexpert.cms.data.AccessTokenRepository;
 import pl.gisexpert.cms.data.AccountRepository;
+import pl.gisexpert.cms.data.CompanyRepository;
 import pl.gisexpert.cms.data.LoginAttemptRepository;
 import pl.gisexpert.cms.model.AccessToken;
 import pl.gisexpert.cms.model.Account;
 import pl.gisexpert.cms.model.AccountConfirmation;
 import pl.gisexpert.cms.model.AccountStatus;
 import pl.gisexpert.cms.model.Address;
+import pl.gisexpert.cms.model.Company;
 import pl.gisexpert.cms.model.LoginAttempt;
+import pl.gisexpert.cms.model.PremiumPlanType;
 import pl.gisexpert.cms.service.AccountService;
+import pl.gisexpert.cms.service.CompanyService;
 import pl.gisexpert.cms.service.LoginAttemptService;
+import pl.gisexpert.cms.service.PremiumPlanService;
 import pl.gisexpert.rest.model.AccountInfo;
 import pl.gisexpert.rest.model.BaseResponse;
+import pl.gisexpert.rest.model.CompanyInfo;
 import pl.gisexpert.rest.model.GetTokenForm;
 import pl.gisexpert.rest.model.GetTokenResponse;
 import pl.gisexpert.rest.model.RegisterForm;
@@ -92,6 +98,15 @@ public class AuthRESTService {
 	private MailService mailService;
 	
 	@Inject
+	private PremiumPlanService premiumPlanService;
+	
+	@Inject
+	private CompanyService companyService;
+	
+	@Inject
+	private CompanyRepository companyRepository;
+	
+	@Inject
 	@RESTI18n
 	private ResourceBundle i18n;
 	
@@ -108,22 +123,26 @@ public class AuthRESTService {
 		account.setUsername(formData.getEmail());
 		account.setPassword(account.hashPassword(formData.getPassword()));
 		account.setEmailAddress(formData.getEmail());
+		account.setFirstName(formData.getFirstname());
+		account.setLastName(formData.getLastname());
 		if (formData.getQueuedPayment() != null) {
 			account.setQueuedPayment(formData.getQueuedPayment());
 		}
-
+		
 		Address address = new Address();
-		address.setFirstName(formData.getFirstname());
-		address.setLastName(formData.getLastname());
+		
 		address.setCity(formData.getCompanyAddress().getCity());
-		address.setCompanyName(formData.getCompanyAddress().getCompanyName());
-		address.setTaxId(formData.getCompanyAddress().getTaxId());
 		address.setStreet(formData.getCompanyAddress().getStreet());
 		address.setHouseNumber(formData.getCompanyAddress().getBuildingNumber());
 		address.setFlatNumber(formData.getCompanyAddress().getFlatNumber());
 		address.setZipcode(formData.getCompanyAddress().getZipCode());
-
-		account.setAddress(address);
+		
+		Company company = new Company();
+		company.setCompanyName(formData.getCompanyAddress().getCompanyName());
+		company.setTaxId(formData.getCompanyAddress().getTaxId());
+		
+		company.setAddress(address);
+		account.setCompany(company);
 
 		account.setDateRegistered(new Date());
 		account.setAccountStatus(AccountStatus.UNCONFIRMED);
@@ -143,6 +162,8 @@ public class AuthRESTService {
 			errorStatus.setResponseStatus(Status.BAD_REQUEST);
 			return Response.status(Response.Status.BAD_REQUEST).entity(errorStatus).build();
 		}
+		
+		premiumPlanService.activatePlan(account, PremiumPlanType.PLAN_TESTOWY);
 
 		String subject = "Geoanalityka - potwierdzenie rejestracji użytkownika";
 
@@ -369,5 +390,69 @@ public class AuthRESTService {
 		accountInfo.setTokenExpires(accessToken.getExpires());
 
 		return Response.status(Response.Status.OK).entity(accountInfo).build();
+	}
+	
+	@GET
+	@Path("/companyInfo")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getCompanyInfo() {
+
+		Subject currentUser = SecurityUtils.getSubject();
+		String username = (String) currentUser.getPrincipal();
+		
+		if (username == null) {
+			return Response.status(Response.Status.FORBIDDEN).build();
+		}
+		Account account = accountRepository.findByUsername(username);
+		
+		Company company = companyService.findCompanyForAccount(account);
+		
+		if (company == null) {
+			return Response.status(Response.Status.FORBIDDEN).build();
+		}
+		
+		CompanyInfo companyInfo = new CompanyInfo(company);
+		
+
+		return Response.status(Response.Status.OK).entity(companyInfo).build();
+	}
+	
+	@POST
+	@Path("/companyInfo")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response changeCompanyInfo(CompanyInfo companyInfo) {
+		
+		Subject currentUser = SecurityUtils.getSubject();
+		String username = (String) currentUser.getPrincipal();
+		
+		if (username == null) {
+			return Response.status(Response.Status.FORBIDDEN).build();
+		}
+		Account account = accountRepository.findByUsername(username);
+		
+		Company company = new Company();
+		company.setCompanyName(companyInfo.getCompanyName());
+		company.setTaxId(companyInfo.getTaxId());
+		company.setPhone(companyInfo.getPhone());
+		
+		Address address = new Address();
+		address.setCity(companyInfo.getCity());
+		address.setFlatNumber(companyInfo.getFlatNumber());
+		address.setHouseNumber(companyInfo.getHouseNumber());
+		address.setStreet(companyInfo.getStreet());
+		address.setZipcode(companyInfo.getZipcode());
+		
+		company.setAddress(address);
+		
+		companyRepository.create(company);
+		account.setCompany(company);
+		accountRepository.edit(account);
+		
+		BaseResponse response = new BaseResponse();
+		response.setMessage("Pomyślnie zmieniono dane.");
+		response.setResponseStatus(Response.Status.OK);
+		
+		return Response.status(Response.Status.OK).entity(response).build();
 	}
 }
