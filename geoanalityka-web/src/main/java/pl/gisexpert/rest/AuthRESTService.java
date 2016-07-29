@@ -142,6 +142,7 @@ public class AuthRESTService {
 		company.setTaxId(formData.getCompanyAddress().getTaxId());
 		
 		company.setAddress(address);
+		companyRepository.create(company);
 		account.setCompany(company);
 
 		account.setDateRegistered(new Date());

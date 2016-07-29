@@ -1,121 +1,118 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
-    <h:head>
-        <meta charset="utf-8"/>
-        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1"/>
-        <meta name="description" content=""/>
-        <meta name="author" content=""/>
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<h:head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="description" content="" />
+	<meta name="author" content="" />
 
-        <title>#{i18n.app}</title>
+	<title>#{i18n.app}</title>
 
-        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-        <!--[if lt IE 9]>
+	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+	<!--[if lt IE 9]>
             <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
             <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
         <![endif]-->
 
-    </h:head>
+</h:head>
 
-    <h:body>
+<h:body>
 
-        <h:outputStylesheet name="plugins/bootstrap/dist/css/bootstrap.min.css"/>
-        <h:outputStylesheet name="plugins/metisMenu/dist/metisMenu.min.css"/>
-        <h:outputStylesheet name="plugins/sbadmin2/css/timeline.css"/>
-        <h:outputStylesheet name="plugins/sbadmin2/css/sb-admin-2.css"/>
-        <h:outputStylesheet name="plugins/morrisjs/morris.css"/>
-        <h:outputStylesheet name="plugins/font-awesome/css/font-awesome.min.css"/>
-        <h:outputStylesheet name="css/style.css"/>
+	<h:outputStylesheet name="plugins/bootstrap/dist/css/bootstrap.min.css" />
+	<h:outputStylesheet name="plugins/metisMenu/dist/metisMenu.min.css" />
+	<h:outputStylesheet name="plugins/sbadmin2/css/timeline.css" />
+	<h:outputStylesheet name="plugins/sbadmin2/css/sb-admin-2.css" />
+	<h:outputStylesheet name="plugins/morrisjs/morris.css" />
+	<h:outputStylesheet
+		name="plugins/font-awesome/css/font-awesome.min.css" />
+	<h:outputStylesheet name="css/style.css" />
 
-        <div id="wrapper">
+	<div id="wrapper">
 
-            <!-- Navigation -->
-            <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <h:link class="navbar-brand" outcome="pretty:home">#{i18n['app']}</h:link>
-                </div>
-                <!-- /.navbar-header -->
+		<!-- Navigation -->
+		<nav class="navbar navbar-default navbar-static-top" role="navigation"
+			style="margin-bottom: 0">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse"
+					data-target=".navbar-collapse">
+					<span class="sr-only">Toggle navigation</span> <span
+						class="icon-bar"></span> <span class="icon-bar"></span> <span
+						class="icon-bar"></span>
+				</button>
+				<h:link class="navbar-brand" outcome="pretty:home">#{i18n['app']}</h:link>
+			</div>
+			<!-- /.navbar-header -->
 
-                <ul class="nav navbar-top-links navbar-right">
-                    <!-- /.dropdown -->
-                    <li class="dropdown">
-                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                            <i class="fa fa-bars fa-fw"></i> Zalogowany jako: <em>#{accountController.account.username}</em> <i class="fa fa-caret-down"></i>
-                        </a>
-                        <ul class="dropdown-menu dropdown-user">
-                            <li><h:link outcome="pretty:account"><i class="fa fa-user fa-fw"></i> #{i18n['account.profile']}</h:link>
-                            </li>
-                            <li><h:link outcome="pretty:account_changepassword"><i class="fa fa-key fa-fw"></i> #{i18n['account.changepassword']}</h:link>
-                            </li>
+			<ul class="nav navbar-top-links navbar-right">
+				<!-- /.dropdown -->
+				<li class="dropdown"><a class="dropdown-toggle"
+					data-toggle="dropdown" href="#"> <i class="fa fa-bars fa-fw"></i>
+						Zalogowany jako: <em>#{accountController.account.username}</em> <i
+						class="fa fa-caret-down"></i>
+				</a>
+					<ul class="dropdown-menu dropdown-user">
+						<li><h:link outcome="pretty:account">
+								<i class="fa fa-user fa-fw"></i> #{i18n['account.profile']}</h:link></li>
+						<li><h:link outcome="pretty:account_changepassword">
+								<i class="fa fa-key fa-fw"></i> #{i18n['account.changepassword']}</h:link>
+						</li>
 
-                            <li class="divider"></li>
+						<li class="divider"></li>
 
-                            <li><h:link outcome="pretty:logout"><i class="fa fa-sign-out fa-fw"></i> #{i18n['logout']}</h:link>
-                            </li>
-                        </ul>
-                        <!-- /.dropdown-user -->
-                    </li>
-                    <!-- /.dropdown -->
-                </ul>
-                <!-- /.navbar-top-links -->
+						<li><h:link outcome="pretty:logout">
+								<i class="fa fa-sign-out fa-fw"></i> #{i18n['logout']}</h:link></li>
+					</ul> <!-- /.dropdown-user --></li>
+				<!-- /.dropdown -->
+			</ul>
+			<!-- /.navbar-top-links -->
 
-                <div class="navbar-default sidebar" role="navigation">
-                    <div class="sidebar-nav navbar-collapse">
-                        <ul class="nav" id="side-menu">
-                            <li>
-                                <a href="#"><i class="glyphicon glyphicon-user"></i> #{i18n['accounts']}<span class="fa arrow"></span></a>
-                                <ul class="nav nav-second-level">
-                                    <li>
-                                        <h:link outcome="pretty:admin_users" styleClass="#{view.viewId == '/admin/users/users.xhtml' ? 'active' : ''}">#{i18n['common.browse']}</h:link>
-                                    </li>
-                                    <ui:fragment rendered="#{request.isUserInRole('Administrator')}">
-                                        <li>
-                                            <h:link outcome="pretty:admin_users_new" styleClass="#{view.viewId == '/admin/users/addUser.xhtml' ? 'active' : ''}">#{i18n['account.new']}</h:link>
-                                        </li>
-                                    </ui:fragment>
-                                </ul>
-                                <!-- /.nav-second-level -->
-                            </li>
-                            <li>
-                                <h:link outcome="pretty:admin_roles" styleClass="#{view.viewId == '/admin/roles/roles.xhtml' ? 'active' : ''}"><i class="fa fa-users fa-fw"></i> #{i18n['roles']}</h:link>
-                            </li>
-                            
-                            <ui:fragment rendered="#{request.isUserInRole('Redaktor')}">
-                            <li>
-                                <h:link outcome="pretty:admin_landing" styleClass="#{view.viewId == '/admin/landing_page/landingPage.xhtml' ? 'active' : ''}"><i class="glyphicon glyphicon-home"></i> #{i18n['landing']}</h:link>
-                            </li>
-                            </ui:fragment>
-                        </ul>
-                    </div>
-                    <!-- /.sidebar-collapse -->
-                </div>
-                <!-- /.navbar-static-side -->
-            </nav>
+			<div class="navbar-default sidebar" role="navigation">
+				<div class="sidebar-nav navbar-collapse">
+					<ul class="nav" id="side-menu">
+						<ui:fragment rendered="#{request.isUserInRole('Administrator')}">
+							<li><a href="#"><i class="glyphicon glyphicon-user"></i>
+									#{i18n['accounts']}<span class="fa arrow"></span></a>
+								<ul class="nav nav-second-level">
+									<li><h:link outcome="pretty:admin_users"
+											styleClass="#{view.viewId == '/admin/users/users.xhtml' ? 'active' : ''}">#{i18n['common.browse']}</h:link>
+									</li>
 
-            <div id="page-wrapper">
-                <ui:insert name="content"></ui:insert>
-            </div>
-            <!-- /#page-wrapper -->
+									<li><h:link outcome="pretty:admin_users_new"
+											styleClass="#{view.viewId == '/admin/users/addUser.xhtml' ? 'active' : ''}">#{i18n['account.new']}</h:link>
+									</li>
 
-        </div>
-        <!-- /#wrapper -->
-        <h:outputScript name="plugins/jquery/dist/jquery.min.js" />
-        <h:outputScript name="plugins/bootstrap/dist/js/bootstrap.min.js" />
-        <h:outputScript name="plugins/metisMenu/dist/metisMenu.min.js" />
-        <h:outputScript name="plugins/raphael/raphael-min.js" />
-        <h:outputScript name="plugins/sbadmin2/js/sb-admin-2.js" />
-        <h:outputScript name="plugins/jquery-ui/jquery-ui.min.js" />
-        
-        <ui:insert name="additionalScripts" />
+								</ul> <!-- /.nav-second-level --></li>
+							<li><h:link outcome="pretty:admin_roles"
+									styleClass="#{view.viewId == '/admin/roles/roles.xhtml' ? 'active' : ''}">
+									<i class="fa fa-users fa-fw"></i> #{i18n['roles']}</h:link></li>
+						</ui:fragment>
 
-    </h:body>
+					</ul>
+				</div>
+				<!-- /.sidebar-collapse -->
+			</div>
+			<!-- /.navbar-static-side -->
+		</nav>
+
+		<div id="page-wrapper">
+			<ui:insert name="content"></ui:insert>
+		</div>
+		<!-- /#page-wrapper -->
+
+	</div>
+	<!-- /#wrapper -->
+	<h:outputScript name="plugins/jquery/dist/jquery.min.js" />
+	<h:outputScript name="plugins/bootstrap/dist/js/bootstrap.min.js" />
+	<h:outputScript name="plugins/metisMenu/dist/metisMenu.min.js" />
+	<h:outputScript name="plugins/raphael/raphael-min.js" />
+	<h:outputScript name="plugins/sbadmin2/js/sb-admin-2.js" />
+	<h:outputScript name="plugins/jquery-ui/jquery-ui.min.js" />
+
+	<ui:insert name="additionalScripts" />
+
+</h:body>
 </html>
