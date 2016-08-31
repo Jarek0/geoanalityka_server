@@ -17,9 +17,11 @@
 package pl.gisexpert.rest;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -27,6 +29,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -40,9 +43,16 @@ import pl.gisexpert.cms.data.OrderRepository;
 import pl.gisexpert.cms.model.Account;
 import pl.gisexpert.cms.model.Order;
 import pl.gisexpert.cms.model.OrderStatus;
+import pl.gisexpert.cms.model.OrderType;
 import pl.gisexpert.cms.model.PremiumPlanType;
 import pl.gisexpert.cms.service.BillingService;
 import pl.gisexpert.cms.service.PremiumPlanService;
+import pl.gisexpert.invoice.InvoiceDocFactory;
+import pl.gisexpert.invoice.model.Address;
+import pl.gisexpert.invoice.model.Company;
+import pl.gisexpert.invoice.model.Invoice;
+import pl.gisexpert.invoice.model.Transaction;
+import pl.gisexpert.invoice.model.TransactionItem;
 import pl.gisexpert.payu.client.PayUClient;
 import pl.gisexpert.payu.model.Buyer;
 import pl.gisexpert.payu.model.CreateOrderNotify;
@@ -50,11 +60,15 @@ import pl.gisexpert.payu.model.OrderBase;
 import pl.gisexpert.payu.model.Product;
 import pl.gisexpert.rest.model.AddCreditForm;
 import pl.gisexpert.rest.model.BaseResponse;
+import pl.gisexpert.rest.model.BillingHistoryResponse;
+import pl.gisexpert.rest.model.OrderInfo;
 import pl.gisexpert.service.GlobalConfigService;
 import pl.gisexpert.service.GlobalConfigService.PayU;
 
 @Path("/billing")
 public class BillingRESTService {
+	
+	private final int DEFAULT_HISTORY_LIMIT = 10;
 
 	@Inject
 	private AccountRepository accountRepository;
@@ -118,13 +132,16 @@ public class BillingRESTService {
 			customerIpAddress = stk.nextToken();
 		}
 
+		OrderType orderType = OrderType.NONE;
 		String productName;
 		switch (formData.getAmount()) {
 		case 50:
 			productName = "Geoanalizy - aktywacja / przedłużenie planu standardowego";
+			orderType = OrderType.STANDARD_PLAN_ACTIVATION;
 			break;
 		case 100:
 			productName = "Geoanalizy - aktywacja / przedłużenie planu zaawansowanego";
+			orderType = OrderType.ADVANCED_PLAN_ACTIVATION;
 			break;
 		default:
 			return Response.status(Response.Status.UNAUTHORIZED).entity(null).build();
@@ -146,6 +163,7 @@ public class BillingRESTService {
 		order.setStatus(OrderStatus.PENDING);
 		order.setBuyer(buyerAccount);
 		order.setAmount(formData.getAmount());
+		order.setOrderType(orderType);
 		order.setDate(new Date());
 
 		orderRepository.create(order);
@@ -241,15 +259,115 @@ public class BillingRESTService {
 
 			account.setQueuedPayment(null);
 			accountRepository.edit(account);
-			
+
 			log.debug("Removed queued payment from account: " + account.getUsername());
-			
+
 		} catch (Exception e) {
 			log.debug("Failed to remove queued payment from an account.");
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
-		
-		
+
 		return Response.status(Response.Status.OK).build();
+	}
+
+	@GET
+	@Path("/history/{start}/{limit}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response billingHistory(@PathParam("start") Integer start, @PathParam("limit") Integer limit) {
+		
+		Account account = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal(), true);
+
+		List<Order> orders = billingService.getRecentOrders(account, start, limit);
+		
+		BillingHistoryResponse response = new BillingHistoryResponse();
+		List<OrderInfo> orderInfos = new ArrayList<>();
+		for (Order order : orders) {
+			orderInfos.add(new OrderInfo(order));
+		}
+		response.setOrders(orderInfos);
+		response.setResponseStatus(Response.Status.OK);
+		
+		return Response.status(Response.Status.OK).entity(response).build();
+	}
+	
+	@GET
+	@Path("/history")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response billingHistory() {
+		return billingHistory(0, DEFAULT_HISTORY_LIMIT);
+	}
+	
+	@GET
+	@Path("/history/count")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response totalBillingItems() {
+		Account account = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal(), true);
+		Integer billingItemsCount = billingService.getBillingItemsCount(account);
+		
+		BaseResponse response = new BaseResponse();
+		response.setMessage(billingItemsCount.toString());
+		response.setResponseStatus(Response.Status.OK);
+		
+		return Response.status(Response.Status.OK).entity(response).build();
+	}
+	
+	@GET
+	@Path("/invoice/{orderHash}.rtf")
+	@Produces("application/rtf")
+	public Response getPdfInvoice(@PathParam("orderHash") String orderHash) {
+		
+		Account account = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal(), true);
+		pl.gisexpert.cms.model.Company company = account.getCompany();
+		pl.gisexpert.cms.model.Address address = company.getAddress();
+		
+		Order order = orderRepository.findByHash(UUID.fromString(orderHash));
+		if (order == null || !order.getBuyer().equals(account)) {
+			return Response.status(Response.Status.UNAUTHORIZED).build();
+		}
+		
+		Invoice invoice = new Invoice("GEOANAL/00/00/" + order.getId());
+		Address invoiceAddress = new Address();
+		invoiceAddress.setCity(address.getCity());
+		invoiceAddress.setFlatNumber(address.getFlatNumber());
+		invoiceAddress.setHouseNumber(address.getHouseNumber());
+		invoiceAddress.setStreet(address.getStreet());
+		invoiceAddress.setZipcode(address.getZipcode());
+		
+		Company invoiceCompany = new Company();
+		invoiceCompany.setAddress(invoiceAddress);
+		invoiceCompany.setCompanyName(company.getCompanyName());
+		invoiceCompany.setPhone(company.getPhone());
+		invoiceCompany.setTaxId(company.getTaxId());
+		invoice.setCompany(invoiceCompany);
+		
+		Transaction transaction = new Transaction();
+		
+		String itemName = "";
+		switch (order.getOrderType()) {
+		case NONE:
+			itemName = "Doładowanie środków";
+			break;
+		case STANDARD_PLAN_ACTIVATION:
+			itemName = "Aktywacja planu standardowego";
+			break;
+		case ADVANCED_PLAN_ACTIVATION:
+			itemName = "Aktywacja planu zaawansowanego";
+			break;
+		case DEDICATED_PLAN_ACTIVATION:
+			itemName = "Aktywacja planu dedykowanego";
+			break;
+		}
+			
+		TransactionItem item = new TransactionItem(1, itemName, order.getAmount().doubleValue(), 1.0, 0.23);
+		
+		List<TransactionItem> items = Arrays.asList(item);
+		transaction.setItems(items);
+		invoice.setTransaction(transaction);
+		
+		InvoiceDocFactory docFactory = new InvoiceDocFactory();
+		byte[] invoicePdfDocument = docFactory.createRtf(invoice);
+		
+		return Response.status(Response.Status.OK).entity(invoicePdfDocument).build();
+		
 	}
 }

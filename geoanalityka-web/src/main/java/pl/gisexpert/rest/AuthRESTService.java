@@ -164,7 +164,7 @@ public class AuthRESTService {
 			return Response.status(Response.Status.BAD_REQUEST).entity(errorStatus).build();
 		}
 		
-		premiumPlanService.activatePlan(account, PremiumPlanType.PLAN_TESTOWY);
+		premiumPlanService.activatePlan(account, PremiumPlanType.PLAN_DEDYKOWANY);
 
 		String subject = "Geoanalityka - potwierdzenie rejestracji użytkownika";
 
