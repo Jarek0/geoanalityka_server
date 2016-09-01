@@ -22,6 +22,7 @@ public class AccountInfo {
 	private Date tokenExpires;
 	private String accessToken;
 	private Double queuedPayment;
+	private Boolean naturalPerson;
 	private List<String> roles;
 	
 	public AccountInfo(){
@@ -40,6 +41,8 @@ public class AccountInfo {
 		
 		Company company = account.getCompany();		
 		companyName = company.getCompanyName();
+		
+		naturalPerson = account.getNaturalPerson();
 	
 		this.roles = Lists.transform(roles, new Function<Role, String>(){
 			@Override
@@ -117,5 +120,12 @@ public class AccountInfo {
 	public void setRoles(List<String> roles) {
 		this.roles = roles;
 	}
-	
+
+	public Boolean getNaturalPerson() {
+		return naturalPerson;
+	}
+
+	public void setNaturalPerson(Boolean naturalPerson) {
+		this.naturalPerson = naturalPerson;
+	}
 }

@@ -8,8 +8,9 @@ public class RegisterForm extends BaseForm  {
 	private String confirmPassword;
 	private String email;
 	private Double queuedPayment;
+	private Boolean naturalPerson;
 	
-	private CompanyAddressForm companyAddress;
+	private AddressForm address;
 
 	public String getFirstname() {
 		return firstname;
@@ -51,12 +52,12 @@ public class RegisterForm extends BaseForm  {
 		this.email = email;
 	}
 
-	public CompanyAddressForm getCompanyAddress() {
-		return companyAddress;
+	public AddressForm getAddress() {
+		return address;
 	}
 
-	public void setCompanyAddress(CompanyAddressForm companyAddress) {
-		this.companyAddress = companyAddress;
+	public void setAddress(AddressForm address) {
+		this.address = address;
 	}
 
 	public Double getQueuedPayment() {
@@ -65,6 +66,14 @@ public class RegisterForm extends BaseForm  {
 
 	public void setQueuedPayment(Double queuedPayment) {
 		this.queuedPayment = queuedPayment;
+	}
+
+	public Boolean getNaturalPerson() {
+		return naturalPerson;
+	}
+
+	public void setNaturalPerson(Boolean naturalPerson) {
+		this.naturalPerson = naturalPerson;
 	}
 
 	

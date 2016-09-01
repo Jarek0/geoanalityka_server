@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 
 import pl.gisexpert.cms.data.AccessTokenRepository;
 import pl.gisexpert.cms.data.AccountRepository;
+import pl.gisexpert.cms.data.AddressRepository;
 import pl.gisexpert.cms.data.CompanyRepository;
 import pl.gisexpert.cms.data.LoginAttemptRepository;
 import pl.gisexpert.cms.model.AccessToken;
@@ -62,7 +63,9 @@ import pl.gisexpert.cms.service.CompanyService;
 import pl.gisexpert.cms.service.LoginAttemptService;
 import pl.gisexpert.cms.service.PremiumPlanService;
 import pl.gisexpert.rest.model.AccountInfo;
+import pl.gisexpert.rest.model.AddressForm;
 import pl.gisexpert.rest.model.BaseResponse;
+import pl.gisexpert.rest.model.CompanyAddressForm;
 import pl.gisexpert.rest.model.CompanyInfo;
 import pl.gisexpert.rest.model.GetTokenForm;
 import pl.gisexpert.rest.model.GetTokenResponse;
@@ -107,6 +110,9 @@ public class AuthRESTService {
 	private CompanyRepository companyRepository;
 	
 	@Inject
+	private AddressRepository addressRepository;
+	
+	@Inject
 	@RESTI18n
 	private ResourceBundle i18n;
 	
@@ -129,22 +135,32 @@ public class AuthRESTService {
 			account.setQueuedPayment(formData.getQueuedPayment());
 		}
 		
+		AddressForm addressForm = formData.getAddress();
 		Address address = new Address();
 		
-		address.setCity(formData.getCompanyAddress().getCity());
-		address.setStreet(formData.getCompanyAddress().getStreet());
-		address.setHouseNumber(formData.getCompanyAddress().getBuildingNumber());
-		address.setFlatNumber(formData.getCompanyAddress().getFlatNumber());
-		address.setZipcode(formData.getCompanyAddress().getZipCode());
-		
-		Company company = new Company();
-		company.setCompanyName(formData.getCompanyAddress().getCompanyName());
-		company.setTaxId(formData.getCompanyAddress().getTaxId());
-		
-		company.setAddress(address);
-		companyRepository.create(company);
-		account.setCompany(company);
+		address.setCity(addressForm.getCity());
+		address.setStreet(addressForm.getStreet());
+		address.setHouseNumber(addressForm.getBuildingNumber());
+		address.setFlatNumber(addressForm.getFlatNumber());
+		address.setZipcode(addressForm.getZipCode());
 
+		if (!formData.getNaturalPerson()) {
+			CompanyAddressForm companyData = (CompanyAddressForm) addressForm;
+			
+			Company company = new Company();
+			company.setCompanyName(companyData.getCompanyName());
+			company.setTaxId(companyData.getTaxId());
+			company.setAddress(address);
+			companyRepository.create(company);
+			account.setCompany(company);
+		}
+		else {
+			account.setAddress(address);
+			addressRepository.create(address);
+			account.setAddress(address);				
+		}
+
+		account.setNaturalPerson(formData.getNaturalPerson());
 		account.setDateRegistered(new Date());
 		account.setAccountStatus(AccountStatus.UNCONFIRMED);
 

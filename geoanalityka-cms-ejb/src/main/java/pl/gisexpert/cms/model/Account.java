@@ -106,6 +106,15 @@ public class Account implements Serializable {
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "company_id")
 	private Company company;
+	
+	@Audited
+	@AuditJoinTable(name = "account_addresses_aud")
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "address_id")
+	private Address address;
+	
+	@Column
+	private Boolean naturalPerson;
 
 	@Embedded
 	private ResetPassword resetPassword;
@@ -264,6 +273,22 @@ public class Account implements Serializable {
 
 	public void setCompany(Company company) {
 		this.company = company;
+	}	
+
+	public Boolean getNaturalPerson() {
+		return naturalPerson;
+	}
+
+	public void setNaturalPerson(Boolean naturalPerson) {
+		this.naturalPerson = naturalPerson;
+	}
+
+	public Address getAddress() {
+		return address;
+	}
+
+	public void setAddress(Address address) {
+		this.address = address;
 	}
 
 	@Override
