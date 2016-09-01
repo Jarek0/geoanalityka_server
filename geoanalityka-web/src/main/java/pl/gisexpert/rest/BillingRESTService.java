@@ -18,6 +18,7 @@ package pl.gisexpert.rest;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -39,6 +40,7 @@ import org.apache.shiro.SecurityUtils;
 import org.slf4j.Logger;
 
 import pl.gisexpert.cms.data.AccountRepository;
+import pl.gisexpert.cms.data.InvoiceRepository;
 import pl.gisexpert.cms.data.OrderRepository;
 import pl.gisexpert.cms.model.Account;
 import pl.gisexpert.cms.model.Order;
@@ -67,7 +69,7 @@ import pl.gisexpert.service.GlobalConfigService.PayU;
 
 @Path("/billing")
 public class BillingRESTService {
-	
+
 	private final int DEFAULT_HISTORY_LIMIT = 10;
 
 	@Inject
@@ -75,6 +77,9 @@ public class BillingRESTService {
 
 	@Inject
 	private OrderRepository orderRepository;
+
+	@Inject
+	private InvoiceRepository invoiceRepository;
 
 	@Inject
 	private BillingService billingService;
@@ -211,6 +216,7 @@ public class BillingRESTService {
 			switch (data.getOrder().getStatus()) {
 			case "COMPLETED":
 				order.setStatus(OrderStatus.COMPLETED);
+				createInvoice(order);
 				Account buyer = order.getBuyer();
 
 				switch (data.getOrder().getProducts().get(0).getUnitPrice()) {
@@ -237,10 +243,10 @@ public class BillingRESTService {
 				order.setStatus(OrderStatus.REJECTED);
 				break;
 			}
+			
+			orderRepository.edit(order);
 
 		}
-
-		orderRepository.edit(order);
 
 		log.info("Incomming order update from PayU. Order " + order.getId() + " has been updated with status: "
 				+ order.getStatus().name());
@@ -274,11 +280,11 @@ public class BillingRESTService {
 	@Path("/history/{start}/{limit}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response billingHistory(@PathParam("start") Integer start, @PathParam("limit") Integer limit) {
-		
+
 		Account account = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal(), true);
 
 		List<Order> orders = billingService.getRecentOrders(account, start, limit);
-		
+
 		BillingHistoryResponse response = new BillingHistoryResponse();
 		List<OrderInfo> orderInfos = new ArrayList<>();
 		for (Order order : orders) {
@@ -286,62 +292,72 @@ public class BillingRESTService {
 		}
 		response.setOrders(orderInfos);
 		response.setResponseStatus(Response.Status.OK);
-		
+
 		return Response.status(Response.Status.OK).entity(response).build();
 	}
-	
+
 	@GET
 	@Path("/history")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response billingHistory() {
 		return billingHistory(0, DEFAULT_HISTORY_LIMIT);
 	}
-	
+
 	@GET
 	@Path("/history/count")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response totalBillingItems() {
 		Account account = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal(), true);
 		Integer billingItemsCount = billingService.getBillingItemsCount(account);
-		
+
 		BaseResponse response = new BaseResponse();
 		response.setMessage(billingItemsCount.toString());
 		response.setResponseStatus(Response.Status.OK);
-		
+
 		return Response.status(Response.Status.OK).entity(response).build();
 	}
-	
+
 	@GET
 	@Path("/invoice/{orderHash}.rtf")
 	@Produces("application/rtf")
 	public Response getPdfInvoice(@PathParam("orderHash") String orderHash) {
-		
+
 		Account account = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal(), true);
-		pl.gisexpert.cms.model.Company company = account.getCompany();
-		pl.gisexpert.cms.model.Address address = company.getAddress();
-		
+
 		Order order = orderRepository.findByHash(UUID.fromString(orderHash));
 		if (order == null || !order.getBuyer().equals(account)) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
-		
-		Invoice invoice = new Invoice("GEOANAL/00/00/" + order.getId());
+
+		pl.gisexpert.cms.model.Invoice invoice = billingService.getRtfInvoice(order);
+
+		return Response.status(Response.Status.OK).entity(invoice.getInvoiceData()).build();
+
+	}
+
+	public pl.gisexpert.cms.model.Invoice createInvoice(Order order) {
+
+		Account account = accountRepository.findByUsername(order.getBuyer().getUsername(), true);
+		pl.gisexpert.cms.model.Company company = account.getCompany();
+		pl.gisexpert.cms.model.Address address = company.getAddress();
+
+		Invoice invoice = new Invoice(billingService.nextInvoiceId());
 		Address invoiceAddress = new Address();
 		invoiceAddress.setCity(address.getCity());
 		invoiceAddress.setFlatNumber(address.getFlatNumber());
 		invoiceAddress.setHouseNumber(address.getHouseNumber());
 		invoiceAddress.setStreet(address.getStreet());
 		invoiceAddress.setZipcode(address.getZipcode());
-		
+
 		Company invoiceCompany = new Company();
 		invoiceCompany.setAddress(invoiceAddress);
 		invoiceCompany.setCompanyName(company.getCompanyName());
 		invoiceCompany.setPhone(company.getPhone());
 		invoiceCompany.setTaxId(company.getTaxId());
 		invoice.setCompany(invoiceCompany);
-		
+
 		Transaction transaction = new Transaction();
-		
+
 		String itemName = "";
 		switch (order.getOrderType()) {
 		case NONE:
@@ -357,17 +373,27 @@ public class BillingRESTService {
 			itemName = "Aktywacja planu dedykowanego";
 			break;
 		}
-			
+
 		TransactionItem item = new TransactionItem(1, itemName, order.getAmount().doubleValue(), 1.0, 0.23);
-		
+
 		List<TransactionItem> items = Arrays.asList(item);
 		transaction.setItems(items);
 		invoice.setTransaction(transaction);
-		
+
 		InvoiceDocFactory docFactory = new InvoiceDocFactory();
-		byte[] invoicePdfDocument = docFactory.createRtf(invoice);
+		byte[] invoiceRtfDocument = docFactory.createRtf(invoice);
+
+		pl.gisexpert.cms.model.Invoice invoiceEntity = new pl.gisexpert.cms.model.Invoice();
+		invoiceEntity.setInvoiceData(invoiceRtfDocument);
+		invoiceEntity.setMimeType("application/rtf");
+		invoiceEntity.setSerialId(invoice.getInvoiceSerialId());
+		invoiceEntity.setDateCreated(new Date());
 		
-		return Response.status(Response.Status.OK).entity(invoicePdfDocument).build();
+		invoiceEntity.setOrder(order);
+
+		invoiceRepository.create(invoiceEntity);
 		
+		return invoiceEntity;
+
 	}
 }

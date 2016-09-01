@@ -2,6 +2,7 @@ package pl.gisexpert.cms.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,6 +14,7 @@ import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 
@@ -52,6 +54,9 @@ public class Order implements Serializable {
 
 	@Column
 	private OrderStatus status;
+	
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "order")
+	private List<Invoice> invoices;
 
 	public Account getBuyer() {
 		return buyer;
@@ -116,5 +121,14 @@ public class Order implements Serializable {
 	public void setOrderType(OrderType orderType) {
 		this.orderType = orderType;
 	}
+
+	public List<Invoice> getInvoices() {
+		return invoices;
+	}
+
+	public void setInvoices(List<Invoice> invoices) {
+		this.invoices = invoices;
+	}
+	
 
 }
