@@ -9,6 +9,8 @@
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
 		<jta-data-source>java:/geoanalitykaDS</jta-data-source>
 		<class>pl.gisexpert.cms.model.Account</class>
+		<class>pl.gisexpert.cms.model.CompanyAccount</class>
+		<class>pl.gisexpert.cms.model.NaturalPersonAccount</class>
 		<class>pl.gisexpert.cms.model.Address</class>
 		<class>pl.gisexpert.cms.model.AccessToken</class>
 		<class>pl.gisexpert.cms.model.Company</class>

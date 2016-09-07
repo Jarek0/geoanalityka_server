@@ -18,7 +18,6 @@ package pl.gisexpert.rest;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -43,12 +42,15 @@ import pl.gisexpert.cms.data.AccountRepository;
 import pl.gisexpert.cms.data.InvoiceRepository;
 import pl.gisexpert.cms.data.OrderRepository;
 import pl.gisexpert.cms.model.Account;
+import pl.gisexpert.cms.model.CompanyAccount;
+import pl.gisexpert.cms.model.NaturalPersonAccount;
 import pl.gisexpert.cms.model.Order;
 import pl.gisexpert.cms.model.OrderStatus;
 import pl.gisexpert.cms.model.OrderType;
 import pl.gisexpert.cms.model.PremiumPlanType;
 import pl.gisexpert.cms.service.BillingService;
 import pl.gisexpert.cms.service.PremiumPlanService;
+import pl.gisexpert.cms.visitor.DefaultAccountVisitor;
 import pl.gisexpert.invoice.InvoiceDocFactory;
 import pl.gisexpert.invoice.model.Address;
 import pl.gisexpert.invoice.model.Company;
@@ -104,8 +106,7 @@ public class BillingRESTService {
 
 		PayU payUSettings = appConfig.getPayu();
 
-		Account buyerAccount = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal(),
-				true);
+		Account buyerAccount = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal());
 
 		OrderBase createOrderForm = new OrderBase();
 		createOrderForm.setCurrencyCode("PLN");
@@ -170,8 +171,10 @@ public class BillingRESTService {
 		order.setAmount(formData.getAmount());
 		order.setOrderType(orderType);
 		order.setDate(new Date());
-
+		
 		orderRepository.create(order);
+		createInvoice(order);
+		
 		billingService.addOrder(buyerAccount, order);
 		createOrderForm.setExtOrderId(order.getId().toString() + "_" + order.getOrderHash());
 
@@ -216,7 +219,6 @@ public class BillingRESTService {
 			switch (data.getOrder().getStatus()) {
 			case "COMPLETED":
 				order.setStatus(OrderStatus.COMPLETED);
-				createInvoice(order);
 				Account buyer = order.getBuyer();
 
 				switch (data.getOrder().getProducts().get(0).getUnitPrice()) {
@@ -260,8 +262,7 @@ public class BillingRESTService {
 	public Response unqueuePayment() {
 
 		try {
-			Account account = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal(),
-					true);
+			Account account = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal());
 
 			account.setQueuedPayment(null);
 			accountRepository.edit(account);
@@ -281,7 +282,7 @@ public class BillingRESTService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response billingHistory(@PathParam("start") Integer start, @PathParam("limit") Integer limit) {
 
-		Account account = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal(), true);
+		Account account = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal());
 
 		List<Order> orders = billingService.getRecentOrders(account, start, limit);
 
@@ -307,7 +308,7 @@ public class BillingRESTService {
 	@Path("/history/count")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response totalBillingItems() {
-		Account account = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal(), true);
+		Account account = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal());
 		Integer billingItemsCount = billingService.getBillingItemsCount(account);
 
 		BaseResponse response = new BaseResponse();
@@ -320,16 +321,16 @@ public class BillingRESTService {
 	@GET
 	@Path("/invoice/{orderHash}.rtf")
 	@Produces("application/rtf")
-	public Response getPdfInvoice(@PathParam("orderHash") String orderHash) {
+	public Response getRtfInvoice(@PathParam("orderHash") String orderHash) {
 
-		Account account = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal(), true);
+		Account account = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal());
 
 		Order order = orderRepository.findByHash(UUID.fromString(orderHash));
 		if (order == null || !order.getBuyer().equals(account)) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
 
-		pl.gisexpert.cms.model.Invoice invoice = billingService.getRtfInvoice(order);
+		pl.gisexpert.cms.model.Invoice invoice = billingService.getRtfInvoice(order, false);
 
 		return Response.status(Response.Status.OK).entity(invoice.getInvoiceData()).build();
 
@@ -337,23 +338,49 @@ public class BillingRESTService {
 
 	public pl.gisexpert.cms.model.Invoice createInvoice(Order order) {
 
-		Account account = accountRepository.findByUsername(order.getBuyer().getUsername(), true);
-		pl.gisexpert.cms.model.Company company = account.getCompany();
-		pl.gisexpert.cms.model.Address address = company.getAddress();
-
+		Account account = accountRepository.findByUsername(order.getBuyer().getUsername());
+		account = accountRepository.fetchContactData(account);
+		
 		Invoice invoice = new Invoice(billingService.nextInvoiceId());
-		Address invoiceAddress = new Address();
-		invoiceAddress.setCity(address.getCity());
-		invoiceAddress.setFlatNumber(address.getFlatNumber());
-		invoiceAddress.setHouseNumber(address.getHouseNumber());
-		invoiceAddress.setStreet(address.getStreet());
-		invoiceAddress.setZipcode(address.getZipcode());
-
-		Company invoiceCompany = new Company();
+		final Address invoiceAddress = new Address();
+		
+		final Company invoiceCompany = new Company();
 		invoiceCompany.setAddress(invoiceAddress);
-		invoiceCompany.setCompanyName(company.getCompanyName());
-		invoiceCompany.setPhone(company.getPhone());
-		invoiceCompany.setTaxId(company.getTaxId());
+		
+		account.accept(new DefaultAccountVisitor() {
+			@Override
+			public void visit(CompanyAccount account) {
+				
+				pl.gisexpert.cms.model.Company company = account.getCompany();
+				pl.gisexpert.cms.model.Address address = company.getAddress();
+				
+				invoiceAddress.setCity(address.getCity());
+				invoiceAddress.setFlatNumber(address.getFlatNumber());
+				invoiceAddress.setHouseNumber(address.getHouseNumber());
+				invoiceAddress.setStreet(address.getStreet());
+				invoiceAddress.setZipcode(address.getZipcode());
+				
+				invoiceCompany.setCompanyName(company.getCompanyName());
+				invoiceCompany.setPhone(company.getPhone());
+				invoiceCompany.setTaxId(company.getTaxId());
+				
+			}
+			@Override
+			public void visit(NaturalPersonAccount account) {
+
+				pl.gisexpert.cms.model.Address address = account.getAddress();
+				
+				invoiceAddress.setCity(address.getCity());
+				invoiceAddress.setFlatNumber(address.getFlatNumber());
+				invoiceAddress.setHouseNumber(address.getHouseNumber());
+				invoiceAddress.setStreet(address.getStreet());
+				invoiceAddress.setZipcode(address.getZipcode());
+				
+				invoiceCompany.setPhone(account.getPhone());
+				invoiceCompany.setCompanyName(account.getFirstName() + " " + account.getLastName());
+			}
+		});
+		
 		invoice.setCompany(invoiceCompany);
 
 		Transaction transaction = new Transaction();
@@ -381,16 +408,29 @@ public class BillingRESTService {
 		invoice.setTransaction(transaction);
 
 		InvoiceDocFactory docFactory = new InvoiceDocFactory();
-		byte[] invoiceRtfDocument = docFactory.createRtf(invoice);
-
+		byte[] invoiceOriginalRtfDocument = docFactory.createRtf(invoice);
+		
+		invoice.setOriginal(false);
+		byte[] invoiceCopyRtfDocument = docFactory.createRtf(invoice);
+		
+		// Original invoice document
 		pl.gisexpert.cms.model.Invoice invoiceEntity = new pl.gisexpert.cms.model.Invoice();
-		invoiceEntity.setInvoiceData(invoiceRtfDocument);
+		invoiceEntity.setInvoiceData(invoiceOriginalRtfDocument);
 		invoiceEntity.setMimeType("application/rtf");
 		invoiceEntity.setSerialId(invoice.getInvoiceSerialId());
 		invoiceEntity.setDateCreated(new Date());
-		
+		invoiceEntity.setOriginal(true);
 		invoiceEntity.setOrder(order);
-
+		invoiceRepository.create(invoiceEntity);
+		
+		// Invoice copy
+		invoiceEntity = new pl.gisexpert.cms.model.Invoice();
+		invoiceEntity.setInvoiceData(invoiceCopyRtfDocument);
+		invoiceEntity.setMimeType("application/rtf");
+		invoiceEntity.setSerialId(invoice.getInvoiceSerialId());
+		invoiceEntity.setDateCreated(new Date());
+		invoiceEntity.setOriginal(false);
+		invoiceEntity.setOrder(order);
 		invoiceRepository.create(invoiceEntity);
 		
 		return invoiceEntity;

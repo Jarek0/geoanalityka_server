@@ -1,37 +1,18 @@
-INSERT INTO addresses (city, flat_number, house_number, street, zipcode) VALUES ('Lublin', '', '1', 'Vetterów', '20-277');
-INSERT INTO companies (company_name, phone, tax_id, address_id) VALUES ('GIS-Expert Sp. z o.o.', '5435353534', '5435353534', 1);
-INSERT INTO addresses (city, flat_number, house_number, street, zipcode) VALUES ('Lublin', '', '1', 'Vetterów', '20-277');
-INSERT INTO companies (company_name, phone, tax_id, address_id) VALUES ('GIS-Expert Sp. z o.o.', '5435353534', '5435353534', 2);
-INSERT INTO addresses (city, flat_number, house_number, street, zipcode) VALUES ('Lublin', '', '1', 'Vetterów', '20-277');
-INSERT INTO companies (company_name, phone, tax_id, address_id) VALUES ('GIS-Expert Sp. z o.o.', '5435353534', '5435353534', 3);
-INSERT INTO addresses (city, flat_number, house_number, street, zipcode) VALUES ('Lublin', '', '1', 'Vetterów', '20-277');
-INSERT INTO companies (company_name, phone, tax_id, address_id) VALUES ('GIS-Expert Sp. z o.o.', '5435353534', '5435353534', 4);
-INSERT INTO addresses (city, flat_number, house_number, street, zipcode) VALUES ('Lublin', '', '1', 'Vetterów', '20-277');
-INSERT INTO companies (company_name, phone, tax_id, address_id) VALUES ('GIS-Expert Sp. z o.o.', '5435353534', '5435353534', 5);
-INSERT INTO addresses (city, flat_number, house_number, street, zipcode) VALUES ('Lublin', '', '1', 'Vetterów', '20-277');
-INSERT INTO companies (company_name, phone, tax_id, address_id) VALUES ('GIS-Expert Sp. z o.o.', '5435353534', '5435353534', 6);
-INSERT INTO addresses (city, flat_number, house_number, street, zipcode) VALUES ('Lublin', '', '1', 'Vetterów', '20-277');
-INSERT INTO companies (company_name, phone, tax_id, address_id) VALUES ('GIS-Expert Sp. z o.o.', '5435353534', '5435353534', 7);
+INSERT INTO addresses (id, city, flat_number, house_number, street, zipcode) VALUES (8, 'Lublin', '205', '1', 'Vetterów', '20-277');
+INSERT INTO addresses (id, city, flat_number, house_number, street, zipcode) VALUES (9, 'Lublin', '205', '1', 'Vetterów', '20-277');
 
-INSERT INTO accounts (confirmation_token, first_name, last_name, account_status, credits, date_registered, email_address, date_last_login, password, reset_pass_token_exp, reset_pass_token, username, company_id) VALUES (NULL, 'Jakub', 'Malec', 1, 5, '2016-06-14 10:23:01.13', 'jmalec@gis-expert.pl', NULL, '$shiro1$SHA-256$5$lrLKrXNW6wp5i6YnOcrDXA==$DhQ/QFPidtp3qJhlbgCnTes4k0E1Bl0g66v+0cS2Vto=', NULL, NULL, 'jmalec@gis-expert.pl', 1);
-INSERT INTO accounts (confirmation_token, first_name, last_name, account_status, credits, date_registered, email_address, date_last_login, password, reset_pass_token_exp, reset_pass_token, username, company_id) VALUES (NULL, 'Zaawansowany', 'Plan',  1, 5, '2016-06-14 10:23:01.13', 'plan@zaawansowany.xx', NULL, '$shiro1$SHA-256$5$lrLKrXNW6wp5i6YnOcrDXA==$DhQ/QFPidtp3qJhlbgCnTes4k0E1Bl0g66v+0cS2Vto=', NULL, NULL, 'plan@zaawansowany.xx', 2);
-INSERT INTO accounts (confirmation_token, first_name, last_name, account_status, credits, date_registered, email_address, date_last_login, password, reset_pass_token_exp, reset_pass_token, username, company_id) VALUES (NULL, 'Standardowy', 'Plan', 1, 5, '2016-06-14 10:23:01.13', 'plan@standardowy.xx', NULL, '$shiro1$SHA-256$5$lrLKrXNW6wp5i6YnOcrDXA==$DhQ/QFPidtp3qJhlbgCnTes4k0E1Bl0g66v+0cS2Vto=', NULL, NULL, 'plan@standardowy.xx', 3);
-INSERT INTO accounts (confirmation_token, first_name, last_name, account_status, credits, date_registered, email_address, date_last_login, password, reset_pass_token_exp, reset_pass_token, username, company_id) VALUES (NULL, 'Dedykowany', 'Plan', 1, 5, '2016-06-14 10:23:01.13', 'plan@dedykowany.xx', NULL, '$shiro1$SHA-256$5$lrLKrXNW6wp5i6YnOcrDXA==$DhQ/QFPidtp3qJhlbgCnTes4k0E1Bl0g66v+0cS2Vto=', NULL, NULL, 'plan@dedykowany.xx', 4);
-INSERT INTO accounts (confirmation_token, first_name, last_name, account_status, credits, date_registered, email_address, date_last_login, password, reset_pass_token_exp, reset_pass_token, username, company_id) VALUES (NULL, 'Testowy', 'Plan', 1, 5, '2016-06-14 10:23:01.13', 'plan@testowy.xx', NULL, '$shiro1$SHA-256$5$lrLKrXNW6wp5i6YnOcrDXA==$DhQ/QFPidtp3qJhlbgCnTes4k0E1Bl0g66v+0cS2Vto=', NULL, NULL, 'plan@testowy.xx', 5);
-INSERT INTO accounts (confirmation_token, first_name, last_name, account_status, credits, date_registered, email_address, date_last_login, password, reset_pass_token_exp, reset_pass_token, username, company_id) VALUES (NULL, 'Admin', ':D', 1, 5, '2016-06-14 10:23:01.13', 'a@dmin.xx', NULL, '$shiro1$SHA-256$5$lrLKrXNW6wp5i6YnOcrDXA==$DhQ/QFPidtp3qJhlbgCnTes4k0E1Bl0g66v+0cS2Vto=', NULL, NULL, 'a@dmin.xx', 6);
-INSERT INTO accounts (confirmation_token, first_name, last_name, account_status, credits, date_registered, email_address, date_last_login, password, reset_pass_token_exp, reset_pass_token, username, company_id) VALUES (NULL, 'Piotr', 'Kociuba', 1, 5, '2016-06-14 10:23:01.13', 'pkociuba@gis-expert.pl', NULL, '$shiro1$SHA-256$5$lrLKrXNW6wp5i6YnOcrDXA==$DhQ/QFPidtp3qJhlbgCnTes4k0E1Bl0g66v+0cS2Vto=', NULL, NULL, 'pkociuba@gis-expert.pl', 7);
+INSERT INTO companies (id, company_name, phone, tax_id, address_id) VALUES (8, 'Testowa', NULL, '3432432432', 9);
 
-INSERT INTO roles (name) VALUES ('Administrator');
-INSERT INTO roles (name) VALUES ('PLAN_STANDARDOWY');
-INSERT INTO roles (name) VALUES ('PLAN_ZAAWANSOWANY');
-INSERT INTO roles (name) VALUES ('PLAN_DEDYKOWANY');
-INSERT INTO roles (name) VALUES ('PLAN_TESTOWY');
+INSERT INTO accounts (account_type, id, confirmation_token, account_status, credits, date_registered, email_address, first_name, date_last_login, last_name, password, phone, queued_payment, reset_pass_token_exp, reset_pass_token, username, company_id, address_id) VALUES ('company', 2, NULL, 1, 500, '2016-09-07 09:25:30.481', 'qbns.spam@gmail.com', 'No', '2016-09-07 09:25:52.483', 'Name', '$shiro1$SHA-256$5$CaWENmyYL0yJHL4dT4Yzug==$wguom8QBra7+2SGWyKNDlOIvWNmg/l4qDRVITv5WqFI=', NULL, NULL, NULL, NULL, 'qbns.spam@gmail.com', 8, NULL);
+INSERT INTO accounts (account_type, id, confirmation_token, account_status, credits, date_registered, email_address, first_name, date_last_login, last_name, password, phone, queued_payment, reset_pass_token_exp, reset_pass_token, username, company_id, address_id) VALUES ('natural_person', 1, NULL, 1, 500, '2016-09-07 09:21:47.165', 'jmalec@gis-expert.pl', 'Jakub', '2016-09-07 09:26:28.665', 'Malec', '$shiro1$SHA-256$5$WeN9scyr77dkStAJk5s3pQ==$S7YhkIE5eUyJZ+VgYi2qHA+XDU2XY+zaehzkLJxKcSM=', '857443983', NULL, NULL, NULL, 'jmalec@gis-expert.pl', NULL, 8);
+
+
+INSERT INTO roles (id, name) VALUES (1, 'Administrator');
+INSERT INTO roles (id, name) VALUES (2, 'PLAN_STANDARDOWY');
+INSERT INTO roles (id, name) VALUES (3, 'PLAN_ZAAWANSOWANY');
+INSERT INTO roles (id, name) VALUES (4, 'PLAN_DEDYKOWANY');
+INSERT INTO roles (id, name) VALUES (5, 'PLAN_TESTOWY');
 
 INSERT INTO account_roles (username, role) VALUES ('jmalec@gis-expert.pl', 'Administrator');
-INSERT INTO account_roles (username, role) VALUES ('a@dmin.xx', 'Administrator');
-INSERT INTO account_roles (username, role) VALUES ('a@dmin.xx', 'PLAN_DEDYKOWANY');
-INSERT INTO account_roles (username, role) VALUES ('plan@zaawansowany.xx', 'PLAN_ZAAWANSOWANY');
-INSERT INTO account_roles (username, role) VALUES ('plan@standardowy.xx', 'PLAN_STANDARDOWY');
-INSERT INTO account_roles (username, role) VALUES ('plan@dedykowany.xx', 'PLAN_DEDYKOWANY');
-INSERT INTO account_roles (username, role) VALUES ('plan@testowy.xx', 'PLAN_TESTOWY');
-INSERT INTO account_roles (username, role) VALUES ('pkociuba@gis-expert.pl', 'Administrator');
+INSERT INTO account_roles (username, role) VALUES ('jmalec@gis-expert.pl', 'PLAN_DEDYKOWANY');
+INSERT INTO account_roles (username, role) VALUES ('qbns.spam@gmail.com', 'PLAN_DEDYKOWANY');
