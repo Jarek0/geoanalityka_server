@@ -51,10 +51,11 @@ public class BillingService {
 		return "GA/" + currentYear + "/" + (invoicesInCurrentYear + 1);
 	}
 
-	public Invoice getRtfInvoice(Order order) {
+	public Invoice getRtfInvoice(Order order, Boolean original) {
 		String queryString = "Invoice.getInvoiceByOrderAndType";
 		TypedQuery<Invoice> query = em.createNamedQuery(queryString, Invoice.class);
 		query.setParameter("order", order);
+		query.setParameter("original", original);
 		query.setParameter("mimeType", "application/rtf");
 		query.setMaxResults(1);
 

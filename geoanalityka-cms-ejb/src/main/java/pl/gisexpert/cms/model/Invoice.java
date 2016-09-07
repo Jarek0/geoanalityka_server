@@ -32,7 +32,7 @@ import javax.persistence.TemporalType;
 	    columns = {@ColumnResult(name="value")})
 	})
 @NamedQueries({
-	@NamedQuery(name = "Invoice.getInvoiceByOrderAndType", query = "SELECT invoice FROM Invoice invoice WHERE invoice.order = :order AND invoice.mimeType = :mimeType")
+	@NamedQuery(name = "Invoice.getInvoiceByOrderAndType", query = "SELECT invoice FROM Invoice invoice WHERE invoice.order = :order AND invoice.mimeType = :mimeType AND invoice.original = :original")
 })
 public class Invoice implements Serializable {
 
@@ -63,6 +63,9 @@ public class Invoice implements Serializable {
     inverseJoinColumns = {
         @JoinColumn(name = "order_id", referencedColumnName = "id")})
 	private Order order;
+	
+	@Column
+	private Boolean original;
 
 	public Long getId() {
 		return id;
@@ -111,5 +114,14 @@ public class Invoice implements Serializable {
 	public void setOrder(Order order) {
 		this.order = order;
 	}
+
+	public Boolean getOriginal() {
+		return original;
+	}
+
+	public void setOriginal(Boolean original) {
+		this.original = original;
+	}
+	
 	
 }
