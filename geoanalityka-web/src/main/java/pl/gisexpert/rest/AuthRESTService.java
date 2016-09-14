@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 
 import pl.gisexpert.cms.data.AccessTokenRepository;
 import pl.gisexpert.cms.data.AccountRepository;
+import pl.gisexpert.cms.data.AddressRepository;
 import pl.gisexpert.cms.data.CompanyRepository;
 import pl.gisexpert.cms.data.LoginAttemptRepository;
 import pl.gisexpert.cms.model.AccessToken;
@@ -55,15 +56,20 @@ import pl.gisexpert.cms.model.AccountConfirmation;
 import pl.gisexpert.cms.model.AccountStatus;
 import pl.gisexpert.cms.model.Address;
 import pl.gisexpert.cms.model.Company;
+import pl.gisexpert.cms.model.CompanyAccount;
 import pl.gisexpert.cms.model.LoginAttempt;
+import pl.gisexpert.cms.model.NaturalPersonAccount;
 import pl.gisexpert.cms.model.PremiumPlanType;
 import pl.gisexpert.cms.service.AccountService;
-import pl.gisexpert.cms.service.CompanyService;
 import pl.gisexpert.cms.service.LoginAttemptService;
 import pl.gisexpert.cms.service.PremiumPlanService;
+import pl.gisexpert.cms.visitor.AccountAddressVisitor;
+import pl.gisexpert.cms.visitor.DefaultAccountVisitor;
 import pl.gisexpert.rest.model.AccountInfo;
+import pl.gisexpert.rest.model.AddressForm;
 import pl.gisexpert.rest.model.BaseResponse;
-import pl.gisexpert.rest.model.CompanyInfo;
+import pl.gisexpert.rest.model.CompanyAddressForm;
+import pl.gisexpert.rest.model.ContactInfo;
 import pl.gisexpert.rest.model.GetTokenForm;
 import pl.gisexpert.rest.model.GetTokenResponse;
 import pl.gisexpert.rest.model.RegisterForm;
@@ -101,10 +107,13 @@ public class AuthRESTService {
 	private PremiumPlanService premiumPlanService;
 	
 	@Inject
-	private CompanyService companyService;
+	private CompanyRepository companyRepository;
 	
 	@Inject
-	private CompanyRepository companyRepository;
+	private AddressRepository addressRepository;
+	
+	@Inject
+	private AccountAddressVisitor addressVisitor;
 	
 	@Inject
 	@RESTI18n
@@ -118,8 +127,15 @@ public class AuthRESTService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response registerAccount(@Context HttpServletRequest request, RegisterForm formData) {
-
-		Account account = new Account();
+		
+		Account account;
+		if (!formData.getNaturalPerson()) {
+			account = new CompanyAccount();
+		}
+		else {
+			account = new NaturalPersonAccount();
+		}
+		
 		account.setUsername(formData.getEmail());
 		account.setPassword(account.hashPassword(formData.getPassword()));
 		account.setEmailAddress(formData.getEmail());
@@ -129,21 +145,41 @@ public class AuthRESTService {
 			account.setQueuedPayment(formData.getQueuedPayment());
 		}
 		
-		Address address = new Address();
+		final AddressForm addressForm = formData.getAddress();
+		final Address address = new Address();
 		
-		address.setCity(formData.getCompanyAddress().getCity());
-		address.setStreet(formData.getCompanyAddress().getStreet());
-		address.setHouseNumber(formData.getCompanyAddress().getBuildingNumber());
-		address.setFlatNumber(formData.getCompanyAddress().getFlatNumber());
-		address.setZipcode(formData.getCompanyAddress().getZipCode());
-		
-		Company company = new Company();
-		company.setCompanyName(formData.getCompanyAddress().getCompanyName());
-		company.setTaxId(formData.getCompanyAddress().getTaxId());
-		
-		company.setAddress(address);
-		companyRepository.create(company);
-		account.setCompany(company);
+		address.setCity(addressForm.getCity());
+		address.setStreet(addressForm.getStreet());
+		address.setHouseNumber(addressForm.getBuildingNumber());
+		address.setFlatNumber(addressForm.getFlatNumber());
+		address.setZipcode(addressForm.getZipCode());
+
+		if (!formData.getNaturalPerson()) {
+			final CompanyAddressForm companyData = (CompanyAddressForm) addressForm;
+
+			account.accept(new DefaultAccountVisitor(){
+				@Override
+				public void visit(CompanyAccount companyAccount) {
+					Company company = new Company();
+					company.setCompanyName(companyData.getCompanyName());
+					company.setTaxId(companyData.getTaxId());
+					company.setAddress(address);
+					companyRepository.create(company);
+					companyAccount.setCompany(company);
+				}
+			});			
+		}
+		else {
+			account.accept(new DefaultAccountVisitor() {
+				@Override
+				public void visit(NaturalPersonAccount naturalAccount) {
+					addressRepository.create(address);
+					naturalAccount.setAddress(address);
+					naturalAccount.setPhone(addressForm.getPhone());			
+				}
+			});
+				
+		}
 
 		account.setDateRegistered(new Date());
 		account.setAccountStatus(AccountStatus.UNCONFIRMED);
@@ -164,9 +200,9 @@ public class AuthRESTService {
 			return Response.status(Response.Status.BAD_REQUEST).entity(errorStatus).build();
 		}
 		
-		premiumPlanService.activatePlan(account, PremiumPlanType.PLAN_TESTOWY);
+		premiumPlanService.activatePlan(account, PremiumPlanType.PLAN_DEDYKOWANY);
 
-		String subject = "Geoanalityka - potwierdzenie rejestracji użytkownika";
+		String subject = "Geoanalizy - potwierdzenie rejestracji użytkownika";
 
 		MessageFormat formatter = new MessageFormat("");
 
@@ -377,7 +413,14 @@ public class AuthRESTService {
 		if (username == null) {
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
-		Account account = accountRepository.findByUsername(username, true);
+		log.debug("Getting account info for username: " + username);
+		Account account = accountRepository.findByUsername(username);
+		
+		if (account == null) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+		}
+		
+		account = accountRepository.fetchContactData(account);
 		
 		AccountInfo accountInfo = new AccountInfo(account, accountService.getRoles(account));
 		
@@ -394,9 +437,9 @@ public class AuthRESTService {
 	}
 	
 	@GET
-	@Path("/companyInfo")
+	@Path("/contactInfo")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getCompanyInfo() {
+	public Response getContactInfo() {
 
 		Subject currentUser = SecurityUtils.getSubject();
 		String username = (String) currentUser.getPrincipal();
@@ -404,25 +447,35 @@ public class AuthRESTService {
 		if (username == null) {
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
+		
 		Account account = accountRepository.findByUsername(username);
+		account = accountRepository.fetchContactData(account);
 		
-		Company company = companyService.findCompanyForAccount(account);
+		account.accept(addressVisitor);
 		
-		if (company == null) {
+		Address address = addressVisitor.getAddress();
+		Company company = addressVisitor.getCompany();
+		
+		ContactInfo contactInfo;
+		if (company != null) {
+			contactInfo = new ContactInfo(company);
+		}
+		else if (address != null) {
+			contactInfo = new ContactInfo(address);
+			contactInfo.setPhone(account.getPhone());
+		}
+		else {
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
 		
-		CompanyInfo companyInfo = new CompanyInfo(company);
-		
-
-		return Response.status(Response.Status.OK).entity(companyInfo).build();
+		return Response.status(Response.Status.OK).entity(contactInfo).build();
 	}
 	
 	@POST
-	@Path("/companyInfo")
+	@Path("/contactInfo")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response changeCompanyInfo(CompanyInfo companyInfo) {
+	public Response changeContactInfo(final ContactInfo contactInfo) {
 		
 		Subject currentUser = SecurityUtils.getSubject();
 		String username = (String) currentUser.getPrincipal();
@@ -432,22 +485,34 @@ public class AuthRESTService {
 		}
 		Account account = accountRepository.findByUsername(username);
 		
-		Company company = new Company();
-		company.setCompanyName(companyInfo.getCompanyName());
-		company.setTaxId(companyInfo.getTaxId());
-		company.setPhone(companyInfo.getPhone());
+		final Address address = new Address();
+		address.setCity(contactInfo.getCity());
+		address.setFlatNumber(contactInfo.getFlatNumber());
+		address.setHouseNumber(contactInfo.getHouseNumber());
+		address.setStreet(contactInfo.getStreet());
+		address.setZipcode(contactInfo.getZipcode());
 		
-		Address address = new Address();
-		address.setCity(companyInfo.getCity());
-		address.setFlatNumber(companyInfo.getFlatNumber());
-		address.setHouseNumber(companyInfo.getHouseNumber());
-		address.setStreet(companyInfo.getStreet());
-		address.setZipcode(companyInfo.getZipcode());
+		account.accept(new DefaultAccountVisitor() {
+			@Override
+			public void visit(CompanyAccount account) {
+				Company company = new Company();
+				company.setCompanyName(contactInfo.getCompanyName());
+				company.setTaxId(contactInfo.getTaxId());
+				company.setPhone(contactInfo.getPhone());
+				company.setAddress(address);
+				
+				companyRepository.create(company);
+				account.setCompany(company);
+			}
+			@Override
+			public void visit(NaturalPersonAccount account) {
+				
+				addressRepository.create(address);
+				account.setPhone(contactInfo.getPhone());
+				account.setAddress(address);
+			}
+		});
 		
-		company.setAddress(address);
-		
-		companyRepository.create(company);
-		account.setCompany(company);
 		accountRepository.edit(account);
 		
 		BaseResponse response = new BaseResponse();

@@ -3,7 +3,7 @@ package pl.gisexpert.rest.model;
 import pl.gisexpert.cms.model.Address;
 import pl.gisexpert.cms.model.Company;
 
-public class CompanyInfo {
+public class ContactInfo {
 	private String companyName;
 	private String taxId;
 	
@@ -14,11 +14,11 @@ public class CompanyInfo {
 	private String city;
 	private String phone;
 	
-	public CompanyInfo(){
+	public ContactInfo(){
 		
 	}
 	
-	public CompanyInfo(Company company) {
+	public ContactInfo(Company company) {
 		
 		companyName = company.getCompanyName();
 		taxId = company.getTaxId();
@@ -30,7 +30,14 @@ public class CompanyInfo {
 		flatNumber = address.getFlatNumber();
 		zipcode = address.getZipcode();
 		city = address.getCity();
-		
+	}
+	
+	public ContactInfo(Address address) {
+		street = address.getStreet();
+		houseNumber = address.getHouseNumber();
+		flatNumber = address.getFlatNumber();
+		zipcode = address.getZipcode();
+		city = address.getCity();
 	}
 
 	public String getCompanyName() {

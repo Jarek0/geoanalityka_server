@@ -45,9 +45,8 @@ public class AccountService {
     	
     	List<Role> accountRoles = query.getResultList();
     	return accountRoles;
-    	
     }
-
+   
     @Transactional
     public void setRoles(Account account, List<Role> roles) {
     	account.setRoles(roles);

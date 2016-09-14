@@ -7,9 +7,10 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
 import pl.gisexpert.cms.model.Account;
-import pl.gisexpert.cms.model.Address;
 import pl.gisexpert.cms.model.Company;
+import pl.gisexpert.cms.model.CompanyAccount;
 import pl.gisexpert.cms.model.Role;
+import pl.gisexpert.cms.visitor.DefaultAccountVisitor;
 
 public class AccountInfo {
 	private String username;
@@ -22,6 +23,7 @@ public class AccountInfo {
 	private Date tokenExpires;
 	private String accessToken;
 	private Double queuedPayment;
+	private String accountType;
 	private List<String> roles;
 	
 	public AccountInfo(){
@@ -37,9 +39,15 @@ public class AccountInfo {
 		queuedPayment = account.getQueuedPayment();
 		firstName = account.getFirstName();
 		lastName = account.getLastName();
+		accountType = account.getDiscriminatorValue();
 		
-		Company company = account.getCompany();		
-		companyName = company.getCompanyName();
+		account.accept(new DefaultAccountVisitor() {
+			@Override
+			public void visit(CompanyAccount account) {
+				Company company = account.getCompany();		
+				companyName = company.getCompanyName();
+			}
+		});
 	
 		this.roles = Lists.transform(roles, new Function<Role, String>(){
 			@Override
@@ -117,5 +125,13 @@ public class AccountInfo {
 	public void setRoles(List<String> roles) {
 		this.roles = roles;
 	}
-	
+
+	public String getAccountType() {
+		return accountType;
+	}
+
+	public void setAccountType(String accountType) {
+		this.accountType = accountType;
+	}
+
 }

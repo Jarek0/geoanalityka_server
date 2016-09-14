@@ -3,13 +3,11 @@ package pl.gisexpert.cms.data;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
-import pl.gisexpert.cms.model.Account;
 import pl.gisexpert.cms.model.Role;
 import pl.gisexpert.cms.qualifier.CMSEntityManager;
 

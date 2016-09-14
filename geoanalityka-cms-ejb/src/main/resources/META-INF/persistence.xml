@@ -9,11 +9,14 @@
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
 		<jta-data-source>java:/geoanalitykaDS</jta-data-source>
 		<class>pl.gisexpert.cms.model.Account</class>
+		<class>pl.gisexpert.cms.model.CompanyAccount</class>
+		<class>pl.gisexpert.cms.model.NaturalPersonAccount</class>
 		<class>pl.gisexpert.cms.model.Address</class>
 		<class>pl.gisexpert.cms.model.AccessToken</class>
 		<class>pl.gisexpert.cms.model.Company</class>
 		<class>pl.gisexpert.cms.model.LoginAttempt</class>
 		<class>pl.gisexpert.cms.model.Order</class>
+		<class>pl.gisexpert.cms.model.Invoice</class>
 		<class>pl.gisexpert.cms.model.Role</class>
 		<class>pl.gisexpert.cms.model.ResetPassword</class>
 		<class>pl.gisexpert.cms.model.AccountConfirmation</class>
@@ -32,8 +35,6 @@
 				value="none"/> <property name="hibernate.archive.autodetection" value="class"/> 
 				<property name="hibernate.hbm2ddl.auto" value="" /> -->
 			<property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect" />
-			<property name="hibernate.show_sql" value="true" />
-
 		</properties>
 	</persistence-unit>
 

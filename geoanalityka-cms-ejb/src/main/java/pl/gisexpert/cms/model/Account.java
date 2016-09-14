@@ -8,6 +8,9 @@ import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.ColumnResult;
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.DiscriminatorType;
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -21,20 +24,22 @@ import javax.persistence.ManyToMany;
 import javax.persistence.NamedNativeQueries;
 import javax.persistence.NamedNativeQuery;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.SqlResultSetMapping;
 import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.apache.shiro.crypto.SecureRandomNumberGenerator;
 import org.apache.shiro.crypto.hash.DefaultHashService;
-import org.hibernate.envers.AuditJoinTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.validator.constraints.Email;
+
+import pl.gisexpert.cms.visitor.AccountVisitor;
+import pl.gisexpert.cms.visitor.VisitableAccount;
 
 @Entity
 @Table(name = "accounts", indexes = { @Index(name = "username_index", columnList = "username", unique = true) })
@@ -44,7 +49,8 @@ import org.hibernate.validator.constraints.Email;
 		@NamedNativeQuery(name = "Account.removeRole", query = "DELETE FROM account_roles WHERE username = ? AND role = ?"),
 		@NamedNativeQuery(name = "Account.getRoles", query = "SELECT roles.* FROM roles, account_roles WHERE account_roles.username = :username AND roles.name = account_roles.role", resultClass = Role.class),
 		@NamedNativeQuery(name = "Account.hasRole", query = "SELECT COUNT(*) as items_count FROM account_roles WHERE username = :username AND role = :role", resultSetMapping = "Account.sumMapping") })
-public class Account implements Serializable {
+@DiscriminatorColumn(name = "account_type", discriminatorType = DiscriminatorType.STRING)
+public class Account implements Serializable, VisitableAccount {
 
 	private static final long serialVersionUID = 1033705321916453635L;
 
@@ -70,6 +76,9 @@ public class Account implements Serializable {
 	@NotNull
 	@Size(min = 1, max = 30)
 	private String lastName;
+	
+	@Column(length = 18)
+	private String phone;
 
 	@Audited
 	@ManyToMany
@@ -97,15 +106,10 @@ public class Account implements Serializable {
 
 	@Column(nullable = false)
 	private Double credits = 100.0;
+	private Double credits = 500.0;
 
 	@Column(name = "queued_payment")
 	private Double queuedPayment;
-	
-	@Audited
-	@AuditJoinTable(name = "account_companies_aud")
-	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "company_id")
-	private Company company;
 
 	@Embedded
 	private ResetPassword resetPassword;
@@ -258,12 +262,19 @@ public class Account implements Serializable {
 		this.lastName = lastName;
 	}
 
-	public Company getCompany() {
-		return company;
+	public String getPhone() {
+		return phone;
 	}
 
-	public void setCompany(Company company) {
-		this.company = company;
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+	
+	@Transient
+	public String getDiscriminatorValue(){
+	    DiscriminatorValue val = this.getClass().getAnnotation( DiscriminatorValue.class );
+
+	    return val == null ? null : val.value();
 	}
 
 	@Override
@@ -291,6 +302,11 @@ public class Account implements Serializable {
 	@Override
 	public String toString() {
 		return "pl.gisexpert.ejb.entity.Account[ username=" + username + " ]";
+	}
+
+	@Override
+	public void accept(AccountVisitor visitor) {
+		visitor.visit(this);		
 	}
 
 }

@@ -31,9 +31,6 @@ public class Company implements Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column
-	private String phone;
-
 	@Column(name = "company_name", nullable = false, length = 100)
 	private String companyName;
 
@@ -46,15 +43,10 @@ public class Company implements Serializable {
 
 	@NotAudited
 	@OneToOne(fetch = FetchType.EAGER, mappedBy = "company")
-	private Account account;
-
-	public String getPhone() {
-		return phone;
-	}
-
-	public void setPhone(String phone) {
-		this.phone = phone;
-	}
+	private CompanyAccount account;
+	
+	@Column(length = 20)
+	private String phone;
 
 	public String getCompanyName() {
 		return companyName;
@@ -88,12 +80,19 @@ public class Company implements Serializable {
 		this.id = id;
 	}
 
-	public Account getAccount() {
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+	public CompanyAccount getAccount() {
 		return account;
 	}
 
-	public void setAccount(Account account) {
+	public void setAccount(CompanyAccount account) {
 		this.account = account;
 	}
-
 }

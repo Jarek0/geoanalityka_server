@@ -271,7 +271,7 @@ public class DemographicAnalysisRESTService {
 
 		Subject currentUser = SecurityUtils.getSubject();
 		String username = (String) currentUser.getPrincipal();
-		Account account = accountRepository.findByUsername(username, true);
+		Account account = accountRepository.findByUsername(username);
 
 		List<DemographicAnalysis> accountAnalyses = analysisRepository.findMostRecentRangeForAccount(account, begin, end);
 
