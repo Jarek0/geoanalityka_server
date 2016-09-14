@@ -54,7 +54,7 @@ public class Account implements Serializable {
 
 	@Column(nullable = false, length = 80)
 	@NotNull
-	@Size(min = 1, max = 30)
+	@Size(min = 1, max = 80)
 	private String username;
 
 	@Column(nullable = false, length = 102)
@@ -96,7 +96,7 @@ public class Account implements Serializable {
 	private AccountStatus accountStatus;
 
 	@Column(nullable = false)
-	private Double credits = 5.0;
+	private Double credits = 100.0;
 
 	@Column(name = "queued_payment")
 	private Double queuedPayment;

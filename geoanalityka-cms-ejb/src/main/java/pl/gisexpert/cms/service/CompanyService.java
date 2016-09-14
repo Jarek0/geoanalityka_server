@@ -21,7 +21,7 @@ public class CompanyService {
 		String queryString = "SELECT account.company FROM Account account WHERE account = :account";
 		TypedQuery<Company> query = em.createQuery(queryString, Company.class);
 		query.setParameter("account", account);
- 
+
     	try {
     		Company company = query.getSingleResult();
     		return company;

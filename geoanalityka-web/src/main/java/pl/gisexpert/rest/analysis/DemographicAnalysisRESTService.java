@@ -16,21 +16,12 @@
  */
 package pl.gisexpert.rest.analysis;
 
+import java.lang.annotation.Annotation;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.UUID;
+import java.util.*;
 
 import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -49,10 +40,7 @@ import pl.gisexpert.cms.model.analysis.demographic.SimpleDemographicAnalysis;
 import pl.gisexpert.cms.service.AccountService;
 import pl.gisexpert.cms.service.AnalysisService;
 import pl.gisexpert.rest.model.BaseResponse;
-import pl.gisexpert.rest.model.analysis.AdvancedDemographicAnalysisDetails;
-import pl.gisexpert.rest.model.analysis.AnalysisHashResponse;
-import pl.gisexpert.rest.model.analysis.DemographicAnalysisDetails;
-import pl.gisexpert.rest.model.analysis.SimpleDemographicAnalysisDetails;
+import pl.gisexpert.rest.model.analysis.*;
 import pl.gisexpert.rest.model.analysis.demographic.SumAllInRadiusForm;
 import pl.gisexpert.rest.model.analysis.demographic.SumRangeInRadiusForm;
 import pl.gisexpert.rest.util.producer.qualifier.RESTI18n;
@@ -79,10 +67,12 @@ public class DemographicAnalysisRESTService {
 
 	@Inject
 	private AnalysisCostCalculator analysisCostCalculator;
-	
+
 	@Inject
 	@RESTI18n
 	private ResourceBundle i18n;
+
+
 	
 	private final int MIN_VALID_POPULATION = 50;
 
@@ -274,7 +264,7 @@ public class DemographicAnalysisRESTService {
 		return Response.status(Response.Status.OK).entity(response).build();
 	}
 
-	@GET
+	/*@GET
 	@Path("/recent/{begin}/{end}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getRecentAnalyses(@PathParam("begin") Integer begin, @PathParam("end") Integer end) {
@@ -284,7 +274,8 @@ public class DemographicAnalysisRESTService {
 		Account account = accountRepository.findByUsername(username, true);
 
 		List<DemographicAnalysis> accountAnalyses = analysisRepository.findMostRecentRangeForAccount(account, begin, end);
-		
+
+
 		List<DemographicAnalysisDetails> analysesDetailsList = new ArrayList<>();
 		
 		for (DemographicAnalysis analysis : accountAnalyses) {
@@ -292,6 +283,41 @@ public class DemographicAnalysisRESTService {
 		}
 
 		return Response.status(Response.Status.OK).entity(analysesDetailsList).build();
+	}*/
+
+	@GET
+	@Path("/recent/{begin}/{end}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getRecentAnalysesByType(@PathParam("begin") Integer begin, @PathParam("end") Integer end, @QueryParam("cp") Integer page, @QueryParam("ps") Integer pageSize, @QueryParam("ordBy") String orderBy, @QueryParam("type") List<String> type){
+
+		Subject currentUser = SecurityUtils.getSubject();
+		String username = (String) currentUser.getPrincipal();
+		Account account = accountRepository.findByUsername(username, true);
+		List<DemographicAnalysis> accountAnalyses;
+		PaginatedAnalysesDetailList paginatedAnalysesDetailList = new PaginatedAnalysesDetailList();
+
+
+		if(type.size()>0) {
+			accountAnalyses = analysisRepository.findMostRecentRangeAndTypeForAccount(account, begin, end, orderBy, getAnalysisClassType(type));
+			paginatedAnalysesDetailList.setNumberOfPages((int) Math.ceil(accountAnalyses.size()/(double)pageSize));
+			paginatedAnalysesDetailList.setPageSize(pageSize);
+			paginatedAnalysesDetailList.setNumberOfAnalyses(accountAnalyses.size());
+			begin = (page - 1) * pageSize;
+			end = begin + pageSize;
+			accountAnalyses = analysisRepository.findMostRecentRangeAndTypeForAccount(account, begin, end, orderBy,  getAnalysisClassType(type));
+		}
+		else
+			accountAnalyses = analysisRepository.findMostRecentRangeForAccount(account, begin, end);
+
+		List<DemographicAnalysisDetails> analysesDetailsList = new ArrayList<>();
+
+		for (DemographicAnalysis analysis : accountAnalyses) {
+			analysesDetailsList.add(new DemographicAnalysisDetails(analysis));
+		}
+
+		paginatedAnalysesDetailList.setAnalysesDetailsList(analysesDetailsList);
+
+		return Response.status(Response.Status.OK).entity(paginatedAnalysesDetailList).build();
 	}
 
 	@GET
@@ -318,6 +344,64 @@ public class DemographicAnalysisRESTService {
 			response.setResponseStatus(Response.Status.NOT_FOUND);
 			return Response.status(Response.Status.NOT_FOUND).entity(response).build();
 		}
+	}
+
+	@GET
+	@Path("/recent/clearRecentHistory")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response clearRecentHistory(@QueryParam("hashes") List<String> hash){
+
+		Subject currentUser = SecurityUtils.getSubject();
+		String username = (String) currentUser.getPrincipal();
+		Account account = accountRepository.findByUsername(username, true);
+
+		analysisRepository.setDeletedStatusForRecentsByHashesForAccount(account, hash);
+
+		BaseResponse response = new BaseResponse();
+		response.setResponseStatus(Response.Status.OK);
+		response.setMessage("Wyczyszczono historię pomyślnie");
+
+		return Response.status(Response.Status.OK).entity(response).build();
+	}
+
+	@GET
+	@Path("/new_analysis_name")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response updateAnalysisName(@QueryParam("name") String name,@QueryParam("hash") String hash){
+
+		Subject currentUser = SecurityUtils.getSubject();
+		String username = (String) currentUser.getPrincipal();
+		Account account = accountRepository.findByUsername(username, true);
+
+		if( name == null || name.length()==0)
+		{
+			name = "Bez nazwy";
+		}
+		analysisRepository.updateAnalysisNameForAccount(account, name, hash);
+
+		BaseResponse response = new BaseResponse();
+		response.setResponseStatus(Response.Status.OK);
+		response.setMessage("Nazwa została poprawnie zmieniona");
+
+		return Response.status(Response.Status.OK).entity(response).build();
+	}
+
+	private List<Class> getAnalysisClassType(List<String> types) {
+
+		List<Class> analysisTypes = new ArrayList<>();
+
+		for (String type: types) {
+			switch (type) {
+				case "SimpleDemographicAnalysis":
+					analysisTypes.add(SimpleDemographicAnalysis.class);
+					break;
+				case "AdvancedDemographicAnalysis":
+					analysisTypes.add(AdvancedDemographicAnalysis.class);
+					break;
+			}
+		}
+
+		return analysisTypes;
 	}
 	
 	public boolean isPopulationHighEnough(int population) {

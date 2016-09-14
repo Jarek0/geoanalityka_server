@@ -123,7 +123,7 @@ public class ResetPasswordController implements Serializable {
 
 		DefaultPasswordService passwordService = new DefaultPasswordService();
 		DefaultHashService dhs = new DefaultHashService();
-		dhs.setHashIterations(100000);
+		dhs.setHashIterations(5);
 		dhs.setHashAlgorithmName("SHA-256");
 		passwordService.setHashService(dhs);
 

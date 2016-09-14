@@ -15,10 +15,10 @@ import org.hibernate.annotations.Immutable;
 
 @Entity
 @Immutable
-@Table(name = "stat2015_stan_na_30_05_2016")
+@Table(name = "dane2015")
 @NamedNativeQueries({
-	@NamedNativeQuery(name="AddressStat.SumAllInRadius", query="SELECT sum(liczbaosobzamwlokalach)\\:\\:int FROM stat2015_stan_na_30_05_2016 "
-			+ "WHERE ST_Within(geom,ST_Buffer(ST_Transform(ST_GeomFromText('POINT(' || :x || ' ' || :y || ')', :epsg), 2180), :radius))")
+	@NamedNativeQuery(name="AddressStat.SumAllInRadius", query="SELECT sum(liczbaosobzamwlokalach)\\:\\:int FROM dane2015 "
+			+ "WHERE ST_Within(geom,ST_Buffer(ST_Transform(ST_GeomFromText('POINT(' || :x || ' ' || :y || ')', :epsg), 3857), :radius))")
 })
 public class AddressStat implements Serializable {
 
