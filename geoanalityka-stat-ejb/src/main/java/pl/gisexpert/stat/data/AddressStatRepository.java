@@ -88,7 +88,7 @@ public class AddressStatRepository extends AbstractRepository<AddressStat> {
 		String columnSumsStr = Joiner.on(",").join(columnSumsArray);
 
 		String queryString = "SELECT " + columnSumsStr
-				+ " FROM dane2015 WHERE ST_Within(geom,ST_Buffer(ST_Transform(ST_GeomFromText('POINT(' || :x || ' ' || :y || ')', :epsg), 3857), :radius))";
+				+ " FROM stat2015_stan_na_30_05_2016 WHERE ST_Within(geom,ST_Buffer(ST_Transform(ST_GeomFromText('POINT(' || :x || ' ' || :y || ')', :epsg), 2180), :radius))";
 
 		Query query = em.createNativeQuery(queryString);
 

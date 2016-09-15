@@ -106,7 +106,6 @@ public class Account implements Serializable, VisitableAccount {
 
 	@Column(nullable = false)
 	private Double credits = 100.0;
-	private Double credits = 500.0;
 
 	@Column(name = "queued_payment")
 	private Double queuedPayment;

@@ -292,7 +292,7 @@ public class DemographicAnalysisRESTService {
 
 		Subject currentUser = SecurityUtils.getSubject();
 		String username = (String) currentUser.getPrincipal();
-		Account account = accountRepository.findByUsername(username, true);
+		Account account = accountRepository.findByUsername(username);
 		List<DemographicAnalysis> accountAnalyses;
 		PaginatedAnalysesDetailList paginatedAnalysesDetailList = new PaginatedAnalysesDetailList();
 
@@ -353,7 +353,7 @@ public class DemographicAnalysisRESTService {
 
 		Subject currentUser = SecurityUtils.getSubject();
 		String username = (String) currentUser.getPrincipal();
-		Account account = accountRepository.findByUsername(username, true);
+		Account account = accountRepository.findByUsername(username);
 
 		analysisRepository.setDeletedStatusForRecentsByHashesForAccount(account, hash);
 
@@ -371,7 +371,7 @@ public class DemographicAnalysisRESTService {
 
 		Subject currentUser = SecurityUtils.getSubject();
 		String username = (String) currentUser.getPrincipal();
-		Account account = accountRepository.findByUsername(username, true);
+		Account account = accountRepository.findByUsername(username);
 
 		if( name == null || name.length()==0)
 		{
