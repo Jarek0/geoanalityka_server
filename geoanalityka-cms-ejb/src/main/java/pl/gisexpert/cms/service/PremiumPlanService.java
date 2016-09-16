@@ -16,8 +16,7 @@
  */
 package pl.gisexpert.cms.service;
 
-import java.util.List;
-import java.util.List;
+import java.util.Set;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -26,7 +25,7 @@ import javax.transaction.Transactional;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import pl.gisexpert.cms.data.RoleRepository;
 import pl.gisexpert.cms.model.Account;
@@ -34,60 +33,56 @@ import pl.gisexpert.cms.model.PremiumPlanType;
 import pl.gisexpert.cms.model.Role;
 import pl.gisexpert.cms.qualifier.CMSEntityManager;
 
-
 // The @Stateless annotation eliminates the need for manual transaction demarcation
 @Stateless
 public class PremiumPlanService {
 
-    @Inject
-    @CMSEntityManager
-    private EntityManager em;
-    
-    @Inject
-    AccountService accountService;
-    
-    @Inject
-    RoleRepository roleRepository;
+	@Inject
+	@CMSEntityManager
+	private EntityManager em;
 
-    @Transactional
-    public void activatePlan(Account account, PremiumPlanType planType) {
-    	
-    	List<Role> accountRoles = accountService.getRoles(account);
-		List<Role> newRoles = Lists.newArrayList(Iterables.filter(accountRoles,new Predicate<Role>() {
+	@Inject
+	AccountService accountService;
+
+	@Inject
+	RoleRepository roleRepository;
+
+	@Transactional
+	public void activatePlan(Account account, PremiumPlanType planType) {
+		
+		account = em.getReference(account.getClass(), account.getId());
+		Set<Role> accountRoles = account.getRoles();
+		Set<Role> newRoles = Sets.newHashSet(Iterables.filter(accountRoles, new Predicate<Role>() {
 			@Override
 			public boolean apply(Role input) {
-				return !(input.getName().equals("PLAN_STANDARDOWY") ||
-						input.getName().equals("PLAN_ZAAWANSOWANY") ||
-						input.getName().equals("PLAN_DEDYKOWANY") ||
-						input.getName().equals("PLAN_TESTOWY"));
+				return !(input.getName().equals("PLAN_STANDARDOWY") || input.getName().equals("PLAN_ZAAWANSOWANY")
+						|| input.getName().equals("PLAN_DEDYKOWANY") || input.getName().equals("PLAN_TESTOWY"));
 			}
 		}));
-		
+
 		Role newPlanTypeRole = roleRepository.findByName(planType.toString());
 		newRoles.add(newPlanTypeRole);
 		
-    	account.setRoles(newRoles);
-    	em.merge(account);
-    }
-    
-    @Transactional
-    public PremiumPlanType getActivePlan(Account account) {
-    	List<Role> roles = account.getRoles();
-    	List<Role> planRoles = Lists.newArrayList(Iterables.filter(roles,new Predicate<Role>() {
+		account.setRoles(newRoles);
+		em.merge(account);
+	}
+
+	@Transactional
+	public PremiumPlanType getActivePlan(Account account) {
+		Set<Role> roles = account.getRoles();
+		Set<Role> planRoles = Sets.newHashSet(Iterables.filter(roles, new Predicate<Role>() {
 			@Override
 			public boolean apply(Role input) {
-				return (input.getName().equals("PLAN_STANDARDOWY") ||
-						input.getName().equals("PLAN_ZAAWANSOWANY") ||
-						input.getName().equals("PLAN_DEDYKOWANY") ||
-						input.getName().equals("PLAN_TESTOWY"));
+				return (input.getName().equals("PLAN_STANDARDOWY") || input.getName().equals("PLAN_ZAAWANSOWANY")
+						|| input.getName().equals("PLAN_DEDYKOWANY") || input.getName().equals("PLAN_TESTOWY"));
 			}
 		}));
-    	
-    	if (planRoles.size() > 0) {
-    		return PremiumPlanType.valueOf(planRoles.get(0).getName());
-    	}
-    	
-    	return null;
-    }
-    
+
+		if (planRoles.size() > 0) {
+			return PremiumPlanType.valueOf(planRoles.iterator().next().getName());
+		}
+
+		return null;
+	}
+
 }

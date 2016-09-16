@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -81,12 +82,12 @@ public class Account implements Serializable, VisitableAccount {
 	private String phone;
 
 	@Audited
-	@ManyToMany
+	@ManyToMany(cascade = CascadeType.ALL)
 	@JoinTable(name = "account_roles", joinColumns = {
 			@JoinColumn(name = "username", referencedColumnName = "username") }, inverseJoinColumns = {
 					@JoinColumn(name = "role", referencedColumnName = "name") }, indexes = {
 							@Index(name = "role_username_index", columnList = "username", unique = false) })
-	private List<Role> roles;
+	private Set<Role> roles;
 
 	@Email
 	@Column(name = "email_address", nullable = false, length = 80)
@@ -157,11 +158,11 @@ public class Account implements Serializable, VisitableAccount {
 		this.password = password;
 	}
 
-	public List<Role> getRoles() {
+	public Set<Role> getRoles() {
 		return roles;
 	}
 
-	public void setRoles(List<Role> roles) {
+	public void setRoles(Set<Role> roles) {
 		this.roles = roles;
 	}
 

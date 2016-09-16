@@ -16,13 +16,17 @@
  */
 package pl.gisexpert.cms.service;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
+
+import org.hibernate.Hibernate;
+import org.slf4j.Logger;
 
 import pl.gisexpert.cms.model.Account;
 import pl.gisexpert.cms.model.Role;
@@ -37,18 +41,22 @@ public class AccountService {
     @CMSEntityManager
     private EntityManager em;
     
+    @Inject
+    private Logger log;
+    
     @Transactional
-    public List<Role> getRoles(Account account) {
+    public Set<Role> getRoles(Account account) {
     	
     	TypedQuery<Role> query = em.createNamedQuery("Account.getRoles", Role.class);
     	query.setParameter("username", account.getUsername());
     	
-    	List<Role> accountRoles = query.getResultList();
+    	Set<Role> accountRoles = new HashSet<>(query.getResultList());
     	return accountRoles;
     }
    
-    @Transactional
-    public void setRoles(Account account, List<Role> roles) {
+    public void setRoles(Account account, Set<Role> roles) {
+    	
+    	account = em.getReference(account.getClass(), account.getId());
     	account.setRoles(roles);
     	em.merge(account);
     }

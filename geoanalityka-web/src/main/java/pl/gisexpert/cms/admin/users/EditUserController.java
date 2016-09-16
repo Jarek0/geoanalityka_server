@@ -1,7 +1,9 @@
 package pl.gisexpert.cms.admin.users;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -40,12 +42,12 @@ public class EditUserController implements Serializable {
 
     public void init(){
         
-        List<Role> rolesSource = roleRepository.findAll();        
-        List<Role> rolesTarget = accountService.getRoles(account);
+        Set<Role> rolesSource = new HashSet<>(roleRepository.findAll());        
+        Set<Role> rolesTarget = accountService.getRoles(account);
 
         rolesSource.removeAll(rolesTarget);
         
-        roles = new DualListModel<>(rolesSource, rolesTarget);
+        roles = new DualListModel<>(new ArrayList<>(rolesSource), new ArrayList<>(rolesTarget));
         
         newEmail = account.getEmailAddress();
         
@@ -67,9 +69,9 @@ public class EditUserController implements Serializable {
         if (!newEmail.equals(account.getEmailAddress())){
             account.setEmailAddress(newEmail);
         }
-       
-        accountService.setRoles(account, roles.getTarget());
-        
+      
+        accountService.setRoles(account, new HashSet<>(roles.getTarget()));
+    
         FacesMessage msg = new FacesMessage();
         msg.setSeverity(FacesMessage.SEVERITY_INFO);
         msg.setSummary("Parametry konta zostały zaktualizowane.");
