@@ -51,6 +51,9 @@ public class Order implements Serializable {
 
 	@Column(length = 32)
 	private String payuOrderId;
+	
+	@Column(length = 1000)
+	private String payuPaymentUrl;
 
 	@Column
 	private OrderStatus status;
@@ -120,6 +123,14 @@ public class Order implements Serializable {
 
 	public void setOrderType(OrderType orderType) {
 		this.orderType = orderType;
+	}
+
+	public String getPayuPaymentUrl() {
+		return payuPaymentUrl;
+	}
+
+	public void setPayuPaymentUrl(String payuPaymentUrl) {
+		this.payuPaymentUrl = payuPaymentUrl;
 	}
 
 	public List<Invoice> getInvoices() {
