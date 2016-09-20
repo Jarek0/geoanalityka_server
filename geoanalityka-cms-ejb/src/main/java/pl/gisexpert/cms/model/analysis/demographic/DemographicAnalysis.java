@@ -43,6 +43,9 @@ public class DemographicAnalysis extends Analysis implements Serializable {
 
 	@Column
 	private String locationDisplayName;
+	
+	@Column
+	private Integer inhabitedPremises;
 
 	public Long getId() {
 		return id;
@@ -75,5 +78,14 @@ public class DemographicAnalysis extends Analysis implements Serializable {
 	public void setLocationDisplayName(String locationDisplayName) {
 		this.locationDisplayName = locationDisplayName;
 	}
+
+	public Integer getInhabitedPremises() {
+		return inhabitedPremises;
+	}
+
+	public void setInhabitedPremises(Integer inhabitedPremises) {
+		this.inhabitedPremises = inhabitedPremises;
+	}
+	
 
 }

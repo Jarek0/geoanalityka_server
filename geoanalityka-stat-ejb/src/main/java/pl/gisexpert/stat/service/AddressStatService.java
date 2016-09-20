@@ -1,4 +1,4 @@
-package pl.gisexpert.stat.data;
+package pl.gisexpert.stat.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,23 +13,19 @@ import javax.persistence.Query;
 import com.google.common.base.Joiner;
 
 import pl.gisexpert.model.gis.Coordinate;
+import pl.gisexpert.stat.data.AbstractRepository;
 import pl.gisexpert.stat.model.AddressStat;
 import pl.gisexpert.stat.qualifier.StatEntityManager;
 
 @ApplicationScoped
-public class AddressStatRepository extends AbstractRepository<AddressStat> {
+public class AddressStatService {
 
 	@Inject
 	@StatEntityManager
 	private EntityManager em;
 
-	@Override
 	protected EntityManager getEntityManager() {
 		return em;
-	}
-
-	public AddressStatRepository() {
-		super(AddressStat.class);
 	}
 
 	/**
@@ -45,6 +41,19 @@ public class AddressStatRepository extends AbstractRepository<AddressStat> {
 		query.setParameter("epsg", point.getEpsgCode());
 		query.setParameter("radius", radius);
 
+		Integer result = (Integer) query.getSingleResult();
+		result = result == null ? 0 : result;
+
+		return result;
+	}
+	
+	public Integer sumAllPremisesInRadius(Integer radius, Coordinate point) {
+		Query query = em.createNamedQuery("AddressStat.SumAllPremisesInRadius");
+		query.setParameter("x", point.getX());
+		query.setParameter("y", point.getY());
+		query.setParameter("epsg", point.getEpsgCode());
+		query.setParameter("radius", radius);
+		
 		Integer result = (Integer) query.getSingleResult();
 		result = result == null ? 0 : result;
 

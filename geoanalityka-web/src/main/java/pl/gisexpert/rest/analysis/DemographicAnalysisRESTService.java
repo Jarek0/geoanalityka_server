@@ -57,13 +57,13 @@ import pl.gisexpert.rest.model.analysis.demographic.SumAllInRadiusForm;
 import pl.gisexpert.rest.model.analysis.demographic.SumRangeInRadiusForm;
 import pl.gisexpert.rest.util.producer.qualifier.RESTI18n;
 import pl.gisexpert.service.AnalysisCostCalculator;
-import pl.gisexpert.stat.data.AddressStatRepository;
+import pl.gisexpert.stat.service.AddressStatService;
 
 @Path("/analysis/demographic")
 public class DemographicAnalysisRESTService {
 
 	@Inject
-	private AddressStatRepository addressStatRepository;
+	private AddressStatService addressStatRepository;
 
 	@Inject
 	private AccountRepository accountRepository;
@@ -124,10 +124,12 @@ public class DemographicAnalysisRESTService {
 			return Response.status(Response.Status.UNAUTHORIZED).entity(response).build();
 		}
 
-		Integer sum = addressStatRepository.sumAllInRadius(sumAllInRadiusForm.getRadius(),
+		Integer totalPopulation = addressStatRepository.sumAllInRadius(sumAllInRadiusForm.getRadius(),
+				sumAllInRadiusForm.getPoint());
+		Integer inhabitedPremises = addressStatRepository.sumAllPremisesInRadius(sumAllInRadiusForm.getRadius(),
 				sumAllInRadiusForm.getPoint());
 		
-		if (!isPopulationHighEnough(sum)) {
+		if (!isPopulationHighEnough(totalPopulation)) {
 			BaseResponse response = new BaseResponse();
 			response.setResponseStatus(Response.Status.NOT_FOUND);
 			
@@ -140,7 +142,8 @@ public class DemographicAnalysisRESTService {
 			return Response.status(Response.Status.NOT_FOUND).entity(response).build();
 		}
 
-		analysis.setPopulation(sum);
+		analysis.setPopulation(totalPopulation);
+		analysis.setInhabitedPremises(inhabitedPremises);
 
 		analysis.setDateFinished(new Date());
 		analysis.setStatus(AnalysisStatus.FINISHED);
@@ -217,8 +220,13 @@ public class DemographicAnalysisRESTService {
 			
 			return Response.status(Response.Status.NOT_FOUND).entity(response).build();
 		}
-
+	
 		analysis.setKobietyAndMezczyzniByAgeRanges(kobietyAndMezczyzniByAgeRanges);
+		
+		Integer inhabitedPremises = addressStatRepository.sumAllPremisesInRadius(sumRangeInRadiusForm.getRadius(),
+				sumRangeInRadiusForm.getPoint());
+		
+		analysis.setInhabitedPremises(inhabitedPremises);
 
 		analysis.setDateFinished(new Date());
 		analysis.setStatus(AnalysisStatus.FINISHED);

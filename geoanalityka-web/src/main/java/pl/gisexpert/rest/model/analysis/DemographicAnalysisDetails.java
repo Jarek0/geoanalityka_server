@@ -16,6 +16,7 @@ public class DemographicAnalysisDetails {
 	private Coordinate location;
 	private String locationDisplayName;
 	private String type;
+	private Integer inhabitedPremises;
 
 	public DemographicAnalysisDetails(DemographicAnalysis analysis) {
 		this.dateStarted = analysis.getDateStarted();
@@ -27,6 +28,7 @@ public class DemographicAnalysisDetails {
 		this.location = analysis.getLocation();
 		this.locationDisplayName = analysis.getLocationDisplayName();
 		this.type = analysis.getClass().getSimpleName();
+		this.inhabitedPremises = analysis.getInhabitedPremises();
 	}
 
 	public Date getDateStarted() {
@@ -100,6 +102,14 @@ public class DemographicAnalysisDetails {
 	public void setType(String type) {
 		this.type = type;
 	}
-	
+
+	public Integer getInhabitedPremises() {
+		return inhabitedPremises;
+	}
+
+	public void setInhabitedPremises(Integer inhabitedPremises) {
+		this.inhabitedPremises = inhabitedPremises;
+	}
+
 
 }
