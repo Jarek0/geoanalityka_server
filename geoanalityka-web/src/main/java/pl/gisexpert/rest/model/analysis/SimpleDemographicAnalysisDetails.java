@@ -19,8 +19,5 @@ public class SimpleDemographicAnalysisDetails extends DemographicAnalysisDetails
 	public void setPopulation(Integer population) {
 		this.population = population;
 	}
-	
-	
-
 
 }

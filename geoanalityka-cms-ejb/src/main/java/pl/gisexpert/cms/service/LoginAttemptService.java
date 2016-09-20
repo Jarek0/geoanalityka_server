@@ -32,7 +32,7 @@ import pl.gisexpert.cms.qualifier.CMSEntityManager;
 
 // The @Stateless annotation eliminates the need for manual transaction demarcation
 @Stateless
-public class LoginAttemptService {
+public class LoginAttemptService{
 
     @Inject
     @CMSEntityManager
