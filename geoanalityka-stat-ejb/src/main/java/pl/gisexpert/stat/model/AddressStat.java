@@ -15,12 +15,16 @@ import org.hibernate.annotations.Immutable;
 
 @Entity
 @Immutable
-@Table(name = "stat2015_stan_na_30_05_2016")
+@Table(name = "dane2015")
 @NamedNativeQueries({
-		@NamedNativeQuery(name = "AddressStat.SumAllInRadius", query = "SELECT sum(liczbaosobzamwlokalach)\\:\\:int FROM stat2015_stan_na_30_05_2016 "
-				+ "WHERE ST_Within(geom,ST_Buffer(ST_Transform(ST_GeomFromText('POINT(' || :x || ' ' || :y || ')', :epsg), 2180), :radius))"),
-		@NamedNativeQuery(name = "AddressStat.SumAllPremisesInRadius", query = "SELECT sum(liczbalokali)\\:\\:int FROM stat2015_stan_na_30_05_2016 "
-				+ "WHERE ST_Within(geom,ST_Buffer(ST_Transform(ST_GeomFromText('POINT(' || :x || ' ' || :y || ')', :epsg), 2180), :radius))")})
+		@NamedNativeQuery(name = "AddressStat.SumAllInRadius", query = "SELECT sum(liczbaosobzamwlokalach)\\:\\:int FROM dane2015 "
+				+ "WHERE ST_DWithin(geom,ST_GeogFromText('SRID=4326;POINT(' || :x || ' ' || :y || ')'), :radius)"),
+		@NamedNativeQuery(name = "AddressStat.SumAllPremisesInRadius", query = "SELECT sum(liczbalokali)\\:\\:int FROM dane2015 "
+				+ "WHERE ST_DWithin(geom,ST_GeogFromText('SRID=4326;POINT(' || :x || ' ' || :y || ')'), :radius)"),
+		@NamedNativeQuery(name = "AddressStat.SumAllInPolygon", query = "SELECT sum(liczbaosobzamwlokalach)\\:\\:int FROM dane2015 "
+				+ "WHERE ST_DWithin(geom,ST_GeomFromGeoJSON(:geojsonGeom)\\:\\:geography, 0.0\\:\\:double precision)"),
+		@NamedNativeQuery(name = "AddressStat.SumAllPremisesInPolygon", query = "SELECT sum(liczbalokali)\\:\\:int FROM dane2015 "
+				+ "WHERE ST_DWithin(geom,ST_GeomFromGeoJSON(:geojsonGeom)\\:\\:geography, 0.0\\:\\:double precision)") })
 public class AddressStat implements Serializable {
 
 	private static final long serialVersionUID = 1033705321916453635L;
@@ -139,13 +143,13 @@ public class AddressStat implements Serializable {
 
 	@Column(name = "przedprod")
 	protected Integer przedprod;
-	
+
 	@Column(name = "prod")
 	protected Integer prod;
-	
+
 	@Column(name = "poprod")
 	protected Integer poprod;
-	
+
 	@Column(name = "geom")
 	protected byte[] geometry;
 
@@ -325,7 +329,7 @@ public class AddressStat implements Serializable {
 	public Integer getPrzedzialWiekuOd75M() {
 		return przedzialWiekuOd75M;
 	}
-	
+
 	public Integer getPrzedprod() {
 		return przedprod;
 	}

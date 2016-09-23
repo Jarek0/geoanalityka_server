@@ -14,8 +14,13 @@ import javax.persistence.Lob;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 import pl.gisexpert.cms.model.analysis.Analysis;
+import pl.gisexpert.cms.model.analysis.AreaType;
+import pl.gisexpert.cms.model.analysis.TravelType;
 import pl.gisexpert.model.gis.Coordinate;
 
 @Entity
@@ -27,11 +32,11 @@ import pl.gisexpert.model.gis.Coordinate;
 @NamedQueries({
 		@NamedQuery(name = "DemographicAnalysis.findRecentAnalysesForAccount", query = "SELECT analysis FROM DemographicAnalysis analysis LEFT OUTER JOIN analysis.creator creator WHERE creator = :account AND analysis.status != pl.gisexpert.cms.model.analysis.AnalysisStatus.DELETED"),
 		@NamedQuery(name = "DemographicAnalysis.setDeletedStatusForAllAnalysesForAccount", query = "UPDATE DemographicAnalysis analysis SET analysis.status = pl.gisexpert.cms.model.analysis.AnalysisStatus.DELETED WHERE analysis.id IN (SELECT analysis1.id FROM DemographicAnalysis analysis1 LEFT OUTER JOIN analysis1.creator creator WHERE creator = :account AND analysis1.status != pl.gisexpert.cms.model.analysis.AnalysisStatus.DELETED AND analysis1.hash IN :hashes)"),
-   		@NamedQuery(name = "DemographicAnalysis.findRecentAnalysesByTypeOrderedByNameDESCForAccount", query = "SELECT analysis FROM DemographicAnalysis analysis LEFT OUTER JOIN analysis.creator creator WHERE (creator = :account AND TYPE(analysis) IN :classes AND analysis.status != pl.gisexpert.cms.model.analysis.AnalysisStatus.DELETED) ORDER BY analysis.name DESC, analysis.dateStarted DESC"),
+		@NamedQuery(name = "DemographicAnalysis.findRecentAnalysesByTypeOrderedByNameDESCForAccount", query = "SELECT analysis FROM DemographicAnalysis analysis LEFT OUTER JOIN analysis.creator creator WHERE (creator = :account AND TYPE(analysis) IN :classes AND analysis.status != pl.gisexpert.cms.model.analysis.AnalysisStatus.DELETED) ORDER BY analysis.name DESC, analysis.dateStarted DESC"),
 		@NamedQuery(name = "DemographicAnalysis.findRecentAnalysesByTypeOrderedByNameASCForAccount", query = "SELECT analysis FROM DemographicAnalysis analysis LEFT OUTER JOIN analysis.creator creator WHERE (creator = :account AND TYPE(analysis) IN :classes AND analysis.status != pl.gisexpert.cms.model.analysis.AnalysisStatus.DELETED) ORDER BY analysis.name ASC, analysis.dateStarted DESC"),
 		@NamedQuery(name = "DemographicAnalysis.findRecentAnalysesByTypeOrderedByDateDESCForAccount", query = "SELECT analysis FROM DemographicAnalysis analysis LEFT OUTER JOIN analysis.creator creator WHERE (creator = :account AND TYPE(analysis) IN :classes AND analysis.status != pl.gisexpert.cms.model.analysis.AnalysisStatus.DELETED) ORDER BY analysis.dateStarted DESC"),
 		@NamedQuery(name = "DemographicAnalysis.findRecentAnalysesByTypeOrderedByDateASCForAccount", query = "SELECT analysis FROM DemographicAnalysis analysis LEFT OUTER JOIN analysis.creator creator WHERE (creator = :account AND TYPE(analysis) IN :classes AND analysis.status != pl.gisexpert.cms.model.analysis.AnalysisStatus.DELETED) ORDER BY analysis.dateStarted ASC"),
-		@NamedQuery(name = "DemographicAnalysis.updateAnalysisNameForAccount", query = "UPDATE DemographicAnalysis analysis SET analysis.name = :name WHERE analysis.id IN (SELECT analysis1.id FROM DemographicAnalysis analysis1 LEFT OUTER JOIN analysis1.creator creator WHERE creator = :account AND analysis1.status != pl.gisexpert.cms.model.analysis.AnalysisStatus.DELETED AND analysis1.hash IN :hash)")})
+		@NamedQuery(name = "DemographicAnalysis.updateAnalysisNameForAccount", query = "UPDATE DemographicAnalysis analysis SET analysis.name = :name WHERE analysis.id IN (SELECT analysis1.id FROM DemographicAnalysis analysis1 LEFT OUTER JOIN analysis1.creator creator WHERE creator = :account AND analysis1.status != pl.gisexpert.cms.model.analysis.AnalysisStatus.DELETED AND analysis1.hash IN :hash)") })
 public class DemographicAnalysis extends Analysis implements Serializable {
 
 	private static final long serialVersionUID = -4420992994918486571L;
@@ -39,17 +44,32 @@ public class DemographicAnalysis extends Analysis implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	
+	@Column(nullable = false)
+	@NotNull
+	private AreaType areaType;
+	
+	@Column
+	private TravelType travelType;
+	
+	@Column(columnDefinition = "TEXT")
+	private String geojsonArea;
+	
+	@Column
+	@Max(60)
+	@Min(1)
+	Integer travelTime;
 
 	@Column
 	private Integer radius;
 
-	@Column
-	@Lob
+	@Column(nullable = false)
+	@NotNull
 	private Coordinate location;
 
 	@Column
 	private String locationDisplayName;
-	
+
 	@Column
 	private Integer inhabitedPremises;
 
@@ -73,6 +93,7 @@ public class DemographicAnalysis extends Analysis implements Serializable {
 		return location;
 	}
 
+	@Lob
 	public void setLocation(Coordinate location) {
 		this.location = location;
 	}
@@ -85,6 +106,38 @@ public class DemographicAnalysis extends Analysis implements Serializable {
 		this.locationDisplayName = locationDisplayName;
 	}
 
+	public AreaType getAreaType() {
+		return areaType;
+	}
+
+	public void setAreaType(AreaType areaType) {
+		this.areaType = areaType;
+	}
+
+	public TravelType getTravelType() {
+		return travelType;
+	}
+
+	public void setTravelType(TravelType travelType) {
+		this.travelType = travelType;
+	}
+
+	public String getGeojsonArea() {
+		return geojsonArea;
+	}
+
+	public void setGeojsonArea(String geojsonArea) {
+		this.geojsonArea = geojsonArea;
+	}
+
+	public Integer getTravelTime() {
+		return travelTime;
+	}
+
+	public void setTravelTime(Integer travelTime) {
+		this.travelTime = travelTime;
+	}
+
 	public Integer getInhabitedPremises() {
 		return inhabitedPremises;
 	}
@@ -92,6 +145,5 @@ public class DemographicAnalysis extends Analysis implements Serializable {
 	public void setInhabitedPremises(Integer inhabitedPremises) {
 		this.inhabitedPremises = inhabitedPremises;
 	}
-	
 
 }

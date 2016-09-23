@@ -49,7 +49,6 @@ public class Invoice implements Serializable {
 	@Temporal(TemporalType.DATE)
 	private Date dateCreated;
 	
-	@Lob
 	@Column(name = "data")
 	private byte[] invoiceData;
 	
@@ -79,6 +78,7 @@ public class Invoice implements Serializable {
 		return invoiceData;
 	}
 
+	@Lob
 	public void setInvoiceData(byte[] invoice) {
 		this.invoiceData = invoice;
 	}

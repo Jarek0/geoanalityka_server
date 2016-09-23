@@ -13,10 +13,14 @@ public class DemographicAnalysisDetails {
 	private AnalysisStatus status;
 	private String name;
 	private Integer radius;
+	private String travelType;
+	private Integer travelTime;
+	private String areaType;
 	private Coordinate location;
 	private String locationDisplayName;
 	private String type;
 	private Integer inhabitedPremises;
+	private String geojsonArea;
 
 	public DemographicAnalysisDetails(DemographicAnalysis analysis) {
 		this.dateStarted = analysis.getDateStarted();
@@ -29,6 +33,30 @@ public class DemographicAnalysisDetails {
 		this.locationDisplayName = analysis.getLocationDisplayName();
 		this.type = analysis.getClass().getSimpleName();
 		this.inhabitedPremises = analysis.getInhabitedPremises();
+
+		switch (analysis.getAreaType()) {
+		case RADIUS:
+			this.areaType = "radius";
+			break;
+		case TRAVEL_TIME:
+			this.areaType = "travel-time";
+			this.travelTime = analysis.getTravelTime();
+			switch (analysis.getTravelType()) {
+			case CAR:
+				this.travelType = "car";
+				break;
+			case BICYCLE:
+				this.travelType = "bicycle";
+				break;
+			case WALK:
+				this.travelType = "walk";
+				break;
+			}
+			break;
+		}
+		
+		this.geojsonArea = analysis.getGeojsonArea();
+		
 	}
 
 	public Date getDateStarted() {
@@ -111,5 +139,35 @@ public class DemographicAnalysisDetails {
 		this.inhabitedPremises = inhabitedPremises;
 	}
 
+	public String getTravelType() {
+		return travelType;
+	}
 
+	public void setTravelType(String travelType) {
+		this.travelType = travelType;
+	}
+
+	public Integer getTravelTime() {
+		return travelTime;
+	}
+
+	public void setTravelTime(Integer travelTime) {
+		this.travelTime = travelTime;
+	}
+
+	public String getAreaType() {
+		return areaType;
+	}
+
+	public void setAreaType(String areaType) {
+		this.areaType = areaType;
+	}
+
+	public String getGeojsonArea() {
+		return geojsonArea;
+	}
+
+	public void setGeojsonArea(String geojsonArea) {
+		this.geojsonArea = geojsonArea;
+	}
 }
