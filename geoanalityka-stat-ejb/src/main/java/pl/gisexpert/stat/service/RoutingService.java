@@ -5,6 +5,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
+import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 
 import pl.gisexpert.model.gis.Coordinate;
@@ -37,7 +38,7 @@ public class RoutingService {
 		Query query = em.createNativeQuery(queryString);
 
 		String result = (String) query.getSingleResult();
-
+				
 		return result;
 	}
 

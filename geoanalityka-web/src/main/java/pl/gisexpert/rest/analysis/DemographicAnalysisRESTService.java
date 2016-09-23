@@ -38,6 +38,7 @@ import javax.ws.rs.core.Response;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.jfree.util.Log;
+import org.postgresql.util.PSQLException;
 
 import com.google.common.base.Joiner;
 
@@ -140,7 +141,15 @@ public class DemographicAnalysisRESTService {
 			TravelType travelType = simpleAnalysisForm.getTravelType();
 			analysis = (SimpleDemographicAnalysis) (DemographicAnalysisBuilder.simple()
 					.areaType(AreaType.TRAVEL_TIME).travelTime(travelTime).travelType(travelType).build());
+			
 			String geojsonArea = routingService.createGeoJSONServiceArea(location, travelTime, travelType.name().toCharArray()[0]);
+			
+			if (geojsonArea == null) {
+				BaseResponse response = new BaseResponse();
+				response.setMessage("Błąd wyznaczania strefy dojazdu. Upewnij się, że punkt znajduje się w pobliżu sieci dróg.");
+				response.setResponseStatus(Response.Status.NOT_FOUND);
+				return Response.status(Response.Status.NOT_FOUND).entity(response).build();
+			}
 	
 			analysis.setGeojsonArea(geojsonArea);
 			totalPopulation = addressStatService.sumAllInPolygon(geojsonArea);
@@ -245,7 +254,14 @@ public class DemographicAnalysisRESTService {
 					.areaType(AreaType.TRAVEL_TIME).travelTime(travelTime).travelType(travelType).ageRange(ageRangeStr)
 					.build());
 			String geojsonArea = routingService.createGeoJSONServiceArea(location, travelTime, travelType.name().toCharArray()[0]);
-	
+			
+			if (geojsonArea == null) {
+				BaseResponse response = new BaseResponse();
+				response.setMessage("Błąd wyznaczania strefy dojazdu. Upewnij się, że punkt znajduje się w pobliżu sieci dróg.");
+				response.setResponseStatus(Response.Status.NOT_FOUND);
+				return Response.status(Response.Status.NOT_FOUND).entity(response).build();
+			}
+			
 			analysis.setGeojsonArea(geojsonArea);
 			kobietyAndMezczyzniByAgeRanges = addressStatService.sumRangeInPolygon(ageRange, geojsonArea);
 			inhabitedPremises = addressStatService.sumAllPremisesInPolygon(geojsonArea);

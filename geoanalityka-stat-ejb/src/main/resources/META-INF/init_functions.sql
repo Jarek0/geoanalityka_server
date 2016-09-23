@@ -5,7 +5,7 @@
   road_classes INT[]
 ) RETURNS INT LANGUAGE plpgsql AS $$
 DECLARE
-  radius INT := 2000;
+  radius INT := 200;
   result INT;
 BEGIN
   SELECT source INTO result FROM drogi_pkt
