@@ -203,7 +203,7 @@ public class AuthRESTService {
 		
 		premiumPlanService.activatePlan(account, PremiumPlanType.PLAN_DEDYKOWANY);
 
-		String subject = "Geoanalizy - potwierdzenie rejestracji użytkownika";
+		String subject = "Geoanalizy.pl - potwierdzenie rejestracji użytkownika";
 
 		MessageFormat formatter = new MessageFormat("");
 
