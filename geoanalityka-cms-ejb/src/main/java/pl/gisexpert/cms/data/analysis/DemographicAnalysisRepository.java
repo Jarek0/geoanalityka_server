@@ -68,6 +68,17 @@ public class DemographicAnalysisRepository extends AbstractRepository<Analysis> 
     }
 
     @Transactional
+    public List<DemographicAnalysis> getAnalysesDetailsToCompareForAccount(Account account, List<String> hashes) {
+
+        Query query = em.createNamedQuery("DemographicAnalysis.getAnalysesDetailsToCompareForAccount");
+        query.setParameter("account", account);
+        query.setParameter("hashes", hashes);
+
+
+        return query.getResultList();
+    }
+
+    @Transactional
     public List<DemographicAnalysis> findMostRecentRangeAndTypeForAccount(Account account, int begin, int end, String orderBy, List<Class> analysisTypes) {
         Query query;
 

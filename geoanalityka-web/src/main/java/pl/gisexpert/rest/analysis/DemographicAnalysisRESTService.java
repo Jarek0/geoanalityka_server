@@ -36,6 +36,7 @@ import pl.gisexpert.cms.model.Account;
 import pl.gisexpert.cms.model.analysis.AnalysisStatus;
 import pl.gisexpert.cms.model.analysis.demographic.AdvancedDemographicAnalysis;
 import pl.gisexpert.cms.model.analysis.demographic.DemographicAnalysis;
+import pl.gisexpert.cms.model.analysis.demographic.PeopleByWorkingAgeSums;
 import pl.gisexpert.cms.model.analysis.demographic.SimpleDemographicAnalysis;
 import pl.gisexpert.cms.service.AccountService;
 import pl.gisexpert.cms.service.AnalysisService;
@@ -210,6 +211,13 @@ public class DemographicAnalysisRESTService {
 
 		analysis.setKobietyAndMezczyzniByAgeRanges(kobietyAndMezczyzniByAgeRanges);
 
+		PeopleByWorkingAgeSums peopleByWorkingAgeSums = addressStatRepository.peopleByWorkingAgeSums(sumRangeInRadiusForm.getRadius(), sumRangeInRadiusForm.getPoint());
+
+
+		analysis.setPoprod(peopleByWorkingAgeSums.getPoprod());
+		analysis.setProd(peopleByWorkingAgeSums.getProd());
+		analysis.setPrzedprod(peopleByWorkingAgeSums.getPrzedprod());
+
 		analysis.setDateFinished(new Date());
 		analysis.setStatus(AnalysisStatus.FINISHED);
 
@@ -284,6 +292,35 @@ public class DemographicAnalysisRESTService {
 
 		return Response.status(Response.Status.OK).entity(analysesDetailsList).build();
 	}*/
+
+	@GET
+	@Path("/compare")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getComparedAnalyses(@QueryParam("hashes")  List<String> hashes, @QueryParam("analysisType") String type) {
+
+		Subject currentUser = SecurityUtils.getSubject();
+		String username = (String) currentUser.getPrincipal();
+		Account account = accountRepository.findByUsername(username);
+
+		List<DemographicAnalysis> accountAnalyses = analysisRepository.getAnalysesDetailsToCompareForAccount(account, hashes);
+
+
+		List<DemographicAnalysisDetails> analysesDetailsList = new ArrayList<>();
+
+
+		for (DemographicAnalysis analysis : accountAnalyses) {
+			if (analysis instanceof AdvancedDemographicAnalysis) {
+				analysesDetailsList.add( new AdvancedDemographicAnalysisDetails(
+						(AdvancedDemographicAnalysis) analysis));
+			} else if (analysis instanceof SimpleDemographicAnalysis) {
+				analysesDetailsList.add(new SimpleDemographicAnalysisDetails(
+						(SimpleDemographicAnalysis) analysis));
+			}
+
+		}
+
+		return Response.status(Response.Status.OK).entity(analysesDetailsList).build();
+	}
 
 	@GET
 	@Path("/recent/{begin}/{end}")

@@ -32,7 +32,10 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="geoanalityka-common-jar" scope="PROVIDED" />
-    <orderEntry type="module" module-name="geoanalityka-common-ejb" scope="PROVIDED" />
+    <orderEntry type="module" module-name="geoanalityka-cms-ejb" scope="PROVIDED" />
+    <orderEntry type="library" name="Maven: org.postgresql:postgresql:9.3-1103-jdbc41" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.primefaces:primefaces:5.2" level="project" />
+    <orderEntry type="library" name="Maven: com.google.guava:guava:19.0" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.jboss.spec.javax.ejb:jboss-ejb-api_3.2_spec:1.0.0.Final" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: javax.enterprise:cdi-api:1.2" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: javax.el:javax.el-api:3.0.0" level="project" />
@@ -50,15 +53,12 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.javassist:javassist:3.18.1-GA" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: antlr:antlr:2.7.7" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.jboss:jandex:1.1.0.Final" level="project" />
-    <orderEntry type="library" name="Maven: org.postgresql:postgresql:9.3-1103-jdbc41" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.11" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.hamcrest:hamcrest-core:1.3" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.shiro:shiro-core:1.2.3" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.slf4j:slf4j-api:1.6.4" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: commons-beanutils:commons-beanutils:1.8.3" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.shiro:shiro-web:1.2.3" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: org.primefaces:primefaces:5.2" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.jboss.weld:weld-logger:1.0.0-CR2" level="project" />
-    <orderEntry type="library" name="Maven: com.google.guava:guava:19.0" level="project" />
   </component>
 </module>

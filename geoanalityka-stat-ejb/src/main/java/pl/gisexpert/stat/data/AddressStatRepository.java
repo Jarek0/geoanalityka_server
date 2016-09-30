@@ -10,8 +10,10 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
+
 import com.google.common.base.Joiner;
 
+import pl.gisexpert.cms.model.analysis.demographic.PeopleByWorkingAgeSums;
 import pl.gisexpert.model.gis.Coordinate;
 import pl.gisexpert.stat.model.AddressStat;
 import pl.gisexpert.stat.qualifier.StatEntityManager;
@@ -42,7 +44,6 @@ public class AddressStatRepository extends AbstractRepository<AddressStat> {
 		Query query = em.createNamedQuery("AddressStat.SumAllInRadius");
 		query.setParameter("x", point.getX());
 		query.setParameter("y", point.getY());
-		query.setParameter("epsg", point.getEpsgCode());
 		query.setParameter("radius", radius);
 
 		Integer result = (Integer) query.getSingleResult();
@@ -50,6 +51,19 @@ public class AddressStatRepository extends AbstractRepository<AddressStat> {
 
 		return result;
 	}
+
+	public PeopleByWorkingAgeSums peopleByWorkingAgeSums(Integer radius, Coordinate point) {
+		Query query = em.createNamedQuery("AddressStat.PeopleByWorkingAgeSums");
+		query.setParameter("x", point.getX());
+		query.setParameter("y", point.getY());
+		query.setParameter("radius", radius);
+
+		PeopleByWorkingAgeSums result = (PeopleByWorkingAgeSums) query.getSingleResult();
+
+
+		return result;
+	}
+
 
 	/**
 	 * 
@@ -88,13 +102,12 @@ public class AddressStatRepository extends AbstractRepository<AddressStat> {
 		String columnSumsStr = Joiner.on(",").join(columnSumsArray);
 
 		String queryString = "SELECT " + columnSumsStr
-				+ " FROM stat2015_stan_na_30_05_2016 WHERE ST_Within(geom,ST_Buffer(ST_Transform(ST_GeomFromText('POINT(' || :x || ' ' || :y || ')', :epsg), 2180), :radius))";
+				+ " FROM dane2015 WHERE ST_DWithin(geom,ST_GeogFromText('SRID=4326;POINT(' || :x || ' ' || :y || ')'),:radius)";
 
 		Query query = em.createNativeQuery(queryString);
 
 		query.setParameter("x", point.getX());
 		query.setParameter("y", point.getY());
-		query.setParameter("epsg", point.getEpsgCode());
 		query.setParameter("radius", radius);
 
 		@SuppressWarnings("unchecked")
