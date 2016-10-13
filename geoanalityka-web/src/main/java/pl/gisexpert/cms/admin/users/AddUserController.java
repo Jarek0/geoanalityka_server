@@ -3,6 +3,7 @@ package pl.gisexpert.cms.admin.users;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.faces.application.FacesMessage;
@@ -62,7 +63,7 @@ public class AddUserController implements Serializable {
     public void add(){
         
         account.setDateRegistered(new Date());
-        account.setRoles(roles.getTarget());
+        account.setRoles(new HashSet<>(roles.getTarget()));
         
         account.setPassword(account.hashPassword(account.getPassword()));
         account.setAccountStatus(AccountStatus.CONFIRMED);

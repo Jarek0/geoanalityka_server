@@ -16,7 +16,7 @@
 	<parent>
 		<artifactId>geoanalityka</artifactId>
 		<groupId>pl.gisexpert</groupId>
-		<version>0.3</version>
+		<version>0.4.1</version>
 	</parent>
 
 	<artifactId>geoanalityka-web</artifactId>
@@ -60,7 +60,7 @@
 		<dependency>
 		  <groupId>pl.gisexpert</groupId>
 		  <artifactId>reports-generator</artifactId>
-		  <version>0.1.0</version>
+		  <version>0.2.0</version>
 		</dependency>
 
 		<!-- Import the JAX-RS API, we use provided scope as the API is included 

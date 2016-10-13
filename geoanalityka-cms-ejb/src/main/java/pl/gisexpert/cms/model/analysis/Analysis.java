@@ -1,7 +1,6 @@
 package pl.gisexpert.cms.model.analysis;
 
 import java.util.Date;
-import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.FetchType;

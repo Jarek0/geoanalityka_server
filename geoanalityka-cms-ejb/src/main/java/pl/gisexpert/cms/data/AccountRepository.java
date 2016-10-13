@@ -1,7 +1,9 @@
 package pl.gisexpert.cms.data;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -134,12 +136,6 @@ public class AccountRepository extends AbstractRepository<Account> {
 	@Override
 	@Transactional
 	public void create(Account account) {
-		if (account.getRoles() == null) {
-			List<Role> roles = new ArrayList<>();
-			Role role = new Role();
-			role.setName("PLAN_TESTOWY");
-			account.setRoles(roles);
-		}
 		em.persist(account);
 	}
 

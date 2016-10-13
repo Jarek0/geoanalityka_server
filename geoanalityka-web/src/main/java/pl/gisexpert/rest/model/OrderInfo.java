@@ -1,6 +1,5 @@
 package pl.gisexpert.rest.model;
 
-
 import java.util.Date;
 
 import pl.gisexpert.cms.model.Order;
@@ -14,17 +13,22 @@ public class OrderInfo {
 	private Date date;
 	private OrderStatus status;
 	private OrderType orderType;
-	
-	public OrderInfo () {
-		
+	private String payuPaymentUrl;
+
+	public OrderInfo() {
+
 	}
-	
+
 	public OrderInfo(Order order) {
 		orderHash = order.getOrderHash();
 		amount = order.getAmount();
 		date = order.getDate();
 		status = order.getStatus();
 		orderType = order.getOrderType();
+
+		if (order.getStatus() == OrderStatus.PENDING) {
+			payuPaymentUrl = order.getPayuPaymentUrl();
+		}
 	}
 
 	public String getOrderHash() {
@@ -66,6 +70,13 @@ public class OrderInfo {
 	public void setOrderType(OrderType orderType) {
 		this.orderType = orderType;
 	}
-	
-	
+
+	public String getPayuPaymentUrl() {
+		return payuPaymentUrl;
+	}
+
+	public void setPayuPaymentUrl(String payuPaymentUrl) {
+		this.payuPaymentUrl = payuPaymentUrl;
+	}
+
 }

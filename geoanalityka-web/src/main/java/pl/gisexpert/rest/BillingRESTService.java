@@ -102,7 +102,7 @@ public class BillingRESTService {
 	@Path("/add_credit")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response registerAccount(@Context HttpServletRequest request, AddCreditForm formData) {
+	public Response addCredit(@Context HttpServletRequest request, AddCreditForm formData) {
 
 		PayU payUSettings = appConfig.getPayu();
 
@@ -171,10 +171,10 @@ public class BillingRESTService {
 		order.setAmount(formData.getAmount());
 		order.setOrderType(orderType);
 		order.setDate(new Date());
-		
+
 		orderRepository.create(order);
 		createInvoice(order);
-		
+
 		billingService.addOrder(buyerAccount, order);
 		createOrderForm.setExtOrderId(order.getId().toString() + "_" + order.getOrderHash());
 
@@ -183,9 +183,14 @@ public class BillingRESTService {
 
 		String payuRedirectUrl = payuClient.createOrder(createOrderForm);
 
+		order.setPayuPaymentUrl(payuRedirectUrl);
+		orderRepository.edit(order);
+
 		if (payuRedirectUrl == null) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(null).build();
 		}
+
+		log.debug("PayU payment URL for order " + order.getOrderHash() + ": " + payuRedirectUrl);
 
 		BaseResponse responseEntity = new BaseResponse();
 		responseEntity.setMessage(payuRedirectUrl);
@@ -199,6 +204,10 @@ public class BillingRESTService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response payuNotify(CreateOrderNotify data) {
 
+		if (data.getOrder() == null || data.getOrder().getExtOrderId() == null) {
+			return Response.status(Response.Status.OK).build();
+		}
+		
 		// Extract IP address from an IP:PORT string
 		StringTokenizer astk = new StringTokenizer(data.getOrder().getExtOrderId(), "_");
 		Long orderId = null;
@@ -233,6 +242,8 @@ public class BillingRESTService {
 					log.debug("Added 30 credits to account: " + buyer.getUsername() + ". PLAN_ZAAWANSOWANY activated.");
 					break;
 				}
+				
+				accountRepository.edit(buyer);
 
 				break;
 			case "CANCELED":
@@ -245,7 +256,7 @@ public class BillingRESTService {
 				order.setStatus(OrderStatus.REJECTED);
 				break;
 			}
-			
+
 			orderRepository.edit(order);
 
 		}
@@ -340,47 +351,48 @@ public class BillingRESTService {
 
 		Account account = accountRepository.findByUsername(order.getBuyer().getUsername());
 		account = accountRepository.fetchContactData(account);
-		
+
 		Invoice invoice = new Invoice(billingService.nextInvoiceId());
 		final Address invoiceAddress = new Address();
-		
+
 		final Company invoiceCompany = new Company();
 		invoiceCompany.setAddress(invoiceAddress);
-		
+
 		account.accept(new DefaultAccountVisitor() {
 			@Override
 			public void visit(CompanyAccount account) {
-				
+
 				pl.gisexpert.cms.model.Company company = account.getCompany();
 				pl.gisexpert.cms.model.Address address = company.getAddress();
-				
+
 				invoiceAddress.setCity(address.getCity());
 				invoiceAddress.setFlatNumber(address.getFlatNumber());
 				invoiceAddress.setHouseNumber(address.getHouseNumber());
 				invoiceAddress.setStreet(address.getStreet());
 				invoiceAddress.setZipcode(address.getZipcode());
-				
+
 				invoiceCompany.setCompanyName(company.getCompanyName());
 				invoiceCompany.setPhone(company.getPhone());
 				invoiceCompany.setTaxId(company.getTaxId());
-				
+
 			}
+
 			@Override
 			public void visit(NaturalPersonAccount account) {
 
 				pl.gisexpert.cms.model.Address address = account.getAddress();
-				
+
 				invoiceAddress.setCity(address.getCity());
 				invoiceAddress.setFlatNumber(address.getFlatNumber());
 				invoiceAddress.setHouseNumber(address.getHouseNumber());
 				invoiceAddress.setStreet(address.getStreet());
 				invoiceAddress.setZipcode(address.getZipcode());
-				
+
 				invoiceCompany.setPhone(account.getPhone());
 				invoiceCompany.setCompanyName(account.getFirstName() + " " + account.getLastName());
 			}
 		});
-		
+
 		invoice.setCompany(invoiceCompany);
 
 		Transaction transaction = new Transaction();
@@ -409,10 +421,10 @@ public class BillingRESTService {
 
 		InvoiceDocFactory docFactory = new InvoiceDocFactory();
 		byte[] invoiceOriginalRtfDocument = docFactory.createRtf(invoice);
-		
+
 		invoice.setOriginal(false);
 		byte[] invoiceCopyRtfDocument = docFactory.createRtf(invoice);
-		
+
 		// Original invoice document
 		pl.gisexpert.cms.model.Invoice invoiceEntity = new pl.gisexpert.cms.model.Invoice();
 		invoiceEntity.setInvoiceData(invoiceOriginalRtfDocument);
@@ -422,7 +434,7 @@ public class BillingRESTService {
 		invoiceEntity.setOriginal(true);
 		invoiceEntity.setOrder(order);
 		invoiceRepository.create(invoiceEntity);
-		
+
 		// Invoice copy
 		invoiceEntity = new pl.gisexpert.cms.model.Invoice();
 		invoiceEntity.setInvoiceData(invoiceCopyRtfDocument);
@@ -432,7 +444,7 @@ public class BillingRESTService {
 		invoiceEntity.setOriginal(false);
 		invoiceEntity.setOrder(order);
 		invoiceRepository.create(invoiceEntity);
-		
+
 		return invoiceEntity;
 
 	}

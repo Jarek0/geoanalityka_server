@@ -2,7 +2,7 @@ package pl.gisexpert.model.gis;
 
 import java.io.Serializable;
 
-public class Coordinate implements Serializable {
+public class Coordinate implements Geometry, Serializable {
 
 	private static final long serialVersionUID = -5138413995590331020L;
 	

@@ -13,7 +13,6 @@ public class AdvancedDemographicAnalysis extends DemographicAnalysis {
 
 	private static final long serialVersionUID = 6224558629498232285L;
 
-	@Lob
 	@Column(name = "analysis_data")
 	private HashMap<String, HashMap<Integer, Integer>> kobietyAndMezczyzniByAgeRanges;
 	
@@ -35,6 +34,7 @@ public class AdvancedDemographicAnalysis extends DemographicAnalysis {
 		return kobietyAndMezczyzniByAgeRanges;
 	}
 
+	@Lob
 	public void setKobietyAndMezczyzniByAgeRanges(HashMap<String, HashMap<Integer, Integer>> kobietyAndMezczyzniByAgeRanges) {
 		this.kobietyAndMezczyzniByAgeRanges = kobietyAndMezczyzniByAgeRanges;
 	}

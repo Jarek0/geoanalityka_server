@@ -21,11 +21,18 @@ import pl.gisexpert.cms.model.analysis.demographic.PeopleByWorkingAgeSums;
                 }))
 
 @NamedNativeQueries({
-        @NamedNativeQuery(name = "AddressStat.SumAllInRadius", query = "SELECT sum(liczbaosobzamwlokalach)\\:\\:int FROM dane2015 "
-                + "WHERE ST_DWithin(geom,ST_GeogFromText('SRID=4326;POINT(' || :x || ' ' || :y || ')'),:radius)"),
         @NamedNativeQuery(name = "AddressStat.PeopleByWorkingAgeSums", query = "SELECT sum(przedprod)\\:\\:int AS przedprod, sum(prod)\\:\\:int AS prod, sum(poprod)\\:\\:int AS poprod FROM dane2015 "
-                + "WHERE ST_DWithin(geom,ST_GeogFromText('SRID=4326;POINT(' || :x || ' ' || :y || ')'),:radius)", resultSetMapping = "PeopleByWorkingAge")
-})
+                + "WHERE ST_DWithin(geom,ST_GeogFromText('SRID=4326;POINT(' || :x || ' ' || :y || ')'), :radius)", resultSetMapping = "PeopleByWorkingAge"),
+        @NamedNativeQuery(name = "AddressStat.PeopleByWorkingAgeSumsPolygon", query = "SELECT sum(przedprod)\\:\\:int AS przedprod, sum(prod)\\:\\:int AS prod, sum(poprod)\\:\\:int AS poprod FROM dane2015 "
+                + "WHERE ST_DWithin(geom,ST_GeomFromGeoJSON(:geojsonGeom)\\:\\:geography, 0.0\\:\\:double precision)", resultSetMapping = "PeopleByWorkingAge"),
+        @NamedNativeQuery(name = "AddressStat.SumAllInRadius", query = "SELECT sum(liczbaosobzamwlokalach)\\:\\:int FROM dane2015 "
+                + "WHERE ST_DWithin(geom,ST_GeogFromText('SRID=4326;POINT(' || :x || ' ' || :y || ')'), :radius)"),
+        @NamedNativeQuery(name = "AddressStat.SumAllPremisesInRadius", query = "SELECT sum(liczbalokali)\\:\\:int FROM dane2015 "
+                + "WHERE ST_DWithin(geom,ST_GeogFromText('SRID=4326;POINT(' || :x || ' ' || :y || ')'), :radius)"),
+        @NamedNativeQuery(name = "AddressStat.SumAllInPolygon", query = "SELECT sum(liczbaosobzamwlokalach)\\:\\:int FROM dane2015 "
+                + "WHERE ST_DWithin(geom,ST_GeomFromGeoJSON(:geojsonGeom)\\:\\:geography, 0.0\\:\\:double precision)"),
+        @NamedNativeQuery(name = "AddressStat.SumAllPremisesInPolygon", query = "SELECT sum(liczbalokali)\\:\\:int FROM dane2015 "
+                + "WHERE ST_DWithin(geom,ST_GeomFromGeoJSON(:geojsonGeom)\\:\\:geography, 0.0\\:\\:double precision)")})
 public class AddressStat implements Serializable {
 
     private static final long serialVersionUID = 1033705321916453635L;
@@ -104,6 +111,7 @@ public class AddressStat implements Serializable {
     protected Integer przedzialWiekuOd10Do14M;
 
     @Column(name = "przedzialwiekuod15do19m")
+
     protected Integer przedzialWiekuOd15Do19M;
 
     @Column(name = "przedzialwiekuod20do24m")
@@ -182,6 +190,18 @@ public class AddressStat implements Serializable {
         } else if (!id.equals(other.id))
             return false;
         return true;
+    }
+
+    public void setPrzedprod(double przedprod) {
+        this.przedprod = przedprod;
+    }
+
+    public void setProd(double prod) {
+        this.prod = prod;
+    }
+
+    public void setPoprod(double poprod) {
+        this.poprod = poprod;
     }
 
     public static long getSerialversionuid() {

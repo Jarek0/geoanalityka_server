@@ -26,9 +26,10 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.postgresql:postgresql:9.3-1103-jdbc41" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.primefaces:primefaces:5.2" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: com.google.guava:guava:19.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.flywaydb:flyway-core:4.0.3" level="project" />
     <orderEntry type="module" module-name="geoanalityka-common-jar" scope="PROVIDED" />
     <orderEntry type="module" module-name="geoanalityka-stat-ejb" scope="PROVIDED" />
-    <orderEntry type="library" name="Maven: pl.gisexpert:reports-generator:0.1.0" level="project" />
+    <orderEntry type="library" name="Maven: pl.gisexpert:reports-generator:0.2.0" level="project" />
     <orderEntry type="library" name="Maven: com.itextpdf:itextpdf:5.5.9" level="project" />
     <orderEntry type="library" name="Maven: net.sf.jasperreports:jasperreports:6.3.0" level="project" />
     <orderEntry type="library" name="Maven: commons-beanutils:commons-beanutils:1.8.3" level="project" />

@@ -19,6 +19,7 @@ package pl.gisexpert.rest;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -202,7 +203,7 @@ public class AuthRESTService {
 		
 		premiumPlanService.activatePlan(account, PremiumPlanType.PLAN_DEDYKOWANY);
 
-		String subject = "Geoanalizy - potwierdzenie rejestracji użytkownika";
+		String subject = "Geoanalizy.pl - potwierdzenie rejestracji użytkownika";
 
 		MessageFormat formatter = new MessageFormat("");
 
@@ -422,7 +423,7 @@ public class AuthRESTService {
 		
 		account = accountRepository.fetchContactData(account);
 		
-		AccountInfo accountInfo = new AccountInfo(account, accountService.getRoles(account));
+		AccountInfo accountInfo = new AccountInfo(account, new ArrayList<>(accountService.getRoles(account)));
 		
 		String token = request.getHeader("Access-Token");
 		
