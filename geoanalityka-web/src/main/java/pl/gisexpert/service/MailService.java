@@ -56,6 +56,7 @@ public class MailService {
 		sessionProps.put("mail.smtp.starttls.enable", starttls);
 		sessionProps.put("mail.smtp.host", host);
 		sessionProps.put("mail.smtp.port", port);
+		sessionProps.put("mail.smtp.ssl.trust", host);
 
 	}
 
@@ -74,6 +75,7 @@ public class MailService {
 			message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(address));
 			message.setSubject(subject);
 			message.setText(text);
+
 
 			Transport.send(message);
 
