@@ -31,6 +31,9 @@ public class Analysis {
 	@Column
 	private AnalysisStatus status;
 	
+	@Column(name = "status_code")
+	private AnalysisStatusCode statusCode;
+	
 	@Column(length = 255)
 	private String name;
 
@@ -84,6 +87,14 @@ public class Analysis {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public AnalysisStatusCode getStatusCode() {
+		return statusCode;
+	}
+
+	public void setStatusCode(AnalysisStatusCode statusCode) {
+		this.statusCode = statusCode;
 	}
 	
 }

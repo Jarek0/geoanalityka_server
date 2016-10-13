@@ -3,6 +3,7 @@ package pl.gisexpert.rest.model.analysis;
 import java.util.Date;
 
 import pl.gisexpert.cms.model.analysis.AnalysisStatus;
+import pl.gisexpert.cms.model.analysis.AnalysisStatusCode;
 import pl.gisexpert.cms.model.analysis.demographic.DemographicAnalysis;
 import pl.gisexpert.model.gis.Coordinate;
 
@@ -11,6 +12,7 @@ public class DemographicAnalysisDetails {
 	private Date dateFinished;
 	private String hash;
 	private AnalysisStatus status;
+	private AnalysisStatusCode statusCode;
 	private String name;
 	private Integer radius;
 	private String travelType;
@@ -27,6 +29,7 @@ public class DemographicAnalysisDetails {
 		this.dateFinished = analysis.getDateFinished();
 		this.hash = analysis.getHash();
 		this.status = analysis.getStatus();
+		this.statusCode = analysis.getStatusCode();
 		this.name = analysis.getName();
 		this.radius = analysis.getRadius();
 		this.location = analysis.getLocation();
@@ -169,5 +172,13 @@ public class DemographicAnalysisDetails {
 
 	public void setGeojsonArea(String geojsonArea) {
 		this.geojsonArea = geojsonArea;
+	}
+
+	public AnalysisStatusCode getStatusCode() {
+		return statusCode;
+	}
+
+	public void setStatusCode(AnalysisStatusCode statusCode) {
+		this.statusCode = statusCode;
 	}
 }

@@ -16,14 +16,12 @@
  */
 package pl.gisexpert.rest.analysis;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
+import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -37,8 +35,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
-import org.jfree.util.Log;
-import org.postgresql.util.PSQLException;
+import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
 
@@ -53,29 +50,26 @@ import pl.gisexpert.cms.model.analysis.demographic.DemographicAnalysis;
 import pl.gisexpert.cms.model.analysis.demographic.DemographicAnalysisBuilder;
 import pl.gisexpert.cms.model.analysis.demographic.SimpleDemographicAnalysis;
 import pl.gisexpert.cms.service.AccountService;
+import pl.gisexpert.cms.service.AnalysisCostCalculator;
 import pl.gisexpert.cms.service.AnalysisService;
+import pl.gisexpert.cms.service.AsyncAnalysisService;
 import pl.gisexpert.model.gis.Coordinate;
 import pl.gisexpert.rest.model.BaseResponse;
 import pl.gisexpert.rest.model.analysis.AdvancedDemographicAnalysisDetails;
 import pl.gisexpert.rest.model.analysis.AnalysisHashResponse;
+import pl.gisexpert.rest.model.analysis.AnalysisStatusResponse;
 import pl.gisexpert.rest.model.analysis.DemographicAnalysisDetails;
 import pl.gisexpert.rest.model.analysis.PaginatedAnalysesDetailList;
 import pl.gisexpert.rest.model.analysis.SimpleDemographicAnalysisDetails;
-import pl.gisexpert.rest.model.analysis.demographic.SimpleAnalysisForm;
 import pl.gisexpert.rest.model.analysis.demographic.AdvancedAnalysisForm;
+import pl.gisexpert.rest.model.analysis.demographic.SimpleAnalysisForm;
 import pl.gisexpert.rest.util.producer.qualifier.RESTI18n;
-import pl.gisexpert.service.AnalysisCostCalculator;
 import pl.gisexpert.stat.service.AddressStatService;
 import pl.gisexpert.stat.service.RoutingService;
 
 @Path("/analysis/demographic")
+@Stateless
 public class DemographicAnalysisRESTService {
-
-	@Inject
-	private AddressStatService addressStatService;
-
-	@Inject
-	private RoutingService routingService;
 
 	@Inject
 	private AccountRepository accountRepository;
@@ -84,22 +78,23 @@ public class DemographicAnalysisRESTService {
 	private AccountService accountService;
 
 	@Inject
-	private AnalysisService analysisService;
-
-	@Inject
 	private DemographicAnalysisRepository analysisRepository;
 
 	@Inject
 	private AnalysisCostCalculator analysisCostCalculator;
 
 	@Inject
+	private AsyncAnalysisService asyncAnalysisService;
+
+	@Inject
+	private Logger log;
+
+	@Inject
 	@RESTI18n
 	private ResourceBundle i18n;
 
-	private final int MIN_VALID_POPULATION = 50;
-
 	/**
-	 * Returns total population in given radius around given point
+	 * Returns total population in given area around given point
 	 * 
 	 * @param simpleAnalysisForm
 	 * @return
@@ -119,47 +114,34 @@ public class DemographicAnalysisRESTService {
 					"Analizowanie obszaru o promieniu większym niż 2 km możliwe jest w planie standardowym lub wyższym.");
 			return Response.status(Response.Status.NOT_FOUND).entity(response).build();
 		}
-		
-		Integer totalPopulation = 0;
-		Integer inhabitedPremises = 0;
-		Coordinate location = simpleAnalysisForm.getPoint();
 
+		Coordinate location = simpleAnalysisForm.getPoint();
+		
+		
+		String locationDisplayName = simpleAnalysisForm.getLocationName();
+		String analysisName = simpleAnalysisForm.getName();
 		SimpleDemographicAnalysis analysis;
+
 		switch (simpleAnalysisForm.getAreaType()) {
 		case RADIUS:
 			Integer radius = simpleAnalysisForm.getRadius();
 			analysis = (SimpleDemographicAnalysis) (DemographicAnalysisBuilder.simple().areaType(AreaType.RADIUS)
-					.radius(radius).build());
-			totalPopulation = addressStatService.sumAllInRadius(simpleAnalysisForm.getRadius(),
-					simpleAnalysisForm.getPoint());
-			inhabitedPremises = addressStatService.sumAllPremisesInRadius(simpleAnalysisForm.getRadius(),
-					simpleAnalysisForm.getPoint());
+					.radius(radius).creator(creator).name(analysisName).location(location)
+					.locationDisplayName(locationDisplayName).build());
 			break;
 		case TRAVEL_TIME:
 		default:
+			if (!accountService.hasRole(creator, "PLAN_ZAAWANSOWANY")
+					&& !accountService.hasRole(creator, "PLAN_DEDYKOWANY")) {
+				return Response.status(Response.Status.UNAUTHORIZED).build();
+			}
+
 			Integer travelTime = simpleAnalysisForm.getTravelTime();
 			TravelType travelType = simpleAnalysisForm.getTravelType();
-			analysis = (SimpleDemographicAnalysis) (DemographicAnalysisBuilder.simple()
-					.areaType(AreaType.TRAVEL_TIME).travelTime(travelTime).travelType(travelType).build());
-			
-			String geojsonArea = routingService.createGeoJSONServiceArea(location, travelTime, travelType.name().toCharArray()[0]);
-			
-			if (geojsonArea == null) {
-				BaseResponse response = new BaseResponse();
-				response.setMessage("Błąd wyznaczania strefy dojazdu. Upewnij się, że punkt znajduje się w pobliżu sieci dróg.");
-				response.setResponseStatus(Response.Status.NOT_FOUND);
-				return Response.status(Response.Status.NOT_FOUND).entity(response).build();
-			}
-	
-			analysis.setGeojsonArea(geojsonArea);
-			totalPopulation = addressStatService.sumAllInPolygon(geojsonArea);
-			inhabitedPremises = addressStatService.sumAllPremisesInPolygon(geojsonArea);
+			analysis = (SimpleDemographicAnalysis) (DemographicAnalysisBuilder.simple().areaType(AreaType.TRAVEL_TIME)
+					.travelTime(travelTime).travelType(travelType).location(location)
+					.locationDisplayName(locationDisplayName).name(analysisName).build());
 		}
-		
-		analysis.setCreator(creator);
-		analysis.setLocation(simpleAnalysisForm.getPoint());
-		analysis.setLocationDisplayName(simpleAnalysisForm.getLocationName());
-		analysis.setName(simpleAnalysisForm.getName());
 
 		Double analysisCost = analysisCostCalculator.calculate(analysis);
 		if (creator.getCredits() < analysisCost) {
@@ -168,37 +150,18 @@ public class DemographicAnalysisRESTService {
 			response.setMessage("Insufficient credits");
 			return Response.status(Response.Status.UNAUTHORIZED).entity(response).build();
 		}
-
-		if (!isPopulationHighEnough(totalPopulation)) {
-			BaseResponse response = new BaseResponse();
-			response.setResponseStatus(Response.Status.NOT_FOUND);
-
-			Object[] messageArguments = { MIN_VALID_POPULATION };
-			String pattern = i18n.getString("analysis.demographic.lowpopulation");
-			MessageFormat formatter = new MessageFormat(pattern);
-			formatter.setLocale(i18n.getLocale());
-			response.setMessage(formatter.format(messageArguments));
-
-			return Response.status(Response.Status.NOT_FOUND).entity(response).build();
-		}
-
-		analysis.setPopulation(totalPopulation);
-		analysis.setInhabitedPremises(inhabitedPremises);
-
-		analysis.setDateFinished(new Date());
-		analysis.setStatus(AnalysisStatus.FINISHED);
-
-		analysisRepository.create(analysis);
-		analysis = (SimpleDemographicAnalysis) analysisService.addDemographicAnalysis(creator, analysis);
-
-		creator.setCredits(creator.getCredits() - analysisCost);
+		
+		analysis.setHash(analysisRepository.nextAnalysisHash().toString());
+		
+		creator.setCredits(creator.getCredits() - analysisCostCalculator.calculate(analysis));
 		accountRepository.edit(creator);
 
-		AnalysisHashResponse responseValue = new AnalysisHashResponse();
-		responseValue.setResponseStatus(Response.Status.OK);
-		responseValue.setHash(analysis.getHash().toString());
+		asyncAnalysisService.executeSimpleDemographicAnalysis(analysis);
 
-		return Response.status(Response.Status.OK).entity(responseValue).build();
+		SimpleDemographicAnalysisDetails analysisDetails = new SimpleDemographicAnalysisDetails(analysis);
+
+		return Response.status(Response.Status.OK).entity(analysisDetails).build();
+
 	}
 
 	/**
@@ -227,50 +190,33 @@ public class DemographicAnalysisRESTService {
 
 		Integer[] ageRange = advancedAnalysisForm.getRange();
 		String ageRangeStr = Joiner.on("-").join(ageRange);
-		HashMap<String, HashMap<Integer, Integer>> kobietyAndMezczyzniByAgeRanges;
 		Coordinate location = advancedAnalysisForm.getPoint();
-		Integer inhabitedPremises;
+		String locationDisplayName = advancedAnalysisForm.getLocationName();
+		String analysisName = advancedAnalysisForm.getName();
 
 		AdvancedDemographicAnalysis analysis;
 		switch (advancedAnalysisForm.getAreaType()) {
 		case RADIUS:
 			Integer radius = advancedAnalysisForm.getRadius();
 			analysis = (AdvancedDemographicAnalysis) (DemographicAnalysisBuilder.advanced().areaType(AreaType.RADIUS)
-					.radius(radius).ageRange(ageRangeStr).build());
-			kobietyAndMezczyzniByAgeRanges = addressStatService.sumRangeInRadius(ageRange, radius, location);
-			inhabitedPremises = addressStatService.sumAllPremisesInRadius(advancedAnalysisForm.getRadius(),
-					advancedAnalysisForm.getPoint());
+					.radius(radius).ageRange(ageRangeStr).location(location).locationDisplayName(locationDisplayName)
+					.creator(creator).name(analysisName).build());
 			break;
 		case TRAVEL_TIME:
 		default:
-			
-			if (!accountService.hasRole(creator, "PLAN_ZAAWANSOWANY") && !accountService.hasRole(creator, "PLAN_DEDYKOWANY")){
+
+			if (!accountService.hasRole(creator, "PLAN_ZAAWANSOWANY")
+					&& !accountService.hasRole(creator, "PLAN_DEDYKOWANY")) {
 				return Response.status(Response.Status.UNAUTHORIZED).build();
 			}
+
 			Integer travelTime = advancedAnalysisForm.getTravelTime();
 			TravelType travelType = advancedAnalysisForm.getTravelType();
-			Log.debug("Travel type: " + advancedAnalysisForm.getTravelType().name());
 			analysis = (AdvancedDemographicAnalysis) (DemographicAnalysisBuilder.advanced()
 					.areaType(AreaType.TRAVEL_TIME).travelTime(travelTime).travelType(travelType).ageRange(ageRangeStr)
+					.location(location).locationDisplayName(locationDisplayName).creator(creator).name(analysisName)
 					.build());
-			String geojsonArea = routingService.createGeoJSONServiceArea(location, travelTime, travelType.name().toCharArray()[0]);
-			
-			if (geojsonArea == null) {
-				BaseResponse response = new BaseResponse();
-				response.setMessage("Błąd wyznaczania strefy dojazdu. Upewnij się, że punkt znajduje się w pobliżu sieci dróg.");
-				response.setResponseStatus(Response.Status.NOT_FOUND);
-				return Response.status(Response.Status.NOT_FOUND).entity(response).build();
-			}
-			
-			analysis.setGeojsonArea(geojsonArea);
-			kobietyAndMezczyzniByAgeRanges = addressStatService.sumRangeInPolygon(ageRange, geojsonArea);
-			inhabitedPremises = addressStatService.sumAllPremisesInPolygon(geojsonArea);
 		}
-		
-		analysis.setCreator(creator);
-		analysis.setLocation(location);
-		analysis.setLocationDisplayName(advancedAnalysisForm.getLocationName());
-		analysis.setName(advancedAnalysisForm.getName());
 
 		Double analysisCost = analysisCostCalculator.calculate(analysis);
 		if (creator.getCredits() < analysisCost) {
@@ -279,37 +225,17 @@ public class DemographicAnalysisRESTService {
 			response.setMessage("Insufficient credits");
 			return Response.status(Response.Status.UNAUTHORIZED).entity(response).build();
 		}
+		
+		analysis.setHash(analysisRepository.nextAnalysisHash().toString());
 
-		if (!isPopulationHighEnough(kobietyAndMezczyzniByAgeRanges)) {
-			BaseResponse response = new BaseResponse();
-			response.setResponseStatus(Response.Status.NOT_FOUND);
-
-			Object[] messageArguments = { MIN_VALID_POPULATION };
-			String pattern = i18n.getString("analysis.demographic.lowpopulation");
-			MessageFormat formatter = new MessageFormat(pattern);
-			formatter.setLocale(i18n.getLocale());
-			response.setMessage(formatter.format(messageArguments));
-
-			return Response.status(Response.Status.NOT_FOUND).entity(response).build();
-		}
-
-		analysis.setKobietyAndMezczyzniByAgeRanges(kobietyAndMezczyzniByAgeRanges);
-		analysis.setInhabitedPremises(inhabitedPremises);
-
-		analysis.setDateFinished(new Date());
-		analysis.setStatus(AnalysisStatus.FINISHED);
-
-		analysisRepository.create(analysis);
-		analysis = (AdvancedDemographicAnalysis) analysisService.addDemographicAnalysis(creator, analysis);
-
-		creator.setCredits(creator.getCredits() - analysisCost);
+		creator.setCredits(creator.getCredits() - analysisCostCalculator.calculate(analysis));
 		accountRepository.edit(creator);
 
-		AnalysisHashResponse responseValue = new AnalysisHashResponse();
-		responseValue.setHash(analysis.getHash().toString());
-		responseValue.setResponseStatus(Response.Status.OK);
+		asyncAnalysisService.executeAdvancedDemographicAnalysis(analysis);
 
-		return Response.status(Response.Status.OK).entity(responseValue).build();
+		AdvancedDemographicAnalysisDetails analysisDetails = new AdvancedDemographicAnalysisDetails(analysis);
+
+		return Response.status(Response.Status.OK).entity(analysisDetails).build();
 	}
 
 	@POST
@@ -400,8 +326,9 @@ public class DemographicAnalysisRESTService {
 			end = begin + pageSize;
 			accountAnalyses = analysisRepository.findMostRecentRangeAndTypeForAccount(account, begin, end, orderBy,
 					getAnalysisClassType(type));
-		} else
+		} else {
 			accountAnalyses = analysisRepository.findMostRecentRangeForAccount(account, begin, end);
+		}
 
 		List<DemographicAnalysisDetails> analysesDetailsList = new ArrayList<>();
 
@@ -430,6 +357,26 @@ public class DemographicAnalysisRESTService {
 
 		if (analysis != null) {
 			return Response.status(Response.Status.OK).entity(details).build();
+		} else {
+			BaseResponse response = new BaseResponse();
+			response.setMessage("Analysis not found");
+			response.setResponseStatus(Response.Status.NOT_FOUND);
+			return Response.status(Response.Status.NOT_FOUND).entity(response).build();
+		}
+	}
+
+	@GET
+	@Path("/status/{hash}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response analysisStatus(@PathParam("hash") String hash) {
+
+		DemographicAnalysis analysis = analysisRepository.findByHash(UUID.fromString(hash));
+		if (analysis != null) {
+			AnalysisStatusResponse response = new AnalysisStatusResponse();
+			response.setStatus(analysis.getStatus());
+			response.setStatusCode(analysis.getStatusCode());
+			response.setResponseStatus(Response.Status.OK);
+			return Response.status(Response.Status.OK).entity(response).build();
 		} else {
 			BaseResponse response = new BaseResponse();
 			response.setMessage("Analysis not found");
@@ -493,25 +440,6 @@ public class DemographicAnalysisRESTService {
 		}
 
 		return analysisTypes;
-	}
-
-	public boolean isPopulationHighEnough(int population) {
-		return population > MIN_VALID_POPULATION;
-	}
-
-	public boolean isPopulationHighEnough(HashMap<String, HashMap<Integer, Integer>> kobietyAndMezczyzniByAgeRanges) {
-		int sum = 0;
-		for (Integer value : kobietyAndMezczyzniByAgeRanges.get("kobiety").values()) {
-			if (value != null) {
-				sum += value;
-			}
-		}
-		for (Integer value : kobietyAndMezczyzniByAgeRanges.get("mezczyzni").values()) {
-			if (value != null) {
-				sum += value;
-			}
-		}
-		return sum > MIN_VALID_POPULATION;
 	}
 
 }

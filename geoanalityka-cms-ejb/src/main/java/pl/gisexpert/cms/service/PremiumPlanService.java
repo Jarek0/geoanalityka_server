@@ -52,6 +52,7 @@ public class PremiumPlanService {
 		
 		account = em.getReference(account.getClass(), account.getId());
 		Set<Role> accountRoles = account.getRoles();
+		
 		Set<Role> newRoles = Sets.newHashSet(Iterables.filter(accountRoles, new Predicate<Role>() {
 			@Override
 			public boolean apply(Role input) {

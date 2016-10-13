@@ -73,6 +73,8 @@ public class Account implements Serializable, VisitableAccount {
 	@Size(min = 1, max = 50)
 	private String firstName;
 
+	
+	
 	@Column(name = "last_name", nullable = false, length = 30)
 	@NotNull
 	@Size(min = 1, max = 30)
