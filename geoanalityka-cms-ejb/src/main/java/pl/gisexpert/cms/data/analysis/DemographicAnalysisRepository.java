@@ -3,6 +3,7 @@ package pl.gisexpert.cms.data.analysis;
 import java.util.List;
 import java.util.UUID;
 
+import javax.ejb.Startup;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -68,10 +69,20 @@ public class DemographicAnalysisRepository extends AbstractRepository<Analysis> 
 		return query.getResultList();
 	}
 
-	@Transactional
-	public List<DemographicAnalysis> findMostRecentRangeAndTypeForAccount(Account account, int begin, int end,
-			String orderBy, List<Class> analysisTypes) {
-		Query query;
+    @Transactional
+    public List<DemographicAnalysis> getAnalysesDetailsToCompareForAccount(Account account, List<String> hashes) {
+
+        Query query = em.createNamedQuery("DemographicAnalysis.getAnalysesDetailsToCompareForAccount");
+        query.setParameter("account", account);
+        query.setParameter("hashes", hashes);
+
+
+        return query.getResultList();
+    }
+
+    @Transactional
+    public List<DemographicAnalysis> findMostRecentRangeAndTypeForAccount(Account account, int begin, int end, String orderBy, List<Class> analysisTypes) {
+        Query query;
 
 		switch (orderBy) {
 		case "dd":

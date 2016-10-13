@@ -10,8 +10,10 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
+
 import com.google.common.base.Joiner;
 
+import pl.gisexpert.cms.model.analysis.demographic.PeopleByWorkingAgeSums;
 import pl.gisexpert.model.gis.Coordinate;
 import pl.gisexpert.stat.qualifier.StatEntityManager;
 
@@ -58,6 +60,29 @@ public class AddressStatService {
 		
 		return result;
 	}
+
+	public PeopleByWorkingAgeSums peopleByWorkingAgeSums(Integer radius, Coordinate point) {
+		Query query = em.createNamedQuery("AddressStat.PeopleByWorkingAgeSums");
+		query.setParameter("x", point.getX());
+		query.setParameter("y", point.getY());
+		query.setParameter("radius", radius);
+
+		PeopleByWorkingAgeSums result = (PeopleByWorkingAgeSums) query.getSingleResult();
+
+
+		return result;
+	}
+
+	public PeopleByWorkingAgeSums peopleByWorkingAgeSumsPolygon(String polygonGeoJSON) {
+		Query query = em.createNamedQuery("AddressStat.PeopleByWorkingAgeSumsPolygon");
+		query.setParameter("geojsonGeom", polygonGeoJSON);
+
+		PeopleByWorkingAgeSums result = (PeopleByWorkingAgeSums) query.getSingleResult();
+
+
+		return result;
+	}
+
 
 	/**
 	 * 

@@ -1,4 +1,4 @@
-package pl.gisexpert.cms.service;
+package pl.gisexpert.stat.service;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -8,8 +8,6 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.inject.Inject;
-
-import org.hibernate.Hibernate;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
@@ -21,9 +19,10 @@ import pl.gisexpert.cms.model.Account;
 import pl.gisexpert.cms.model.analysis.AnalysisStatus;
 import pl.gisexpert.cms.model.analysis.AnalysisStatusCode;
 import pl.gisexpert.cms.model.analysis.demographic.AdvancedDemographicAnalysis;
+import pl.gisexpert.cms.model.analysis.demographic.PeopleByWorkingAgeSums;
 import pl.gisexpert.cms.model.analysis.demographic.SimpleDemographicAnalysis;
-import pl.gisexpert.stat.service.AddressStatService;
-import pl.gisexpert.stat.service.RoutingService;
+import pl.gisexpert.cms.service.AnalysisCostCalculator;
+import pl.gisexpert.cms.service.AnalysisService;
 
 @Stateless
 @TransactionManagement(TransactionManagementType.BEAN)
@@ -76,9 +75,8 @@ public class AsyncAnalysisService {
 			if (geojsonArea == null) {
 				statusCode = AnalysisStatusCode.SERVICE_AREA_FAIL;
 				status = AnalysisStatus.FAILED;
-			}
-			
-			else {
+			} else {
+				
 				analysis.setGeojsonArea(geojsonArea);
 				totalPopulation = addressStatService.sumAllInPolygon(geojsonArea);
 				inhabitedPremises = addressStatService.sumAllPremisesInPolygon(geojsonArea);
@@ -121,12 +119,14 @@ public class AsyncAnalysisService {
 		HashMap<String, HashMap<Integer, Integer>> kobietyAndMezczyzniByAgeRanges;
 		Integer inhabitedPremises = 0;
 		Integer[] ageRange = Iterables.toArray(Ints.stringConverter().convertAll(Splitter.on("-").split(analysis.getAgeRange())), Integer.class);
+		PeopleByWorkingAgeSums peopleByWorkingAgeSums;
 		
 		switch (analysis.getAreaType()) {
 		case RADIUS:
 			
 			kobietyAndMezczyzniByAgeRanges = addressStatService.sumRangeInRadius(ageRange, analysis.getRadius(), analysis.getLocation());
 			inhabitedPremises = addressStatService.sumAllPremisesInRadius(analysis.getRadius(), analysis.getLocation());
+			peopleByWorkingAgeSums = addressStatService.peopleByWorkingAgeSums(analysis.getRadius(), analysis.getLocation());
 			
 			status = AnalysisStatus.FINISHED;
 			statusCode = AnalysisStatusCode.OK;
@@ -146,6 +146,11 @@ public class AsyncAnalysisService {
 				analysis.setGeojsonArea(geojsonArea);
 				kobietyAndMezczyzniByAgeRanges = addressStatService.sumRangeInPolygon(ageRange, geojsonArea);
 				inhabitedPremises = addressStatService.sumAllPremisesInPolygon(geojsonArea);
+				peopleByWorkingAgeSums = addressStatService.peopleByWorkingAgeSumsPolygon(geojsonArea);
+				
+				analysis.setPoprod(peopleByWorkingAgeSums.getPoprod());
+				analysis.setProd(peopleByWorkingAgeSums.getProd());
+				analysis.setPrzedprod(peopleByWorkingAgeSums.getPrzedprod());
 				
 				statusCode = AnalysisStatusCode.OK;
 				status = AnalysisStatus.FINISHED;

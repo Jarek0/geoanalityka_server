@@ -17,6 +17,7 @@
 package pl.gisexpert.rest.analysis;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.UUID;
@@ -52,7 +53,6 @@ import pl.gisexpert.cms.model.analysis.demographic.SimpleDemographicAnalysis;
 import pl.gisexpert.cms.service.AccountService;
 import pl.gisexpert.cms.service.AnalysisCostCalculator;
 import pl.gisexpert.cms.service.AnalysisService;
-import pl.gisexpert.cms.service.AsyncAnalysisService;
 import pl.gisexpert.model.gis.Coordinate;
 import pl.gisexpert.rest.model.BaseResponse;
 import pl.gisexpert.rest.model.analysis.AdvancedDemographicAnalysisDetails;
@@ -64,8 +64,7 @@ import pl.gisexpert.rest.model.analysis.SimpleDemographicAnalysisDetails;
 import pl.gisexpert.rest.model.analysis.demographic.AdvancedAnalysisForm;
 import pl.gisexpert.rest.model.analysis.demographic.SimpleAnalysisForm;
 import pl.gisexpert.rest.util.producer.qualifier.RESTI18n;
-import pl.gisexpert.stat.service.AddressStatService;
-import pl.gisexpert.stat.service.RoutingService;
+import pl.gisexpert.stat.service.AsyncAnalysisService;
 
 @Path("/analysis/demographic")
 @Stateless
@@ -79,6 +78,9 @@ public class DemographicAnalysisRESTService {
 
 	@Inject
 	private DemographicAnalysisRepository analysisRepository;
+	
+	@Inject
+	private AnalysisService analysisService;
 
 	@Inject
 	private AnalysisCostCalculator analysisCostCalculator;
@@ -195,6 +197,7 @@ public class DemographicAnalysisRESTService {
 		String analysisName = advancedAnalysisForm.getName();
 
 		AdvancedDemographicAnalysis analysis;
+		
 		switch (advancedAnalysisForm.getAreaType()) {
 		case RADIUS:
 			Integer radius = advancedAnalysisForm.getRadius();
@@ -204,7 +207,6 @@ public class DemographicAnalysisRESTService {
 			break;
 		case TRAVEL_TIME:
 		default:
-
 			if (!accountService.hasRole(creator, "PLAN_ZAAWANSOWANY")
 					&& !accountService.hasRole(creator, "PLAN_DEDYKOWANY")) {
 				return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -228,14 +230,16 @@ public class DemographicAnalysisRESTService {
 		
 		analysis.setHash(analysisRepository.nextAnalysisHash().toString());
 
-		creator.setCredits(creator.getCredits() - analysisCostCalculator.calculate(analysis));
-		accountRepository.edit(creator);
-
 		asyncAnalysisService.executeAdvancedDemographicAnalysis(analysis);
 
-		AdvancedDemographicAnalysisDetails analysisDetails = new AdvancedDemographicAnalysisDetails(analysis);
+		creator.setCredits(creator.getCredits() - analysisCost);
+		accountRepository.edit(creator);
 
-		return Response.status(Response.Status.OK).entity(analysisDetails).build();
+		AnalysisHashResponse responseValue = new AnalysisHashResponse();
+		responseValue.setHash(analysis.getHash().toString());
+		responseValue.setResponseStatus(Response.Status.OK);
+
+		return Response.status(Response.Status.OK).entity(responseValue).build();
 	}
 
 	@POST
@@ -302,6 +306,35 @@ public class DemographicAnalysisRESTService {
 	 * Response.status(Response.Status.OK).entity(analysesDetailsList).build();
 	 * }
 	 */
+
+	@GET
+	@Path("/compare")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getComparedAnalyses(@QueryParam("hashes")  List<String> hashes, @QueryParam("analysisType") String type) {
+
+		Subject currentUser = SecurityUtils.getSubject();
+		String username = (String) currentUser.getPrincipal();
+		Account account = accountRepository.findByUsername(username);
+
+		List<DemographicAnalysis> accountAnalyses = analysisRepository.getAnalysesDetailsToCompareForAccount(account, hashes);
+
+
+		List<DemographicAnalysisDetails> analysesDetailsList = new ArrayList<>();
+
+
+		for (DemographicAnalysis analysis : accountAnalyses) {
+			if (analysis instanceof AdvancedDemographicAnalysis) {
+				analysesDetailsList.add( new AdvancedDemographicAnalysisDetails(
+						(AdvancedDemographicAnalysis) analysis));
+			} else if (analysis instanceof SimpleDemographicAnalysis) {
+				analysesDetailsList.add(new SimpleDemographicAnalysisDetails(
+						(SimpleDemographicAnalysis) analysis));
+			}
+
+		}
+
+		return Response.status(Response.Status.OK).entity(analysesDetailsList).build();
+	}
 
 	@GET
 	@Path("/recent/{begin}/{end}")
