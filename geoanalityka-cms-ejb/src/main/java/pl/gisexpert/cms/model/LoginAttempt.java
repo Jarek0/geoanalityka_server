@@ -36,6 +36,12 @@ public class LoginAttempt implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date date;
 
+
+
+    @Column(nullable = false)
+    @NotNull
+    private String ip;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "account_id")
     private Account account;
@@ -47,6 +53,8 @@ public class LoginAttempt implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
+
+    public void setIp(String ip) { this.ip = ip; }
 
     public Boolean getSuccessful() {
 		return successful;
