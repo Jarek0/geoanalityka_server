@@ -2,9 +2,11 @@ package pl.gisexpert.cms.model.analysis.demographic;
 
 import java.util.Date;
 
+import pl.gisexpert.cms.model.Account;
 import pl.gisexpert.cms.model.analysis.AnalysisStatus;
 import pl.gisexpert.cms.model.analysis.AreaType;
 import pl.gisexpert.cms.model.analysis.TravelType;
+import pl.gisexpert.model.gis.Coordinate;
 
 public class DemographicAnalysisBuilder {
 	
@@ -14,6 +16,10 @@ public class DemographicAnalysisBuilder {
 	private Integer radius;
 	private Integer travelTime;
 	private String ageRange;
+	private Account creator;
+	private Coordinate location;
+	private String locationDisplayName;
+	private String name;
 	
 	public DemographicAnalysisBuilder(DemographicAnalysisType type) {
 		this.type = type;
@@ -56,6 +62,26 @@ public class DemographicAnalysisBuilder {
 		return this;
 	}
 	
+	public DemographicAnalysisBuilder name(String name) {
+		this.name = name;
+		return this;
+	}
+	
+	public DemographicAnalysisBuilder creator(Account creator) {
+		this.creator = creator;
+		return this;
+	}
+	
+	public DemographicAnalysisBuilder location(Coordinate location) {
+		this.location = location;
+		return this;
+	}
+	
+	public DemographicAnalysisBuilder locationDisplayName(String locationDisplayName) {
+		this.locationDisplayName = locationDisplayName;
+		return this;
+	}
+	
 	public DemographicAnalysis build() {
 		DemographicAnalysis analysis;
 		
@@ -84,6 +110,11 @@ public class DemographicAnalysisBuilder {
 		
 		analysis.setDateStarted(new Date());
 		analysis.setStatus(AnalysisStatus.PENDING);
+		
+		analysis.setCreator(creator);
+		analysis.setName(name);
+		analysis.setLocation(location);
+		analysis.setLocationDisplayName(locationDisplayName);
 		
 		return analysis;
 	}

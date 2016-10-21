@@ -1,4 +1,4 @@
-package pl.gisexpert.service;
+package pl.gisexpert.cms.service;
 
 import java.security.InvalidParameterException;
 

@@ -16,7 +16,7 @@
 	<parent>
 		<artifactId>geoanalityka</artifactId>
 		<groupId>pl.gisexpert</groupId>
-		<version>0.4.1</version>
+		<version>0.5</version>
 	</parent>
 
 	<artifactId>geoanalityka-cms-ejb</artifactId>
@@ -47,8 +47,6 @@
 			<scope>provided</scope>
 			<version>${project.version}</version>
 		</dependency>
-
-
 
 		<!-- Declare the APIs we depend on and need for compilation. All of them 
 			are provided by JBoss WildFly -->
@@ -146,13 +144,6 @@
 			<artifactId>weld-logger</artifactId>
 			<version>1.0.0-CR2</version>
 			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.primefaces</groupId>
-			<artifactId>primefaces</artifactId>
-			<version>5.2</version>
-			<scope>compile</scope>
 		</dependency>
 
 		<dependency>

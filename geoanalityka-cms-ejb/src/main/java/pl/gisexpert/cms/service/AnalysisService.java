@@ -19,6 +19,7 @@ package pl.gisexpert.cms.service;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
 
 import pl.gisexpert.cms.model.Account;
 import pl.gisexpert.cms.model.analysis.demographic.DemographicAnalysis;

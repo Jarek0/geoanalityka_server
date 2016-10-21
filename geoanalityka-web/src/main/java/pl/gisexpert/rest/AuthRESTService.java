@@ -434,6 +434,8 @@ public class AuthRESTService {
 		}
 		accountInfo.setAccessToken(accessToken.getToken());
 		accountInfo.setTokenExpires(accessToken.getExpires());
+		accountInfo.setAnalysesBbox(appConfig.getPlanTestowyBbox().getBbox());
+
 
 		return Response.status(Response.Status.OK).entity(accountInfo).build();
 	}

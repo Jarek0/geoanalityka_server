@@ -1,5 +1,6 @@
 package pl.gisexpert.rest.model;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -25,6 +26,7 @@ public class AccountInfo {
 	private Double queuedPayment;
 	private String accountType;
 	private List<String> roles;
+	private ArrayList<ArrayList<Double>> analysesBbox;
 	
 	public AccountInfo(){
 		
@@ -133,5 +135,9 @@ public class AccountInfo {
 	public void setAccountType(String accountType) {
 		this.accountType = accountType;
 	}
+
+	public ArrayList<ArrayList<Double>> getAnalysesBbox() { return analysesBbox; }
+
+	public void setAnalysesBbox(ArrayList<ArrayList<Double>> analysesBbox) { this.analysesBbox = analysesBbox; }
 
 }

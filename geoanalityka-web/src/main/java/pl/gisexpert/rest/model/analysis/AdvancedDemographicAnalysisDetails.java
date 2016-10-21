@@ -9,12 +9,9 @@ public class AdvancedDemographicAnalysisDetails extends DemographicAnalysisDetai
 	private HashMap<String, HashMap<Integer, Integer>> kobietyAndMezczyzniByAgeRanges;
 	private String ageRange;
 
-	private double przedprod;
-
-
-	private double prod;
-
-	private double poprod;
+	private Double przedprod;
+	private Double prod;
+	private Double poprod;
 
 	public AdvancedDemographicAnalysisDetails(AdvancedDemographicAnalysis analysis) {
 		super(analysis);
@@ -43,27 +40,27 @@ public class AdvancedDemographicAnalysisDetails extends DemographicAnalysisDetai
 		this.ageRange = ageRange;
 	}
 
-	public double getPrzedprod() {
+	public Double getPrzedprod() {
 		return przedprod;
 	}
 
-	public void setPrzedprod(double przedprod) {
+	public void setPrzedprod(Double przedprod) {
 		this.przedprod = przedprod;
 	}
 
-	public double getProd() {
+	public Double getProd() {
 		return prod;
 	}
 
-	public void setProd(double prod) {
+	public void setProd(Double prod) {
 		this.prod = prod;
 	}
 
-	public double getPoprod() {
+	public Double getPoprod() {
 		return poprod;
 	}
 
-	public void setPoprod(double poprod) {
+	public void setPoprod(Double poprod) {
 		this.poprod = poprod;
 	}
 

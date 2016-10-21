@@ -20,15 +20,15 @@ public class AdvancedDemographicAnalysis extends DemographicAnalysis {
 	private String ageRange;
 
 	@Column(name = "przedprod")
-	protected double przedprod;
+	protected Double przedprod;
 
 	@Column(name = "prod")
-	protected double prod;
+	protected Double prod;
 
 
 
 	@Column(name = "poprod")
-	protected double poprod;
+	protected Double poprod;
 
 	public HashMap<String, HashMap<Integer, Integer>> getKobietyAndMezczyzniByAgeRanges() {
 		return kobietyAndMezczyzniByAgeRanges;
@@ -46,27 +46,27 @@ public class AdvancedDemographicAnalysis extends DemographicAnalysis {
 	public void setAgeRange(String ageRange) {
 		this.ageRange = ageRange;
 	}
-	public double getPrzedprod() {
+	public Double getPrzedprod() {
 		return przedprod;
 	}
 
-	public void setPrzedprod(double przedprod) {
+	public void setPrzedprod(Double przedprod) {
 		this.przedprod = przedprod;
 	}
 
-	public double getProd() {
+	public Double getProd() {
 		return prod;
 	}
 
-	public void setProd(double prod) {
+	public void setProd(Double prod) {
 		this.prod = prod;
 	}
 
-	public double getPoprod() {
+	public Double getPoprod() {
 		return poprod;
 	}
 
-	public void setPoprod(double poprod) {
+	public void setPoprod(Double poprod) {
 		this.poprod = poprod;
 	}
 
