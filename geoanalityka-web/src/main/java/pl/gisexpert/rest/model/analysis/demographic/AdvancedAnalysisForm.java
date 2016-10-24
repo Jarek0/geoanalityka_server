@@ -10,7 +10,7 @@ public class AdvancedAnalysisForm extends BaseForm {
 	private Coordinate point;
 	private Integer radius;
 	private TravelType travelType;
-	private Integer travelTime;
+	private Integer travelTimeOrDistance;
 	private Integer[] range;
 	private String name;
 	private String locationName;
@@ -68,6 +68,9 @@ public class AdvancedAnalysisForm extends BaseForm {
 		case "travel-time":
 			this.areaType = AreaType.TRAVEL_TIME;
 			break;
+		case "travel-distance":
+			this.areaType = AreaType.TRAVEL_DISTANCE;
+			break;
 		}
 	}
 
@@ -89,11 +92,14 @@ public class AdvancedAnalysisForm extends BaseForm {
 		}
 	}
 
-	public Integer getTravelTime() {
-		return travelTime;
+	public Integer getTravelTimeOrDistance() {
+		return travelTimeOrDistance;
 	}
 
-	public void setTravelTime(Integer travelTime) {
-		this.travelTime = travelTime;
+	public void setTravelTimeOrDistance(Integer travelTimeOrDistance) {
+		this.travelTimeOrDistance = travelTimeOrDistance;
 	}
+	
+	
+
 }

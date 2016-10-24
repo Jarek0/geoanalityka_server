@@ -14,7 +14,7 @@ public class DemographicAnalysisBuilder {
 	private AreaType areaType;
 	private TravelType travelType;
 	private Integer radius;
-	private Integer travelTime;
+	private Integer travelTimeOrDistance;
 	private String ageRange;
 	private Account creator;
 	private Coordinate location;
@@ -52,8 +52,8 @@ public class DemographicAnalysisBuilder {
 		return this;
 	}
 	
-	public DemographicAnalysisBuilder travelTime(Integer travelTime) {
-		this.travelTime = travelTime;
+	public DemographicAnalysisBuilder travelTimeOrDistance(Integer travelTimeOrDistance) {
+		this.travelTimeOrDistance = travelTimeOrDistance;
 		return this;
 	}
 	
@@ -103,7 +103,7 @@ public class DemographicAnalysisBuilder {
 			analysis.setRadius(radius);
 			break;
 		case TRAVEL_TIME:
-			analysis.setTravelTime(travelTime);
+			analysis.setTravelTimeOrDistance(travelTimeOrDistance);
 			analysis.setTravelType(travelType);
 			break;
 		}

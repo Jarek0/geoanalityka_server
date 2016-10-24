@@ -138,10 +138,10 @@ public class DemographicAnalysisRESTService {
 				return Response.status(Response.Status.UNAUTHORIZED).build();
 			}
 
-			Integer travelTime = simpleAnalysisForm.getTravelTime();
+			Integer travelTime = simpleAnalysisForm.getTravelTimeOrDistance();
 			TravelType travelType = simpleAnalysisForm.getTravelType();
 			analysis = (SimpleDemographicAnalysis) (DemographicAnalysisBuilder.simple().areaType(AreaType.TRAVEL_TIME)
-					.travelTime(travelTime).travelType(travelType).location(location)
+					.travelTimeOrDistance(travelTime).travelType(travelType).location(location)
 					.locationDisplayName(locationDisplayName).name(analysisName).build());
 		}
 
@@ -206,16 +206,17 @@ public class DemographicAnalysisRESTService {
 					.creator(creator).name(analysisName).build());
 			break;
 		case TRAVEL_TIME:
+		case TRAVEL_DISTANCE:
 		default:
 			if (!accountService.hasRole(creator, "PLAN_ZAAWANSOWANY")
 					&& !accountService.hasRole(creator, "PLAN_DEDYKOWANY")) {
 				return Response.status(Response.Status.UNAUTHORIZED).build();
 			}
 
-			Integer travelTime = advancedAnalysisForm.getTravelTime();
+			Integer travelTimeOrDistance = advancedAnalysisForm.getTravelTimeOrDistance();
 			TravelType travelType = advancedAnalysisForm.getTravelType();
 			analysis = (AdvancedDemographicAnalysis) (DemographicAnalysisBuilder.advanced()
-					.areaType(AreaType.TRAVEL_TIME).travelTime(travelTime).travelType(travelType).ageRange(ageRangeStr)
+					.areaType(AreaType.TRAVEL_TIME).travelTimeOrDistance(travelTimeOrDistance).travelType(travelType).ageRange(ageRangeStr)
 					.location(location).locationDisplayName(locationDisplayName).creator(creator).name(analysisName)
 					.build());
 		}
@@ -235,11 +236,9 @@ public class DemographicAnalysisRESTService {
 		creator.setCredits(creator.getCredits() - analysisCost);
 		accountRepository.edit(creator);
 
-		AnalysisHashResponse responseValue = new AnalysisHashResponse();
-		responseValue.setHash(analysis.getHash().toString());
-		responseValue.setResponseStatus(Response.Status.OK);
+		AdvancedDemographicAnalysisDetails analysisDetails = new AdvancedDemographicAnalysisDetails(analysis);
 
-		return Response.status(Response.Status.OK).entity(responseValue).build();
+		return Response.status(Response.Status.OK).entity(analysisDetails).build();
 	}
 
 	@POST

@@ -16,7 +16,7 @@ public class DemographicAnalysisDetails {
 	private String name;
 	private Integer radius;
 	private String travelType;
-	private Integer travelTime;
+	private Integer travelTimeOrDistance;
 	private String areaType;
 	private Coordinate location;
 	private String locationDisplayName;
@@ -42,8 +42,21 @@ public class DemographicAnalysisDetails {
 			this.areaType = "radius";
 			break;
 		case TRAVEL_TIME:
-			this.areaType = "travel-time";
-			this.travelTime = analysis.getTravelTime();
+		case TRAVEL_DISTANCE:
+
+			switch (analysis.getAreaType()) {
+			case TRAVEL_TIME:
+				this.areaType = "travel-time";
+				break;
+			case TRAVEL_DISTANCE:
+				this.areaType = "travel-distance";
+				break;
+			default:
+				break;
+			}
+			
+
+			this.travelTimeOrDistance = analysis.getTravelTimeOrDistance();
 			switch (analysis.getTravelType()) {
 			case CAR:
 				this.travelType = "car";
@@ -57,9 +70,9 @@ public class DemographicAnalysisDetails {
 			}
 			break;
 		}
-		
+
 		this.geojsonArea = analysis.getGeojsonArea();
-		
+
 	}
 
 	public Date getDateStarted() {
@@ -150,12 +163,12 @@ public class DemographicAnalysisDetails {
 		this.travelType = travelType;
 	}
 
-	public Integer getTravelTime() {
-		return travelTime;
+	public Integer getTravelTimeOrDistance() {
+		return travelTimeOrDistance;
 	}
 
-	public void setTravelTime(Integer travelTime) {
-		this.travelTime = travelTime;
+	public void setTravelTimeOrDistance(Integer travelTimeOrDistance) {
+		this.travelTimeOrDistance = travelTimeOrDistance;
 	}
 
 	public String getAreaType() {

@@ -56,10 +56,10 @@ public class DemographicAnalysis extends Analysis implements Serializable {
 	@Column(columnDefinition = "TEXT")
 	private String geojsonArea;
 	
-	@Column
-	@Max(60)
+	@Column(name = "travel_time_or_distance")
+	@Max(100000)
 	@Min(1)
-	Integer travelTime;
+	Integer travelTimeOrDistance;
 
 	@Column
 	private Integer radius;
@@ -131,12 +131,12 @@ public class DemographicAnalysis extends Analysis implements Serializable {
 		this.geojsonArea = geojsonArea;
 	}
 
-	public Integer getTravelTime() {
-		return travelTime;
+	public Integer getTravelTimeOrDistance() {
+		return travelTimeOrDistance;
 	}
 
-	public void setTravelTime(Integer travelTime) {
-		this.travelTime = travelTime;
+	public void setTravelTimeOrDistance(Integer travelTimeOrDistance) {
+		this.travelTimeOrDistance = travelTimeOrDistance;
 	}
 
 	public Integer getInhabitedPremises() {

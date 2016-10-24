@@ -12,7 +12,7 @@ public class SimpleAnalysisForm extends BaseForm {
 	private String locationName;
 	private AreaType areaType;
 	private TravelType travelType;
-	private Integer travelTime;
+	private Integer travelTimeOrDistance;
 
 	public Coordinate getPoint() {
 		return point;
@@ -79,12 +79,11 @@ public class SimpleAnalysisForm extends BaseForm {
 		}
 	}
 
-	public Integer getTravelTime() {
-		return travelTime;
+	public Integer getTravelTimeOrDistance() {
+		return travelTimeOrDistance;
 	}
 
-	public void setTravelTime(Integer travelTime) {
-		this.travelTime = travelTime;
+	public void setTravelTimeOrDistance(Integer travelTimeOrDistance) {
+		this.travelTimeOrDistance = travelTimeOrDistance;
 	}
-
 }

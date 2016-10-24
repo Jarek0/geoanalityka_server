@@ -69,7 +69,7 @@ public class AsyncAnalysisService {
 			statusCode = AnalysisStatusCode.OK;
 			break;
 		case TRAVEL_TIME:
-			String geojsonArea = routingService.createGeoJSONServiceArea(analysis.getLocation(), analysis.getTravelTime(),
+			String geojsonArea = routingService.createGeoJSONServiceArea(analysis.getLocation(), analysis.getTravelTimeOrDistance(),
 					analysis.getTravelType().name().toCharArray()[0]);
 
 			if (geojsonArea == null) {
@@ -133,7 +133,7 @@ public class AsyncAnalysisService {
 			break;
 		case TRAVEL_TIME:
 		default:
-			String geojsonArea = routingService.createGeoJSONServiceArea(analysis.getLocation(), analysis.getTravelTime(),
+			String geojsonArea = routingService.createGeoJSONServiceArea(analysis.getLocation(), analysis.getTravelTimeOrDistance(),
 					analysis.getTravelType().name().toCharArray()[0]);
 
 			if (geojsonArea == null) {

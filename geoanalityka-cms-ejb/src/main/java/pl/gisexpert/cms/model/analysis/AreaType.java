@@ -2,7 +2,7 @@ package pl.gisexpert.cms.model.analysis;
 
 public enum AreaType {
 
-	RADIUS("R"), TRAVEL_TIME("T");
+	RADIUS("R"), TRAVEL_TIME("T"), TRAVEL_DISTANCE("D");
 
 	private final String name;
 
