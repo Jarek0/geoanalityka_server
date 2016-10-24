@@ -273,7 +273,7 @@ public class AuthRESTService {
 	@Path("/getToken")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response getToken(GetTokenForm formData) {
+	public Response getToken(@Context HttpServletRequest request, GetTokenForm formData) {
 
 		Account account = accountRepository.findByUsername(formData.getUsername());
 
@@ -306,6 +306,7 @@ public class AuthRESTService {
 		LoginAttempt loginAttempt = new LoginAttempt();
 		loginAttempt.setDate(new Date());
 		loginAttempt.setAccount(account);
+		loginAttempt.setIp(request.getRemoteAddr());
 
 		DefaultPasswordService passwordService = new DefaultPasswordService();
 		DefaultHashService dhs = new DefaultHashService();
@@ -433,6 +434,8 @@ public class AuthRESTService {
 		}
 		accountInfo.setAccessToken(accessToken.getToken());
 		accountInfo.setTokenExpires(accessToken.getExpires());
+		accountInfo.setAnalysesBbox(appConfig.getPlanTestowyBbox().getBbox());
+
 
 		return Response.status(Response.Status.OK).entity(accountInfo).build();
 	}

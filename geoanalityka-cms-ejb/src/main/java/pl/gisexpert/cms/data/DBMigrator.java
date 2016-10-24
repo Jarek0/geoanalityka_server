@@ -39,6 +39,8 @@ public class DBMigrator {
 		// Flyway was introduced to the project when production was at v0.4
 		flyway.setBaselineVersionAsString("0.4");
 		flyway.setBaselineOnMigrate(true);
+		//flyway.setValidateOnMigrate(false);
+		//flyway.repair();
 		flyway.migrate();
 	}
 }

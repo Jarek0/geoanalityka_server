@@ -1,11 +1,14 @@
 package pl.gisexpert.service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.ini4j.Wini;
 import org.omnifaces.cdi.Eager;
 import org.slf4j.Logger;
@@ -33,6 +36,16 @@ public class GlobalConfigService {
 		public void setPortalUrl(String portalUrl) {
 			this.portalUrl = portalUrl;
 		}
+	}
+
+	public class PlanTestowyBbox{
+		private ArrayList<ArrayList<Double>> planTestowyBbox;
+
+		public ArrayList<ArrayList<Double>> getBbox() { return planTestowyBbox; }
+
+		public void setBbox(ArrayList<ArrayList<Double>> planTestowyBbox) { this.planTestowyBbox = planTestowyBbox; }
+
+
 	}
 
 	public class PayU {
@@ -100,6 +113,7 @@ public class GlobalConfigService {
 	private Clients clients;
 	private PayU payu;
 	private Settings settings;
+	private PlanTestowyBbox planTestowyBbox;
 
 	@Inject
 	Logger log;
@@ -124,6 +138,13 @@ public class GlobalConfigService {
 			settings.setBaseCredits(config.get("settings", "base_credits", Integer.class));
 			settings.setContactFormTarget(config.get("settings", "contact_form_target", String.class));
 
+			planTestowyBbox = new PlanTestowyBbox();
+			String str = config.get("settings", "plan_testowy_bbox",String.class);
+			Gson gson = new Gson();
+			ArrayList<ArrayList<Double>> list = gson.fromJson(str, new TypeToken<ArrayList<ArrayList<Double>>>() {}.getType());
+
+			planTestowyBbox.setBbox(list);
+
 		} catch (IOException ex) {
 			log.error(null, ex);
 		}
@@ -140,5 +161,7 @@ public class GlobalConfigService {
 	public Settings getSettings() {
 		return settings;
 	}
+
+	public PlanTestowyBbox getPlanTestowyBbox() {return planTestowyBbox;}
 	
 }

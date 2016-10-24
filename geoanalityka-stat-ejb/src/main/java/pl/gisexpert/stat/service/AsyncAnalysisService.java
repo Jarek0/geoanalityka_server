@@ -127,7 +127,11 @@ public class AsyncAnalysisService {
 			kobietyAndMezczyzniByAgeRanges = addressStatService.sumRangeInRadius(ageRange, analysis.getRadius(), analysis.getLocation());
 			inhabitedPremises = addressStatService.sumAllPremisesInRadius(analysis.getRadius(), analysis.getLocation());
 			peopleByWorkingAgeSums = addressStatService.peopleByWorkingAgeSums(analysis.getRadius(), analysis.getLocation());
-			
+
+			analysis.setPoprod(peopleByWorkingAgeSums.getPoprod());
+			analysis.setProd(peopleByWorkingAgeSums.getProd());
+			analysis.setPrzedprod(peopleByWorkingAgeSums.getPrzedprod());
+
 			status = AnalysisStatus.FINISHED;
 			statusCode = AnalysisStatusCode.OK;
 			break;
@@ -156,7 +160,7 @@ public class AsyncAnalysisService {
 				status = AnalysisStatus.FINISHED;
 			}
 		}
-		
+
 		if (status == AnalysisStatus.FINISHED && !isPopulationHighEnough(kobietyAndMezczyzniByAgeRanges)) {
 			status = AnalysisStatus.FAILED;
 			statusCode = AnalysisStatusCode.POPULATION_TOO_LOW;

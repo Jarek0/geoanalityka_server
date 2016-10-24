@@ -3,7 +3,7 @@
   <parent>
     <groupId>pl.gisexpert</groupId>
     <artifactId>geoanalityka</artifactId>
-    <version>0.5</version>
+    <version>0.6</version>
   </parent>
   <artifactId>geoanalityka-common-jar</artifactId>
   <name>geoanalityka Common jar</name>
