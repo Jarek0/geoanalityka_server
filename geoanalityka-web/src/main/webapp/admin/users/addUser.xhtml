@@ -26,22 +26,37 @@
 
             <div style="padding-top:30px" class="panel-body" >
                 
-                <h2>Funkcja tymczasowo niedostępna</h2>
-                
                 <div style="display:none" id="login-alert" class="alert alert-danger col-sm-12"></div>
 
-                <h:form id="addUser" styleClass="form-horizontal hidden" role="form">
+                <h:form id="addUser" styleClass="form-horizontal" role="form">
                     <p:messages />
-
+                    
                     <div class="form-group col-sm-12 col-lg-8">
-                        <p:outputLabel for="account-username" value="#{i18n['account.username']}" styleClass="control-label col-sm-4"/>
+                        <p:outputLabel for="account-firstname" value="#{i18n['address.firstname']}" styleClass="control-label col-sm-4"/>
                         <div class="col-sm-8">
-                            <p:inputText id="account-username" styleClass="form-control" value="#{addUserController.account.username}" pt:placeholder="#{i18n['account.username']}">
-                                <f:validator binding="#{usernameUnicityValidator}" id="usernameUnicityValidator" />
+                            <p:inputText id="account-firstname" styleClass="form-control" value="#{addUserController.account.firstName}" pt:placeholder="#{i18n['address.firstname']}">
+                            </p:inputText>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group col-sm-12 col-lg-8">
+                        <p:outputLabel for="account-lastname" value="#{i18n['address.lastname']}" styleClass="control-label col-sm-4"/>
+                        <div class="col-sm-8">
+                            <p:inputText id="account-lastname" styleClass="form-control" value="#{addUserController.account.lastName}" pt:placeholder="#{i18n['address.lastname']}">
+                            </p:inputText>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group col-sm-12 col-lg-8">
+                        <p:outputLabel for="account-company-name" value="#{i18n['company.name']}" styleClass="control-label col-sm-4"/>
+                        <div class="col-sm-8">
+                            <p:inputText id="account-company-name" styleClass="form-control" value="#{addUserController.company.companyName}" pt:placeholder="#{i18n['company.name']}">
                             </p:inputText>
                         </div>
                     </div>
 
+                    <hr class="col-sm-12 col-lg-8" />
+                    
                     <div class="form-group col-sm-12 col-lg-8">
                         <p:outputLabel for="account-email" value="#{i18n['account.email']}" styleClass="control-label col-sm-4"/>
                         <div class="col-sm-8">

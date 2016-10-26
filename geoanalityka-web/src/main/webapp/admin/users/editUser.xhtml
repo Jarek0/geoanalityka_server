@@ -67,6 +67,14 @@
                             </p:password>
                         </div>
                     </div>
+                    
+                    <div class="form-group col-sm-12 col-lg-8">
+                        <p:outputLabel for="account-credits" value="#{i18n['account.credits']}" styleClass="control-label col-sm-4"/>
+                        <div class="col-sm-8">
+                            <p:inputText id="account-credits" styleClass="form-control" value="#{editUserController.credits}" pt:placeholder="#{i18n['account.credits']}">
+                            </p:inputText>
+                        </div>
+                    </div>
 
                     <hr class="col-sm-12 col-lg-8" />
 

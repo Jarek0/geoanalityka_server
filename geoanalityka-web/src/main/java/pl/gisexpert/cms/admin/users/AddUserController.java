@@ -17,9 +17,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pl.gisexpert.cms.data.AccountRepository;
+import pl.gisexpert.cms.data.CompanyRepository;
 import pl.gisexpert.cms.data.RoleRepository;
 import pl.gisexpert.cms.model.Account;
 import pl.gisexpert.cms.model.AccountStatus;
+import pl.gisexpert.cms.model.Address;
+import pl.gisexpert.cms.model.Company;
+import pl.gisexpert.cms.model.CompanyAccount;
 import pl.gisexpert.cms.model.Role;
 import pl.gisexpert.service.GlobalConfigService;
 
@@ -30,7 +34,8 @@ public class AddUserController implements Serializable {
 
     Logger log = LoggerFactory.getLogger(AddUserController.class);
     
-    private Account account;
+    private CompanyAccount account;
+    private Company company;
     
     @Inject
     private RoleRepository roleRepository;
@@ -39,13 +44,28 @@ public class AddUserController implements Serializable {
     private AccountRepository accountRepository;
     
     @Inject
+    private CompanyRepository companyRepository;
+    
+    @Inject
     private GlobalConfigService appConfig;
     
     private DualListModel<Role> roles;
     
     public void init(){
         
-        account = new Account();
+        account = new CompanyAccount();
+        Address address = new Address();
+        address.setCity("Testowe Miasto");
+        address.setHouseNumber("1");
+        address.setStreet("Testowa Ulica");
+        address.setZipcode("00-000");
+
+        company = new Company();
+        company.setAddress(address);
+        company.setPhone("000000000");
+        company.setTaxId("000-00-00-000");
+        account.setAccountStatus(AccountStatus.CONFIRMED);
+        
         List<Role> rolesSource = roleRepository.findAll();
         List<Role> rolesTarget = new ArrayList<>();
         
@@ -56,14 +76,23 @@ public class AddUserController implements Serializable {
         return account;
     }
 
-    public void setAccount(Account account) {
+    public void setAccount(CompanyAccount account) {
         this.account = account;
     }
     
-    public void add(){
+    public Company getCompany() {
+		return company;
+	}
+
+	public void setCompany(Company company) {
+		this.company = company;
+	}
+
+	public void add(){
+    	
+    	account.setUsername(account.getEmailAddress());
         
         account.setDateRegistered(new Date());
-        account.setRoles(new HashSet<>(roles.getTarget()));
         
         account.setPassword(account.hashPassword(account.getPassword()));
         account.setAccountStatus(AccountStatus.CONFIRMED);
@@ -72,7 +101,11 @@ public class AddUserController implements Serializable {
         baseCredits = baseCredits == null ? 100 : baseCredits;
         account.setCredits(baseCredits.doubleValue());
         
+        companyRepository.create(company);
+        account.setCompany(company);
         accountRepository.create(account);
+        account.setRoles(new HashSet<>(roles.getTarget()));
+        accountRepository.edit(account);
         
         log.info("Created account with username: " + account.getUsername());
         FacesMessage msg = new FacesMessage();
