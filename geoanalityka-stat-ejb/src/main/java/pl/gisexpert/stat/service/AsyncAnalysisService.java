@@ -119,7 +119,7 @@ public class AsyncAnalysisService {
 		HashMap<String, HashMap<Integer, Integer>> kobietyAndMezczyzniByAgeRanges;
 		Integer inhabitedPremises = 0;
 		Integer[] ageRange = Iterables.toArray(Ints.stringConverter().convertAll(Splitter.on("-").split(analysis.getAgeRange())), Integer.class);
-		PeopleByWorkingAgeSums peopleByWorkingAgeSums;
+		PeopleByWorkingAgeSums peopleByWorkingAgeSums = null;
 		
 		switch (analysis.getAreaType()) {
 		case RADIUS:
@@ -127,10 +127,6 @@ public class AsyncAnalysisService {
 			kobietyAndMezczyzniByAgeRanges = addressStatService.sumRangeInRadius(ageRange, analysis.getRadius(), analysis.getLocation());
 			inhabitedPremises = addressStatService.sumAllPremisesInRadius(analysis.getRadius(), analysis.getLocation());
 			peopleByWorkingAgeSums = addressStatService.peopleByWorkingAgeSums(analysis.getRadius(), analysis.getLocation());
-
-			analysis.setPoprod(peopleByWorkingAgeSums.getPoprod());
-			analysis.setProd(peopleByWorkingAgeSums.getProd());
-			analysis.setPrzedprod(peopleByWorkingAgeSums.getPrzedprod());
 
 			status = AnalysisStatus.FINISHED;
 			statusCode = AnalysisStatusCode.OK;
@@ -152,14 +148,23 @@ public class AsyncAnalysisService {
 				inhabitedPremises = addressStatService.sumAllPremisesInPolygon(geojsonArea);
 				peopleByWorkingAgeSums = addressStatService.peopleByWorkingAgeSumsPolygon(geojsonArea);
 				
-				analysis.setPoprod(peopleByWorkingAgeSums.getPoprod());
-				analysis.setProd(peopleByWorkingAgeSums.getProd());
-				analysis.setPrzedprod(peopleByWorkingAgeSums.getPrzedprod());
-				
 				statusCode = AnalysisStatusCode.OK;
 				status = AnalysisStatus.FINISHED;
 			}
 		}
+		
+		if (peopleByWorkingAgeSums != null) {
+			analysis.setPoprod(peopleByWorkingAgeSums.getPoprod());
+			analysis.setProd(peopleByWorkingAgeSums.getProd());
+			analysis.setPrzedprod(peopleByWorkingAgeSums.getPrzedprod());
+			
+			analysis.setPoprodk(peopleByWorkingAgeSums.getPoprodk());
+			analysis.setProdk(peopleByWorkingAgeSums.getProdk());
+			analysis.setPrzedprodk(peopleByWorkingAgeSums.getPrzedprodk());
+			analysis.setPoprodm(peopleByWorkingAgeSums.getPoprodm());
+			analysis.setProdm(peopleByWorkingAgeSums.getProdm());
+			analysis.setPrzedprodm(peopleByWorkingAgeSums.getPrzedprodm());
+		}		
 
 		if (status == AnalysisStatus.FINISHED && !isPopulationHighEnough(kobietyAndMezczyzniByAgeRanges)) {
 			status = AnalysisStatus.FAILED;
