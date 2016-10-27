@@ -39,6 +39,8 @@ public class EditUserController implements Serializable {
     
     private String newPassword;
     private String newEmail;
+    
+    private Double credits;
 
     public void init(){
         
@@ -50,6 +52,7 @@ public class EditUserController implements Serializable {
         roles = new DualListModel<>(new ArrayList<>(rolesSource), new ArrayList<>(rolesTarget));
         
         newEmail = account.getEmailAddress();
+        credits = account.getCredits();
         
     }
     
@@ -69,7 +72,10 @@ public class EditUserController implements Serializable {
         if (!newEmail.equals(account.getEmailAddress())){
             account.setEmailAddress(newEmail);
         }
-      
+        if (!credits.equals(account.getCredits())){
+            account.setCredits(credits);
+        }
+        accountRepository.edit(account);      
         accountService.setRoles(account, new HashSet<>(roles.getTarget()));
     
         FacesMessage msg = new FacesMessage();
@@ -102,6 +108,13 @@ public class EditUserController implements Serializable {
     public void setRoles(DualListModel<Role> roles) {
         this.roles = roles;
     }
-  
+
+	public Double getCredits() {
+		return credits;
+	}
+
+	public void setCredits(Double credits) {
+		this.credits = credits;
+	}
     
 }
