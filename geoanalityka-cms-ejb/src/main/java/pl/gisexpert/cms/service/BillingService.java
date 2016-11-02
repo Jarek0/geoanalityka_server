@@ -62,6 +62,18 @@ public class BillingService {
 		Invoice invoice = query.getResultList().get(0);
 		return invoice;
 	}
+	
+	public Invoice getPdfInvoice(Order order, Boolean original) {
+		String queryString = "Invoice.getInvoiceByOrderAndType";
+		TypedQuery<Invoice> query = em.createNamedQuery(queryString, Invoice.class);
+		query.setParameter("order", order);
+		query.setParameter("original", original);
+		query.setParameter("mimeType", "application/pdf");
+		query.setMaxResults(1);
+
+		Invoice invoice = query.getResultList().get(0);
+		return invoice;
+	}
 
 	public List<Order> getRecentOrders(Account account, Integer start, Integer limit) {
 		String queryString = "SELECT order FROM Order order WHERE order.buyer = :buyer";
