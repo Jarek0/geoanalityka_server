@@ -1,15 +1,15 @@
 package pl.gisexpert.cms.admin.users;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
+import java.text.MessageFormat;
+import java.util.*;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Response;
 
 import org.omnifaces.cdi.ViewScoped;
 import org.primefaces.model.DualListModel;
@@ -19,13 +19,10 @@ import org.slf4j.LoggerFactory;
 import pl.gisexpert.cms.data.AccountRepository;
 import pl.gisexpert.cms.data.CompanyRepository;
 import pl.gisexpert.cms.data.RoleRepository;
-import pl.gisexpert.cms.model.Account;
-import pl.gisexpert.cms.model.AccountStatus;
-import pl.gisexpert.cms.model.Address;
-import pl.gisexpert.cms.model.Company;
-import pl.gisexpert.cms.model.CompanyAccount;
-import pl.gisexpert.cms.model.Role;
+import pl.gisexpert.cms.model.*;
+import pl.gisexpert.rest.model.BaseResponse;
 import pl.gisexpert.service.GlobalConfigService;
+import pl.gisexpert.service.MailService;
 
 @Named
 @ViewScoped
@@ -48,6 +45,9 @@ public class AddUserController implements Serializable {
     
     @Inject
     private GlobalConfigService appConfig;
+
+    @Inject
+    private MailService mailService;
     
     private DualListModel<Role> roles;
     
@@ -64,7 +64,7 @@ public class AddUserController implements Serializable {
         company.setAddress(address);
         company.setPhone("000000000");
         company.setTaxId("000-00-00-000");
-        account.setAccountStatus(AccountStatus.CONFIRMED);
+        account.setAccountStatus(AccountStatus.UNCONFIRMED);
         
         List<Role> rolesSource = roleRepository.findAll();
         List<Role> rolesTarget = new ArrayList<>();
@@ -89,13 +89,13 @@ public class AddUserController implements Serializable {
 	}
 
 	public void add(){
-    	
+        String tempPassword = GenerateTempPassword().toString();
     	account.setUsername(account.getEmailAddress());
         
         account.setDateRegistered(new Date());
-        
-        account.setPassword(account.hashPassword(account.getPassword()));
-        account.setAccountStatus(AccountStatus.CONFIRMED);
+
+        account.setPassword(account.hashPassword(tempPassword));
+        account.setAccountStatus(AccountStatus.UNCONFIRMED);
         
         Integer baseCredits = appConfig.getSettings().getBaseCredits();
         baseCredits = baseCredits == null ? 100 : baseCredits;
@@ -103,9 +103,29 @@ public class AddUserController implements Serializable {
         
         companyRepository.create(company);
         account.setCompany(company);
+
+        UUID confirmationCode = UUID.randomUUID();
+        AccountConfirmation accountConfirmation = new AccountConfirmation();
+        accountConfirmation.setToken(confirmationCode.toString());
+
+        account.setAccountConfirmation(accountConfirmation);
         accountRepository.create(account);
         account.setRoles(new HashSet<>(roles.getTarget()));
         accountRepository.edit(account);
+
+        String subject = "Geoanalizy.pl - potwierdzenie rejestracji użytkownika";
+        MessageFormat formatter = new MessageFormat("");
+        ResourceBundle i18n = ResourceBundle.getBundle("pl.gisexpert.i18n.Text");
+        formatter.setLocale(i18n.getLocale());
+        formatter.applyPattern(i18n.getString("account.confirm.emailtextwithpassword"));
+        HttpServletRequest req = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        String url = req.getRequestURL().toString();
+        String baseURL = url.substring(0, url.length() - req.getRequestURI().length()) + req.getContextPath();
+        String confirmAccountURL = baseURL + "/rest/auth/confirm/" + account.getId() + "/" + confirmationCode;
+        Object[] params = { confirmAccountURL, account.getEmailAddress(), tempPassword };
+
+        String emailText = formatter.format(params);
+        mailService.sendMail(subject, emailText, account.getEmailAddress());
         
         log.info("Created account with username: " + account.getUsername());
         FacesMessage msg = new FacesMessage();
@@ -120,6 +140,17 @@ public class AddUserController implements Serializable {
 
     public void setRoles(DualListModel<Role> roles) {
         this.roles = roles;
+    }
+
+    private StringBuilder GenerateTempPassword(){
+        char[] chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
+        StringBuilder sb = new StringBuilder();
+        Random random = new Random();
+        for (int i = 0; i < 15; i++) {
+            char c = chars[random.nextInt(chars.length)];
+            sb.append(c);
+        }
+        return sb;
     }
   
     

@@ -408,20 +408,20 @@ public class DemographicAnalysisRESTService {
     public Response analysisDetails(@PathParam("hash") String hash) {
 
         DemographicAnalysis analysis = analysisRepository.findByHash(UUID.fromString(hash));
-        DemographicAnalysisDetails details = null;
+            DemographicAnalysisDetails details = null;
 
-        if (analysis instanceof AdvancedDemographicAnalysis) {
-            details = new AdvancedDemographicAnalysisDetails((AdvancedDemographicAnalysis) analysis);
-        } else if (analysis instanceof SimpleDemographicAnalysis) {
-            details = new SimpleDemographicAnalysisDetails((SimpleDemographicAnalysis) analysis);
-        }
+            if (analysis instanceof AdvancedDemographicAnalysis) {
+                details = new AdvancedDemographicAnalysisDetails((AdvancedDemographicAnalysis) analysis);
+            } else if (analysis instanceof SimpleDemographicAnalysis) {
+                details = new SimpleDemographicAnalysisDetails((SimpleDemographicAnalysis) analysis);
+            }
 
-        if (analysis != null) {
-            return Response.status(Response.Status.OK).entity(details).build();
-        } else {
-            BaseResponse response = new BaseResponse();
-            response.setMessage("Analysis not found");
-            response.setResponseStatus(Response.Status.NOT_FOUND);
+            if (analysis != null) {
+                return Response.status(Response.Status.OK).entity(details).build();
+            } else {
+                BaseResponse response = new BaseResponse();
+                response.setMessage("Analysis not found");
+                response.setResponseStatus(Response.Status.NOT_FOUND);
             return Response.status(Response.Status.NOT_FOUND).entity(response).build();
         }
     }
