@@ -448,6 +448,7 @@ public class AuthRESTService {
 		Subject currentUser = SecurityUtils.getSubject();
 		String username = (String) currentUser.getPrincipal();
 		
+		log.debug("Getting contact info for " + username);
 		if (username == null) {
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
@@ -469,6 +470,7 @@ public class AuthRESTService {
 			contactInfo.setPhone(account.getPhone());
 		}
 		else {
+			log.warn("Failed fetching contact info for " + account.getUsername());
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
 		

@@ -12,6 +12,13 @@ public class AdvancedDemographicAnalysisDetails extends DemographicAnalysisDetai
 	private Double przedprod;
 	private Double prod;
 	private Double poprod;
+	
+	private Double przedprodk;
+	private Double prodk;
+	private Double poprodk;
+	private Double przedprodm;
+	private Double prodm;
+	private Double poprodm;
 
 	public AdvancedDemographicAnalysisDetails(AdvancedDemographicAnalysis analysis) {
 		super(analysis);
@@ -20,6 +27,12 @@ public class AdvancedDemographicAnalysisDetails extends DemographicAnalysisDetai
 		this.przedprod = analysis.getPrzedprod();
 		this.poprod = analysis.getPoprod();
 		this.prod = analysis.getProd();
+		this.przedprodk = analysis.getPrzedprodk();
+		this.poprodk = analysis.getPoprodk();
+		this.prodk = analysis.getProdk();
+		this.przedprodm = analysis.getPrzedprodm();
+		this.poprodm = analysis.getPoprodm();
+		this.prodm = analysis.getProdm();
 
 	}
 
@@ -63,5 +76,54 @@ public class AdvancedDemographicAnalysisDetails extends DemographicAnalysisDetai
 	public void setPoprod(Double poprod) {
 		this.poprod = poprod;
 	}
+
+	public Double getPrzedprodk() {
+		return przedprodk;
+	}
+
+	public void setPrzedprodk(Double przedprodk) {
+		this.przedprodk = przedprodk;
+	}
+
+	public Double getProdk() {
+		return prodk;
+	}
+
+	public void setProdk(Double prodk) {
+		this.prodk = prodk;
+	}
+
+	public Double getPoprodk() {
+		return poprodk;
+	}
+
+	public void setPoprodk(Double poprodk) {
+		this.poprodk = poprodk;
+	}
+
+	public Double getPrzedprodm() {
+		return przedprodm;
+	}
+
+	public void setPrzedprodm(Double przedprodm) {
+		this.przedprodm = przedprodm;
+	}
+
+	public Double getProdm() {
+		return prodm;
+	}
+
+	public void setProdm(Double prodm) {
+		this.prodm = prodm;
+	}
+
+	public Double getPoprodm() {
+		return poprodm;
+	}
+
+	public void setPoprodm(Double poprodm) {
+		this.poprodm = poprodm;
+	}
+	
 
 }

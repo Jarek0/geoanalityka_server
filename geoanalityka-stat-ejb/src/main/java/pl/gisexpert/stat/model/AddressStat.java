@@ -14,16 +14,29 @@ import pl.gisexpert.cms.model.analysis.demographic.PeopleByWorkingAgeSums;
         classes = @ConstructorResult(
                 targetClass = PeopleByWorkingAgeSums.class,
                 columns = {
-
                         @ColumnResult(name = "przedprod", type = Double.class),
                         @ColumnResult(name = "prod", type = Double.class),
                         @ColumnResult(name = "poprod", type = Double.class),
+                        @ColumnResult(name = "przedprodk", type = Double.class),
+                        @ColumnResult(name = "prodk", type = Double.class),
+                        @ColumnResult(name = "poprodk", type = Double.class),
+                        @ColumnResult(name = "przedprodm", type = Double.class),
+                        @ColumnResult(name = "prodm", type = Double.class),
+                        @ColumnResult(name = "poprodm", type = Double.class)
                 }))
 
 @NamedNativeQueries({
-        @NamedNativeQuery(name = "AddressStat.PeopleByWorkingAgeSums", query = "SELECT sum(przedprod)\\:\\:int AS przedprod, sum(prod)\\:\\:int AS prod, sum(poprod)\\:\\:int AS poprod FROM dane2015 "
+        @NamedNativeQuery(name = "AddressStat.PeopleByWorkingAgeSums", query = "SELECT "
+        		+ "sum(przedprod)\\:\\:int AS przedprod, sum(prod)\\:\\:int AS prod, sum(poprod)\\:\\:int AS poprod, "
+        		+ "sum(przedprodk)\\:\\:int AS przedprodk, sum(prodk)\\:\\:int AS prodk, sum(poprodk)\\:\\:int AS poprodk, "
+        		+ "sum(przedprodm)\\:\\:int AS przedprodm, sum(prodm)\\:\\:int AS prodm, sum(poprodm)\\:\\:int AS poprodm "
+        		+ "FROM dane2015 "
                 + "WHERE ST_DWithin(geom,ST_GeogFromText('SRID=4326;POINT(' || :x || ' ' || :y || ')'), :radius)", resultSetMapping = "PeopleByWorkingAge"),
-        @NamedNativeQuery(name = "AddressStat.PeopleByWorkingAgeSumsPolygon", query = "SELECT sum(przedprod)\\:\\:int AS przedprod, sum(prod)\\:\\:int AS prod, sum(poprod)\\:\\:int AS poprod FROM dane2015 "
+        @NamedNativeQuery(name = "AddressStat.PeopleByWorkingAgeSumsPolygon", query = "SELECT "
+        		+ "sum(przedprod)\\:\\:int AS przedprod, sum(prod)\\:\\:int AS prod, sum(poprod)\\:\\:int AS poprod, "
+        		+ "sum(przedprodk)\\:\\:int AS przedprodk, sum(prodk)\\:\\:int AS prodk, sum(poprodk)\\:\\:int AS poprodk, "
+        		+ "sum(przedprodm)\\:\\:int AS przedprodm, sum(prodm)\\:\\:int AS prodm, sum(poprodm)\\:\\:int AS poprodm "
+        		+ "FROM dane2015 "
                 + "WHERE ST_DWithin(geom,ST_GeomFromGeoJSON(:geojsonGeom)\\:\\:geography, 0.0\\:\\:double precision)", resultSetMapping = "PeopleByWorkingAge"),
         @NamedNativeQuery(name = "AddressStat.SumAllInRadius", query = "SELECT sum(liczbaosobzamwlokalach)\\:\\:int FROM dane2015 "
                 + "WHERE ST_DWithin(geom,ST_GeogFromText('SRID=4326;POINT(' || :x || ' ' || :y || ')'), :radius)"),
@@ -161,6 +174,24 @@ public class AddressStat implements Serializable {
 
     @Column(name = "poprod")
     protected double poprod;
+    
+    @Column(name = "przedprodk")
+    protected double przedprodk;
+    
+    @Column(name = "prodk")
+    protected double prodk;
+    
+    @Column(name = "poprodk")
+    protected double poprodk;
+    
+    @Column(name = "przedprodm")
+    protected double przedprodm;
+    
+    @Column(name = "prodm")
+    protected double prodm;
+    
+    @Column(name = "poprodm")
+    protected double poprodm;
 
     public Long getId() {
         return id;
@@ -364,7 +395,57 @@ public class AddressStat implements Serializable {
         return przedzialWiekuOd75M;
     }
 
-    public byte[] getGeometry() {
+    public double getPrzedprodk() {
+		return przedprodk;
+	}
+
+
+	public void setPrzedprodk(double przedprodk) {
+		this.przedprodk = przedprodk;
+	}
+
+
+	public double getProdk() {
+		return prodk;
+	}
+
+
+	public void setProdk(double prodk) {
+		this.prodk = prodk;
+	}
+
+
+	public double getPoprodk() {
+		return poprodk;
+	}
+
+
+	public void setPoprodk(double poprodk) {
+		this.poprodk = poprodk;
+	}
+
+
+	public double getProdm() {
+		return prodm;
+	}
+
+
+	public void setProdm(double prodm) {
+		this.prodm = prodm;
+	}
+
+
+	public double getPoprodm() {
+		return poprodm;
+	}
+
+
+	public void setPoprodm(double poprodm) {
+		this.poprodm = poprodm;
+	}
+
+
+	public byte[] getGeometry() {
         return geometry;
     }
 
