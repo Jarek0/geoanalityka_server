@@ -173,8 +173,9 @@ public class BillingRESTService {
 		order.setDate(new Date());
 
 		orderRepository.create(order);
-		createInvoice(order);
-
+		createInvoice(order, "application/rtf");
+		createInvoice(order, "application/pdf");
+		
 		billingService.addOrder(buyerAccount, order);
 		createOrderForm.setExtOrderId(order.getId().toString() + "_" + order.getOrderHash());
 
@@ -344,10 +345,26 @@ public class BillingRESTService {
 		pl.gisexpert.cms.model.Invoice invoice = billingService.getRtfInvoice(order, false);
 
 		return Response.status(Response.Status.OK).entity(invoice.getInvoiceData()).build();
+	}
+	
+	@GET
+	@Path("/invoice/{orderHash}.pdf")
+	@Produces("application/rtf")
+	public Response getPdfInvoice(@PathParam("orderHash") String orderHash) {
 
+		Account account = accountRepository.findByUsername((String) SecurityUtils.getSubject().getPrincipal());
+
+		Order order = orderRepository.findByHash(UUID.fromString(orderHash));
+		if (order == null || !order.getBuyer().equals(account)) {
+			return Response.status(Response.Status.UNAUTHORIZED).build();
+		}
+
+		pl.gisexpert.cms.model.Invoice invoice = billingService.getPdfInvoice(order, false);
+
+		return Response.status(Response.Status.OK).entity(invoice.getInvoiceData()).build();
 	}
 
-	public pl.gisexpert.cms.model.Invoice createInvoice(Order order) {
+	public pl.gisexpert.cms.model.Invoice createInvoice(Order order, String mimeType) {
 
 		Account account = accountRepository.findByUsername(order.getBuyer().getUsername());
 		account = accountRepository.fetchContactData(account);
@@ -420,15 +437,27 @@ public class BillingRESTService {
 		invoice.setTransaction(transaction);
 
 		InvoiceDocFactory docFactory = new InvoiceDocFactory();
-		byte[] invoiceOriginalRtfDocument = docFactory.createRtf(invoice);
-
-		invoice.setOriginal(false);
-		byte[] invoiceCopyRtfDocument = docFactory.createRtf(invoice);
+		
+		byte[] originalInvoiceDocument;
+		byte[] invoiceCopyDocument;
+		switch (mimeType) {
+		case "application/rtf": 
+			originalInvoiceDocument = docFactory.createRtf(invoice);
+			invoice.setOriginal(false);
+			invoiceCopyDocument = docFactory.createRtf(invoice);
+			break;
+		case "application/pdf":
+		default:
+			originalInvoiceDocument = docFactory.createPdf(invoice);
+			invoice.setOriginal(false);
+			invoiceCopyDocument = docFactory.createPdf(invoice);
+			break;
+		}
 
 		// Original invoice document
 		pl.gisexpert.cms.model.Invoice invoiceEntity = new pl.gisexpert.cms.model.Invoice();
-		invoiceEntity.setInvoiceData(invoiceOriginalRtfDocument);
-		invoiceEntity.setMimeType("application/rtf");
+		invoiceEntity.setInvoiceData(originalInvoiceDocument);
+		invoiceEntity.setMimeType(mimeType);
 		invoiceEntity.setSerialId(invoice.getInvoiceSerialId());
 		invoiceEntity.setDateCreated(new Date());
 		invoiceEntity.setOriginal(true);
@@ -437,8 +466,8 @@ public class BillingRESTService {
 
 		// Invoice copy
 		invoiceEntity = new pl.gisexpert.cms.model.Invoice();
-		invoiceEntity.setInvoiceData(invoiceCopyRtfDocument);
-		invoiceEntity.setMimeType("application/rtf");
+		invoiceEntity.setInvoiceData(invoiceCopyDocument);
+		invoiceEntity.setMimeType(mimeType);
 		invoiceEntity.setSerialId(invoice.getInvoiceSerialId());
 		invoiceEntity.setDateCreated(new Date());
 		invoiceEntity.setOriginal(false);
