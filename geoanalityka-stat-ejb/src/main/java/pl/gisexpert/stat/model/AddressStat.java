@@ -7,9 +7,10 @@ import javax.persistence.*;
 import org.hibernate.annotations.Immutable;
 import pl.gisexpert.cms.model.analysis.demographic.PeopleByWorkingAgeSums;
 
-@Entity
+
+
+@MappedSuperclass
 @Immutable
-@Table(name = "dane2015")
 @SqlResultSetMapping(name = "PeopleByWorkingAge",
         classes = @ConstructorResult(
                 targetClass = PeopleByWorkingAgeSums.class,
@@ -25,27 +26,14 @@ import pl.gisexpert.cms.model.analysis.demographic.PeopleByWorkingAgeSums;
                         @ColumnResult(name = "poprodm", type = Double.class)
                 }))
 
-@NamedNativeQueries({
-        @NamedNativeQuery(name = "AddressStat.PeopleByWorkingAgeSums", query = "SELECT "
-        		+ "sum(przedprod)\\:\\:int AS przedprod, sum(prod)\\:\\:int AS prod, sum(poprod)\\:\\:int AS poprod, "
-        		+ "sum(przedprodk)\\:\\:int AS przedprodk, sum(prodk)\\:\\:int AS prodk, sum(poprodk)\\:\\:int AS poprodk, "
-        		+ "sum(przedprodm)\\:\\:int AS przedprodm, sum(prodm)\\:\\:int AS prodm, sum(poprodm)\\:\\:int AS poprodm "
-        		+ "FROM dane2015 "
-                + "WHERE ST_DWithin(geom,ST_GeogFromText('SRID=4326;POINT(' || :x || ' ' || :y || ')'), :radius)", resultSetMapping = "PeopleByWorkingAge"),
-        @NamedNativeQuery(name = "AddressStat.PeopleByWorkingAgeSumsPolygon", query = "SELECT "
-        		+ "sum(przedprod)\\:\\:int AS przedprod, sum(prod)\\:\\:int AS prod, sum(poprod)\\:\\:int AS poprod, "
-        		+ "sum(przedprodk)\\:\\:int AS przedprodk, sum(prodk)\\:\\:int AS prodk, sum(poprodk)\\:\\:int AS poprodk, "
-        		+ "sum(przedprodm)\\:\\:int AS przedprodm, sum(prodm)\\:\\:int AS prodm, sum(poprodm)\\:\\:int AS poprodm "
-        		+ "FROM dane2015 "
-                + "WHERE ST_DWithin(geom,ST_GeomFromGeoJSON(:geojsonGeom)\\:\\:geography, 0.0\\:\\:double precision)", resultSetMapping = "PeopleByWorkingAge"),
-        @NamedNativeQuery(name = "AddressStat.SumAllInRadius", query = "SELECT sum(liczbaosobzamwlokalach)\\:\\:int FROM dane2015 "
-                + "WHERE ST_DWithin(geom,ST_GeogFromText('SRID=4326;POINT(' || :x || ' ' || :y || ')'), :radius)"),
-        @NamedNativeQuery(name = "AddressStat.SumAllPremisesInRadius", query = "SELECT sum(liczbalokali)\\:\\:int FROM dane2015 "
-                + "WHERE ST_DWithin(geom,ST_GeogFromText('SRID=4326;POINT(' || :x || ' ' || :y || ')'), :radius)"),
-        @NamedNativeQuery(name = "AddressStat.SumAllInPolygon", query = "SELECT sum(liczbaosobzamwlokalach)\\:\\:int FROM dane2015 "
-                + "WHERE ST_DWithin(geom,ST_GeomFromGeoJSON(:geojsonGeom)\\:\\:geography, 0.0\\:\\:double precision)"),
-        @NamedNativeQuery(name = "AddressStat.SumAllPremisesInPolygon", query = "SELECT sum(liczbalokali)\\:\\:int FROM dane2015 "
-                + "WHERE ST_DWithin(geom,ST_GeomFromGeoJSON(:geojsonGeom)\\:\\:geography, 0.0\\:\\:double precision)")})
+@NamedNativeQueries(value = {
+       // @NamedNativeQuery(name = "AddressStat.PeopleByWorkingAgeSums", query = ,
+       // @NamedNativeQuery(name = "AddressStat.PeopleByWorkingAgeSumsPolygon", query = , resultSetMapping = "PeopleByWorkingAge"),
+        //@NamedNativeQuery(name = "AddressStat.SumAllInRadius", query = ),
+        //@NamedNativeQuery(name = "AddressStat.SumAllPremisesInRadius", query = ,
+        //@NamedNativeQuery(name = "AddressStat.SumAllInPolygon", query = ),
+       // @NamedNativeQuery(name = "AddressStat.SumAllPremisesInPolygon", query = )
+})
 public class AddressStat implements Serializable {
 
     private static final long serialVersionUID = 1033705321916453635L;

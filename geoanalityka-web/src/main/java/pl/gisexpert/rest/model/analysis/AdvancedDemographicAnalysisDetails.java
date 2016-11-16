@@ -20,6 +20,12 @@ public class AdvancedDemographicAnalysisDetails extends DemographicAnalysisDetai
 	private Double prodm;
 	private Double poprodm;
 
+	private Integer population_2015;
+	private Integer population_2010;
+	private Integer population_2005;
+	private Integer population_2000;
+	private Integer population_1995;
+
 	public AdvancedDemographicAnalysisDetails(AdvancedDemographicAnalysis analysis) {
 		super(analysis);
 		this.kobietyAndMezczyzniByAgeRanges = analysis.getKobietyAndMezczyzniByAgeRanges();
@@ -33,6 +39,11 @@ public class AdvancedDemographicAnalysisDetails extends DemographicAnalysisDetai
 		this.przedprodm = analysis.getPrzedprodm();
 		this.poprodm = analysis.getPoprodm();
 		this.prodm = analysis.getProdm();
+		this.population_2015 = analysis.getPopulation_2015();
+		this.population_2010 = analysis.getPopulation_2010();
+		this.population_2005 = analysis.getPopulation_2005();
+		this.population_2000 = analysis.getPopulation_2000();
+		this.population_1995 = analysis.getPopulation_1995();
 
 	}
 
@@ -124,6 +135,44 @@ public class AdvancedDemographicAnalysisDetails extends DemographicAnalysisDetai
 	public void setPoprodm(Double poprodm) {
 		this.poprodm = poprodm;
 	}
-	
 
+	public Integer getPopulation_2015() {
+		return population_2015;
+	}
+
+	public void setPopulation_2015(Integer population_2015) {
+		this.population_2015 = population_2015;
+	}
+
+	public Integer getPopulation_2010() {
+		return population_2010;
+	}
+
+	public void setPopulation_2010(Integer population_2010) {
+		this.population_2010 = population_2010;
+	}
+
+	public Integer getPopulation_2005() {
+		return population_2005;
+	}
+
+	public void setPopulation_2005(Integer population_2005) {
+		this.population_2005 = population_2005;
+	}
+
+	public Integer getPopulation_2000() {
+		return population_2000;
+	}
+
+	public void setPopulation_2000(Integer population_2000) {
+		this.population_2000 = population_2000;
+	}
+
+	public Integer getPopulation_1995() {
+		return population_1995;
+	}
+
+	public void setPopulation_1995(Integer population_1995) {
+		this.population_1995 = population_1995;
+	}
 }
