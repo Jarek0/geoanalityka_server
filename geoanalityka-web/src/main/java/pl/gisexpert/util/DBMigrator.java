@@ -1,4 +1,4 @@
-package pl.gisexpert.cms.data;
+package pl.gisexpert.util;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
