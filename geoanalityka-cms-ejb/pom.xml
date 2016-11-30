@@ -16,7 +16,7 @@
 	<parent>
 		<artifactId>geoanalityka</artifactId>
 		<groupId>pl.gisexpert</groupId>
-		<version>0.7</version>
+		<version>0.8</version>
 	</parent>
 
 	<artifactId>geoanalityka-cms-ejb</artifactId>
@@ -157,12 +157,6 @@
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-envers</artifactId>
 			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.flywaydb</groupId>
-			<artifactId>flyway-core</artifactId>
-			<version>4.0.3</version>
 		</dependency>
 
 	</dependencies>

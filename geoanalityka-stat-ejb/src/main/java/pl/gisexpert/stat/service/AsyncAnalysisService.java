@@ -23,6 +23,7 @@ import pl.gisexpert.cms.model.analysis.demographic.PeopleByWorkingAgeSums;
 import pl.gisexpert.cms.model.analysis.demographic.SimpleDemographicAnalysis;
 import pl.gisexpert.cms.service.AnalysisCostCalculator;
 import pl.gisexpert.cms.service.AnalysisService;
+import pl.gisexpert.stat.model.AvailableYears;
 
 @Stateless
 @TransactionManagement(TransactionManagementType.BEAN)
@@ -120,6 +121,11 @@ public class AsyncAnalysisService {
 		Integer inhabitedPremises = 0;
 		Integer[] ageRange = Iterables.toArray(Ints.stringConverter().convertAll(Splitter.on("-").split(analysis.getAgeRange())), Integer.class);
 		PeopleByWorkingAgeSums peopleByWorkingAgeSums = null;
+		Integer population_2015 = 0;
+		Integer population_2010 = 0;
+		Integer population_2005 = 0;
+		Integer population_2000 = 0;
+		Integer population_1995 = 0;
 		
 		switch (analysis.getAreaType()) {
 		case RADIUS:
@@ -127,6 +133,11 @@ public class AsyncAnalysisService {
 			kobietyAndMezczyzniByAgeRanges = addressStatService.sumRangeInRadius(ageRange, analysis.getRadius(), analysis.getLocation());
 			inhabitedPremises = addressStatService.sumAllPremisesInRadius(analysis.getRadius(), analysis.getLocation());
 			peopleByWorkingAgeSums = addressStatService.peopleByWorkingAgeSums(analysis.getRadius(), analysis.getLocation());
+			population_2015 = addressStatService.sumAllInRadius(analysis.getRadius(), analysis.getLocation(), AvailableYears.CURRENT_YEAR.toString());
+			population_2010 = addressStatService.sumAllInRadius(analysis.getRadius(), analysis.getLocation(), AvailableYears.Y_2010.toString());
+			population_2005 = addressStatService.sumAllInRadius(analysis.getRadius(), analysis.getLocation(), AvailableYears.Y_2005.toString());
+			population_2000 = addressStatService.sumAllInRadius(analysis.getRadius(), analysis.getLocation(), AvailableYears.Y_2000.toString());
+			population_1995 = addressStatService.sumAllInRadius(analysis.getRadius(), analysis.getLocation(), AvailableYears.Y_1995.toString());
 
 			status = AnalysisStatus.FINISHED;
 			statusCode = AnalysisStatusCode.OK;
@@ -147,7 +158,12 @@ public class AsyncAnalysisService {
 				kobietyAndMezczyzniByAgeRanges = addressStatService.sumRangeInPolygon(ageRange, geojsonArea);
 				inhabitedPremises = addressStatService.sumAllPremisesInPolygon(geojsonArea);
 				peopleByWorkingAgeSums = addressStatService.peopleByWorkingAgeSumsPolygon(geojsonArea);
-				
+				population_2015 = addressStatService.sumAllInPolygon(geojsonArea, AvailableYears.CURRENT_YEAR.toString());
+				population_2010 = addressStatService.sumAllInPolygon(geojsonArea, AvailableYears.Y_2010.toString());
+				population_2005 = addressStatService.sumAllInPolygon(geojsonArea, AvailableYears.Y_2005.toString());
+				population_2000 = addressStatService.sumAllInPolygon(geojsonArea, AvailableYears.Y_2000.toString());
+				population_1995 = addressStatService.sumAllInPolygon(geojsonArea, AvailableYears.Y_1995.toString());
+
 				statusCode = AnalysisStatusCode.OK;
 				status = AnalysisStatus.FINISHED;
 			}
@@ -180,6 +196,11 @@ public class AsyncAnalysisService {
 		analysis.setDateFinished(new Date());
 		analysis.setStatus(status);
 		analysis.setStatusCode(statusCode);
+		analysis.setPopulation_2015(population_2015);
+		analysis.setPopulation_2010(population_2010);
+		analysis.setPopulation_2005(population_2005);
+		analysis.setPopulation_2000(population_2000);
+		analysis.setPopulation_1995(population_1995);
 
 		analysis = (AdvancedDemographicAnalysis) analysisService.addDemographicAnalysis(analysis.getCreator(), analysis);
 
