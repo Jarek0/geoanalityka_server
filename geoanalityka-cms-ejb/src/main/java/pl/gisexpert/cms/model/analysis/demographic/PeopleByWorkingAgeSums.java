@@ -1,100 +1,97 @@
 package pl.gisexpert.cms.model.analysis.demographic;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-
 /**
  * Created by pkociuba on 2016-09-20.
  */
 public class PeopleByWorkingAgeSums {
 
-    private double poprod;
-    private double prod;
-    private double przedprod;
+    private Double poprod;
+    private Double prod;
+    private Double przedprod;
     
-    private double poprodk;
-    private double prodk;
-    private double przedprodk;
-    private double poprodm;
-    private double prodm;
-    private double przedprodm;
+    private Double poprodk;
+    private Double prodk;
+    private Double przedprodk;
+    private Double poprodm;
+    private Double prodm;
+    private Double przedprodm;
 
-    public double getPoprod() {
+    public Double getPoprod() {
         return poprod;
     }
 
-    public void setPoprod(double poprod) {
+    public void setPoprod(Double poprod) {
         this.poprod = poprod;
     }
 
-    public double getProd() {
+    public Double getProd() {
         return prod;
     }
 
-    public void setProd(double prod) {
+    public void setProd(Double prod) {
         this.prod = prod;
     }
 
-    public double getPrzedprod() {
+    public Double getPrzedprod() {
         return przedprod;
     }
 
-    public void setPrzedprod(double przedprod) {
+    public void setPrzedprod(Double przedprod) {
         this.przedprod = przedprod;
     }
 
-    public double getPoprodk() {
+    public Double getPoprodk() {
 		return poprodk;
 	}
 
-	public void setPoprodk(double poprodk) {
+	public void setPoprodk(Double poprodk) {
 		this.poprodk = poprodk;
 	}
 
-	public double getProdk() {
+	public Double getProdk() {
 		return prodk;
 	}
 
-	public void setProdk(double prodk) {
+	public void setProdk(Double prodk) {
 		this.prodk = prodk;
 	}
 
-	public double getPrzedprodk() {
+	public Double getPrzedprodk() {
 		return przedprodk;
 	}
 
-	public void setPrzedprodk(double przedprodk) {
+	public void setPrzedprodk(Double przedprodk) {
 		this.przedprodk = przedprodk;
 	}
 
-	public double getPoprodm() {
+	public Double getPoprodm() {
 		return poprodm;
 	}
 
-	public void setPoprodm(double poprodm) {
+	public void setPoprodm(Double poprodm) {
 		this.poprodm = poprodm;
 	}
 
-	public double getProdm() {
+	public Double getProdm() {
 		return prodm;
 	}
 
-	public void setProdm(double prodm) {
+	public void setProdm(Double prodm) {
 		this.prodm = prodm;
 	}
 
-	public double getPrzedprodm() {
+	public Double getPrzedprodm() {
 		return przedprodm;
 	}
 
-	public void setPrzedprodm(double przedprodm) {
+	public void setPrzedprodm(Double przedprodm) {
 		this.przedprodm = przedprodm;
 	}
 	
 	public PeopleByWorkingAgeSums(
-			double przedprod, double prod, double poprod,
-			double przedprodk, double prodk, double poprodk,
-			double przedprodm, double prodm, double poprodm) {
+			Double przedprod, Double prod, Double poprod,
+			Double przedprodk, Double prodk, Double poprodk,
+			Double przedprodm, Double prodm, Double poprodm) {
 		this.poprod = poprod;
         this.prod = prod;
         this.przedprod = przedprod;
