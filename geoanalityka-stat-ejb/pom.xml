@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>geoanalityka</artifactId>
 		<groupId>pl.gisexpert</groupId>
-		<version>0.9</version>
+		<version>0.9.1</version>
 	</parent>
 
 	<artifactId>geoanalityka-stat-ejb</artifactId>
