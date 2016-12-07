@@ -138,20 +138,10 @@ public class BillingRESTService {
 			customerIpAddress = stk.nextToken();
 		}
 
-		OrderType orderType = OrderType.NONE;
+		OrderType orderType = OrderType.ADD_CREDIT;
 		String productName;
-		switch (formData.getAmount()) {
-		case 50:
-			productName = "Geoanalizy - aktywacja / przedłużenie planu standardowego";
-			orderType = OrderType.STANDARD_PLAN_ACTIVATION;
-			break;
-		case 100:
-			productName = "Geoanalizy - aktywacja / przedłużenie planu zaawansowanego";
-			orderType = OrderType.ADVANCED_PLAN_ACTIVATION;
-			break;
-		default:
-			return Response.status(Response.Status.UNAUTHORIZED).entity(null).build();
-		}
+		productName = "Geoanalizy - doładowanie środków";
+		
 		createOrderForm.setDescription("Środki do wykorzystania w portalu Geoanalizy");
 		createOrderForm.setCustomerIp(customerIpAddress);
 		createOrderForm.setMerchantPosId(payUSettings.getPosId());
@@ -231,18 +221,11 @@ public class BillingRESTService {
 				order.setStatus(OrderStatus.COMPLETED);
 				Account buyer = order.getBuyer();
 
-				switch (data.getOrder().getProducts().get(0).getUnitPrice()) {
-				case 5000:
-					buyer.setCredits(buyer.getCredits() + 10);
-					premiumPlanService.activatePlan(buyer, PremiumPlanType.PLAN_STANDARDOWY);
-					log.debug("Added 10 credits to account: " + buyer.getUsername() + ". PLAN_STANDARDOWY activated.");
-					break;
-				case 10000:
-					buyer.setCredits(buyer.getCredits() + 30);
-					premiumPlanService.activatePlan(buyer, PremiumPlanType.PLAN_ZAAWANSOWANY);
-					log.debug("Added 30 credits to account: " + buyer.getUsername() + ". PLAN_ZAAWANSOWANY activated.");
-					break;
-				}
+				Integer orderAmount = data.getOrder().getProducts().get(0).getUnitPrice();
+				Integer creditsAmount = orderAmount / 100;
+				buyer.setCredits(buyer.getCredits() + creditsAmount);
+				premiumPlanService.activatePlan(buyer, PremiumPlanType.PLAN_ZAAWANSOWANY);
+				log.debug("Added " + creditsAmount + " credits to account: " + buyer.getUsername() + ". PLAN_ZAAWANSOWANY activated.");
 				
 				accountRepository.edit(buyer);
 
@@ -428,6 +411,8 @@ public class BillingRESTService {
 		case DEDICATED_PLAN_ACTIVATION:
 			itemName = "Aktywacja planu dedykowanego";
 			break;
+		case ADD_CREDIT:
+			itemName = "Doładowanie środków";
 		}
 
 		TransactionItem item = new TransactionItem(1, itemName, order.getAmount().doubleValue(), 1.0, 0.23);
@@ -435,7 +420,8 @@ public class BillingRESTService {
 		List<TransactionItem> items = Arrays.asList(item);
 		transaction.setItems(items);
 		invoice.setTransaction(transaction);
-
+		invoice.setExample(true);
+		
 		InvoiceDocFactory docFactory = new InvoiceDocFactory();
 		
 		byte[] originalInvoiceDocument;
