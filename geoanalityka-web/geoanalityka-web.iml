@@ -28,7 +28,7 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.flywaydb:flyway-core:4.0.3" level="project" />
     <orderEntry type="module" module-name="geoanalityka-common-jar" scope="PROVIDED" />
     <orderEntry type="module" module-name="geoanalityka-stat-ejb" scope="PROVIDED" />
-    <orderEntry type="library" name="Maven: pl.gisexpert:reports-generator:0.2.0" level="project" />
+    <orderEntry type="library" name="Maven: pl.gisexpert:reports-generator:0.2.1" level="project" />
     <orderEntry type="library" name="Maven: com.itextpdf:itextpdf:5.5.9" level="project" />
     <orderEntry type="library" name="Maven: net.sf.jasperreports:jasperreports:6.3.0" level="project" />
     <orderEntry type="library" name="Maven: commons-collections:commons-collections:3.2.2" level="project" />
@@ -67,6 +67,7 @@
     <orderEntry type="library" name="Maven: org.olap4j:olap4j:0.9.7.309-JS-3" level="project" />
     <orderEntry type="library" name="Maven: com.google.zxing:core:2.3.0" level="project" />
     <orderEntry type="library" name="Maven: com.ibm.icu:icu4j:57.1" level="project" />
+    <orderEntry type="library" name="Maven: net.sf.jasperreports:jasperreports-fonts:6.0.0" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.jboss.resteasy:jaxrs-api:3.0.10.Final" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: javax.enterprise:cdi-api:1.2" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: javax.el:javax.el-api:3.0.0" level="project" />
