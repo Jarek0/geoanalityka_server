@@ -76,7 +76,7 @@ public class BillingService {
 	}
 
 	public List<Order> getRecentOrders(Account account, Integer start, Integer limit) {
-		String queryString = "SELECT order FROM Order order WHERE order.buyer = :buyer";
+		String queryString = "SELECT order FROM Order order WHERE order.buyer = :buyer ORDER BY order.date DESC";
 		TypedQuery<Order> query = em.createQuery(queryString, Order.class);
 
 		query.setParameter("buyer", account);

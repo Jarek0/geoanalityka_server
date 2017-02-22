@@ -19,6 +19,7 @@ package pl.gisexpert.rest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.UUID;
@@ -112,6 +113,9 @@ public class BillingRESTService {
 		createOrderForm.setCurrencyCode("PLN");
 
 		String customerIpAddress = request.getHeader("X-Forwarded-For");
+		if (customerIpAddress != null) {
+			customerIpAddress = customerIpAddress.split(", ")[0];
+		}
 		if (customerIpAddress == null || customerIpAddress.length() == 0
 				|| "unknown".equalsIgnoreCase(customerIpAddress)) {
 			customerIpAddress = request.getHeader("Proxy-Client-IP");
@@ -132,10 +136,20 @@ public class BillingRESTService {
 				|| "unknown".equalsIgnoreCase(customerIpAddress)) {
 			customerIpAddress = request.getRemoteAddr();
 		}
+		if (customerIpAddress == null || customerIpAddress.length() == 0) {
+			customerIpAddress = "127.0.0.1";
+		}
+		log.info("ADRES_USERA: " + customerIpAddress);
+		
+		String [] tokensArray = customerIpAddress.split(":");
+		List<String> tokens = new LinkedList<>(Arrays.asList(tokensArray));
 
-		StringTokenizer stk = new StringTokenizer(customerIpAddress, ":");
-		if (stk.hasMoreTokens()) {
-			customerIpAddress = stk.nextToken();
+		if (tokens.size() > 1) {
+			if (tokens.get(tokens.size() - 1).matches("^[0-9]{2,5}$")) {
+				tokens.remove(tokens.size() - 1);
+			}
+			
+			customerIpAddress = String.join(":", tokens);	
 		}
 
 		OrderType orderType = OrderType.ADD_CREDIT;
@@ -145,7 +159,7 @@ public class BillingRESTService {
 		createOrderForm.setDescription("Środki do wykorzystania w portalu Geoanalizy");
 		createOrderForm.setCustomerIp(customerIpAddress);
 		createOrderForm.setMerchantPosId(payUSettings.getPosId());
-		createOrderForm.setNotifyUrl("http://mapy.gis-expert.pl/geoanalityka-web/rest/billing/payu_notify");
+		createOrderForm.setNotifyUrl("http://geoanalizy.pl/service/rest/billing/payu_notify");
 
 		List<Product> products = new ArrayList<>();
 		Product product = new Product(productName, formData.getAmount() * 100, 1);
