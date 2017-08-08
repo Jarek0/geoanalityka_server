@@ -42,7 +42,7 @@ public class ValidationRESTService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response checkUsernameAvailable(@QueryParam("email") String username) {
 
-		Account account = accountRepository.findByUsername(username);
+		Account account = accountRepository.findByEmail(username);
 		
 		ResourceBundle i18n = ResourceBundle.getBundle("pl.gisexpert.i18n.Text");
 		Response.Status status;
@@ -68,7 +68,7 @@ public class ValidationRESTService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response checkUsernameExists(@QueryParam("email") String username) {
 
-		Account account = accountRepository.findByUsername(username);
+		Account account = accountRepository.findByEmail(username);
 
 		ResourceBundle i18n = ResourceBundle.getBundle("pl.gisexpert.i18n.Text");
 		Response.Status status;

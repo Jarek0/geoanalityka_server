@@ -35,6 +35,13 @@
 
 	<dependencies>
 
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.16.16</version>
+			<scope>provided</scope>
+		</dependency>
+
 		<!-- Dependency on the EJB module so we can use it's services if needed -->
 		<dependency>
 			<groupId>pl.gisexpert</groupId>
@@ -52,15 +59,8 @@
 
 		<dependency>
 			<groupId>pl.gisexpert</groupId>
-			<artifactId>geoanalityka-stat-ejb</artifactId>
-			<type>ejb</type>
-			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>pl.gisexpert</groupId>
 			<artifactId>reports-generator</artifactId>
-			<version>0.2.1</version>
+			<version>0.2.0</version>
 		</dependency>
 
 		<!-- Import the JAX-RS API, we use provided scope as the API is included 
@@ -134,6 +134,7 @@
 			<version>1.2.3</version>
 			<scope>provided</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.shiro</groupId>
 			<artifactId>shiro-web</artifactId>
@@ -216,6 +217,24 @@
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
 			<version>4.0.3</version>
+		</dependency>
+
+		<!-- Servlet Library -->
+		<!-- http://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.1.0</version>
+			<scope>provided</scope>
+		</dependency>
+
+
+		<!-- JSON Library -->
+		<!-- http://mvnrepository.com/artifact/org.glassfish/javax.json -->
+		<dependency>
+			<groupId>org.glassfish</groupId>
+			<artifactId>javax.json</artifactId>
+			<version>1.0.4</version>
 		</dependency>
 
 	</dependencies>

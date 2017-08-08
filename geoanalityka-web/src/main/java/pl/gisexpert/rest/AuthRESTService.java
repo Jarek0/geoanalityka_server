@@ -16,8 +16,6 @@
  */
 package pl.gisexpert.rest;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -49,27 +47,22 @@ import org.slf4j.Logger;
 import pl.gisexpert.cms.data.AccessTokenRepository;
 import pl.gisexpert.cms.data.AccountRepository;
 import pl.gisexpert.cms.data.AddressRepository;
-import pl.gisexpert.cms.data.CompanyRepository;
 import pl.gisexpert.cms.data.LoginAttemptRepository;
 import pl.gisexpert.cms.model.AccessToken;
 import pl.gisexpert.cms.model.Account;
 import pl.gisexpert.cms.model.AccountConfirmation;
 import pl.gisexpert.cms.model.AccountStatus;
 import pl.gisexpert.cms.model.Address;
-import pl.gisexpert.cms.model.Company;
-import pl.gisexpert.cms.model.CompanyAccount;
 import pl.gisexpert.cms.model.LoginAttempt;
 import pl.gisexpert.cms.model.NaturalPersonAccount;
-import pl.gisexpert.cms.model.PremiumPlanType;
 import pl.gisexpert.cms.service.AccountService;
 import pl.gisexpert.cms.service.LoginAttemptService;
-import pl.gisexpert.cms.service.PremiumPlanService;
 import pl.gisexpert.cms.visitor.AccountAddressVisitor;
 import pl.gisexpert.cms.visitor.DefaultAccountVisitor;
+import pl.gisexpert.reCaptcha.VerifyUtils;
 import pl.gisexpert.rest.model.AccountInfo;
 import pl.gisexpert.rest.model.AddressForm;
 import pl.gisexpert.rest.model.BaseResponse;
-import pl.gisexpert.rest.model.CompanyAddressForm;
 import pl.gisexpert.rest.model.ContactInfo;
 import pl.gisexpert.rest.model.GetTokenForm;
 import pl.gisexpert.rest.model.GetTokenResponse;
@@ -103,13 +96,7 @@ public class AuthRESTService {
 
 	@Inject
 	private MailService mailService;
-	
-	@Inject
-	private PremiumPlanService premiumPlanService;
-	
-	@Inject
-	private CompanyRepository companyRepository;
-	
+
 	@Inject
 	private AddressRepository addressRepository;
 	
@@ -128,59 +115,42 @@ public class AuthRESTService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response registerAccount(@Context HttpServletRequest request, RegisterForm formData) {
+
+		if(!VerifyUtils.verify(formData.getCaptcha()))
+		{
+			System.out.println("reCapture");
+			BaseResponse errorStatus = new BaseResponse();
+			errorStatus.setMessage("Invalid reCaptcha key");
+			errorStatus.setResponseStatus(Status.BAD_REQUEST);
+			return Response.status(Response.Status.BAD_REQUEST).entity(errorStatus).build();
+		}
 		
 		Account account;
-		if (!formData.getNaturalPerson()) {
-			account = new CompanyAccount();
-		}
-		else {
-			account = new NaturalPersonAccount();
-		}
-		
-		account.setUsername(formData.getEmail());
+		account = new NaturalPersonAccount();
+
 		account.setPassword(account.hashPassword(formData.getPassword()));
 		account.setEmailAddress(formData.getEmail());
 		account.setFirstName(formData.getFirstname());
 		account.setLastName(formData.getLastname());
-		if (formData.getQueuedPayment() != null) {
-			account.setQueuedPayment(formData.getQueuedPayment());
-		}
+		account.setUsername(formData.getEmail());
 		
 		final AddressForm addressForm = formData.getAddress();
 		final Address address = new Address();
-		
+
 		address.setCity(addressForm.getCity());
 		address.setStreet(addressForm.getStreet());
 		address.setHouseNumber(addressForm.getBuildingNumber());
 		address.setFlatNumber(addressForm.getFlatNumber());
 		address.setZipcode(addressForm.getZipCode());
 
-		if (!formData.getNaturalPerson()) {
-			final CompanyAddressForm companyData = (CompanyAddressForm) addressForm;
-
-			account.accept(new DefaultAccountVisitor(){
-				@Override
-				public void visit(CompanyAccount companyAccount) {
-					Company company = new Company();
-					company.setCompanyName(companyData.getCompanyName());
-					company.setTaxId(companyData.getTaxId());
-					company.setAddress(address);
-					companyRepository.create(company);
-					companyAccount.setCompany(company);
-				}
-			});			
-		}
-		else {
-			account.accept(new DefaultAccountVisitor() {
-				@Override
-				public void visit(NaturalPersonAccount naturalAccount) {
-					addressRepository.create(address);
-					naturalAccount.setAddress(address);
-					naturalAccount.setPhone(addressForm.getPhone());			
-				}
-			});
-				
-		}
+		account.accept(new DefaultAccountVisitor() {
+			@Override
+			public void visit(NaturalPersonAccount naturalAccount) {
+				addressRepository.create(address);
+				naturalAccount.setAddress(address);
+				naturalAccount.setPhone(addressForm.getPhone());
+			}
+		});
 
 		account.setDateRegistered(new Date());
 		account.setAccountStatus(AccountStatus.UNCONFIRMED);
@@ -194,16 +164,14 @@ public class AuthRESTService {
 		try {
 			accountRepository.create(account);
 		} catch (Exception e) {
-
+			System.out.println(e.getMessage());
 			BaseResponse errorStatus = new BaseResponse();
 			errorStatus.setMessage("Invalid parameters.");
 			errorStatus.setResponseStatus(Status.BAD_REQUEST);
 			return Response.status(Response.Status.BAD_REQUEST).entity(errorStatus).build();
 		}
-		
-		premiumPlanService.activatePlan(account, PremiumPlanType.PLAN_DEDYKOWANY);
 
-		String subject = "Geoanalizy.pl - potwierdzenie rejestracji użytkownika";
+		String subject = "Public Survey bilgoraj - potwierdzenie rejestracji użytkownika";
 
 		MessageFormat formatter = new MessageFormat("");
 
@@ -224,7 +192,7 @@ public class AuthRESTService {
 		RegisterResponse registerStatus = new RegisterResponse();
 		registerStatus.setMessage("Account created. Confirmation link has been sent to your E-Mail address. Use it to complete the registration.");
 		registerStatus.setResponseStatus(Status.OK);
-		registerStatus.setUsername(account.getUsername());
+		registerStatus.setUsername(account.getEmailAddress());
 		registerStatus.setEmail(account.getEmailAddress());
 
 		return Response.status(Response.Status.OK).entity(registerStatus).build();
@@ -248,19 +216,18 @@ public class AuthRESTService {
 			account.setAccountStatus(AccountStatus.CONFIRMED);
 			accountRepository.edit(account);
 
-			try {
-				
 				String remoteHost = request.getHeader("Host");
 				if (remoteHost == null){
 					remoteHost = request.getRemoteHost();
 				}
-				
-				return Response.temporaryRedirect(new URI(request.getScheme() + "://" + remoteHost
-						+ appConfig.getClients().getLandingPageUrl() + "/login.html?activate_success=true")).build();
-			} catch (URISyntaxException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+
+				RegisterResponse registerStatus = new RegisterResponse();
+				registerStatus.setMessage("Account created. Confirmation link has been sent to your E-Mail address. Use it to complete the registration.");
+				registerStatus.setResponseStatus(Status.OK);
+				registerStatus.setUsername(account.getEmailAddress());
+				registerStatus.setEmail(account.getEmailAddress());
+
+				return Response.status(Response.Status.OK).entity(registerStatus).build();
 		}
 
 		requestStatus.setMessage("Account confirmation failed.");
@@ -275,7 +242,7 @@ public class AuthRESTService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response getToken(@Context HttpServletRequest request, GetTokenForm formData) {
 
-		Account account = accountRepository.findByUsername(formData.getUsername());
+		Account account = accountRepository.findByEmail(formData.getUsername());
 
 		BaseResponse rs = new BaseResponse();
 		if (account == null) {
@@ -416,7 +383,7 @@ public class AuthRESTService {
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
 		log.debug("Getting account info for username: " + username);
-		Account account = accountRepository.findByUsername(username);
+		Account account = accountRepository.findByEmail(username);
 		
 		if (account == null) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
@@ -453,24 +420,20 @@ public class AuthRESTService {
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
 		
-		Account account = accountRepository.findByUsername(username);
+		Account account = accountRepository.findByEmail(username);
 		account = accountRepository.fetchContactData(account);
 		
 		account.accept(addressVisitor);
 		
 		Address address = addressVisitor.getAddress();
-		Company company = addressVisitor.getCompany();
 		
 		ContactInfo contactInfo;
-		if (company != null) {
-			contactInfo = new ContactInfo(company);
-		}
-		else if (address != null) {
+		if (address != null) {
 			contactInfo = new ContactInfo(address);
 			contactInfo.setPhone(account.getPhone());
 		}
 		else {
-			log.warn("Failed fetching contact info for " + account.getUsername());
+			log.warn("Failed fetching contact info for " + account.getEmailAddress());
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
 		
@@ -489,7 +452,7 @@ public class AuthRESTService {
 		if (username == null) {
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
-		Account account = accountRepository.findByUsername(username);
+		Account account = accountRepository.findByEmail(username);
 		
 		final Address address = new Address();
 		address.setCity(contactInfo.getCity());
@@ -499,17 +462,6 @@ public class AuthRESTService {
 		address.setZipcode(contactInfo.getZipcode());
 		
 		account.accept(new DefaultAccountVisitor() {
-			@Override
-			public void visit(CompanyAccount account) {
-				Company company = new Company();
-				company.setCompanyName(contactInfo.getCompanyName());
-				company.setTaxId(contactInfo.getTaxId());
-				company.setPhone(contactInfo.getPhone());
-				company.setAddress(address);
-				
-				companyRepository.create(company);
-				account.setCompany(company);
-			}
 			@Override
 			public void visit(NaturalPersonAccount account) {
 				

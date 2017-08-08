@@ -1,9 +1,6 @@
 package pl.gisexpert.cms.data;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -20,7 +17,6 @@ import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 
 import pl.gisexpert.cms.model.Account;
-import pl.gisexpert.cms.model.CompanyAccount;
 import pl.gisexpert.cms.model.NaturalPersonAccount;
 import pl.gisexpert.cms.model.Role;
 import pl.gisexpert.cms.qualifier.CMSEntityManager;
@@ -72,13 +68,6 @@ public class AccountRepository extends AbstractRepository<Account> {
 		Account resultAccount = em.getReference(Account.class, account.getId());
 		resultAccount.accept(new DefaultAccountVisitor() {
 			@Override
-			public void visit(CompanyAccount account) {
-				if (!Hibernate.isInitialized(account.getCompany())) {
-					Hibernate.initialize(account.getCompany());
-				}
-			}
-
-			@Override
 			public void visit(NaturalPersonAccount account) {
 				if (!Hibernate.isInitialized(account.getAddress())) {
 					Hibernate.initialize(account.getAddress());
@@ -110,7 +99,7 @@ public class AccountRepository extends AbstractRepository<Account> {
 
 		for (Role role : roles) {
 			Query query = getEntityManager().createNamedQuery("Account.removeRole");
-			query.setParameter(1, account.getUsername());
+			query.setParameter(1, account.getEmailAddress());
 			query.setParameter(2, role.getName());
 			query.executeUpdate();
 		}

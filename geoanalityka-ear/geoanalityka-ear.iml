@@ -9,7 +9,7 @@
       </configuration>
     </facet>
   </component>
-  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_7" inherit-compiler-output="false">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_7">
     <output url="file://$MODULE_DIR$/target/classes" />
     <output-test url="file://$MODULE_DIR$/target/test-classes" />
     <content url="file://$MODULE_DIR$">
@@ -17,14 +17,12 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="geoanalityka-common-jar" />
+    <orderEntry type="library" name="Maven: pl.gisexpert:geoanalityka-common-jar:0.10" level="project" />
     <orderEntry type="module" module-name="geoanalityka-common-ejb" />
     <orderEntry type="module" module-name="geoanalityka-web" />
     <orderEntry type="module" module-name="geoanalityka-cms-ejb" />
     <orderEntry type="library" name="Maven: org.postgresql:postgresql:9.3-1103-jdbc41" level="project" />
     <orderEntry type="library" name="Maven: com.google.guava:guava:19.0" level="project" />
-    <orderEntry type="library" name="Maven: org.flywaydb:flyway-core:4.0.3" level="project" />
-    <orderEntry type="module" module-name="geoanalityka-stat-ejb" />
     <orderEntry type="library" name="Maven: org.primefaces:primefaces:5.3" level="project" />
     <orderEntry type="library" name="Maven: org.primefaces.themes:bootstrap:1.0.10" level="project" />
     <orderEntry type="library" name="Maven: org.jboss.weld:weld-logger:1.0.0-CR2" level="project" />

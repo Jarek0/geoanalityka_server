@@ -25,7 +25,7 @@ public class UsernameUnicityValidator implements Validator {
             message.setSeverity(FacesMessage.SEVERITY_FATAL);
             throw new ValidatorException(message);
         }
-        if (accountFacade.findByUsername((String)value) != null) {
+        if (accountFacade.findByEmail((String)value) != null) {
             FacesMessage message = new FacesMessage("Użytkownik o podanej nazwie już istnieje.");
             message.setSeverity(FacesMessage.SEVERITY_ERROR);
             throw new ValidatorException(message);

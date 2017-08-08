@@ -27,7 +27,7 @@ public class DeleteAccountController implements Serializable {
 	public void delete() {
 		Account accountToBeDeleted = accountFacade.find(accountId);
 		accountFacade.remove(accountToBeDeleted);
-		log.info("Account with username: " + accountToBeDeleted.getUsername() + " has been deleted.");
+		log.info("Account with username: " + accountToBeDeleted.getEmailAddress() + " has been deleted.");
 	}
 
 	public void setAccountId(Long accountId) {

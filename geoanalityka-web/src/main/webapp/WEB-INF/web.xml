@@ -3,6 +3,8 @@
 	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
 	version="3.1">
 
+	<display-name>Public survey</display-name>
+
 	<mime-mapping>
 		<extension>woff</extension>
 		<mime-type>application/x-font-woff</mime-type>
@@ -101,5 +103,14 @@
 		<dispatcher>FORWARD</dispatcher>
 		<dispatcher>INCLUDE</dispatcher>
 		<dispatcher>ERROR</dispatcher>
+	</filter-mapping>
+
+	<filter>
+		<filter-name>CorsFilter</filter-name>
+		<filter-class>pl.gisexpert.filter.CORSFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>CorsFilter</filter-name>
+		<url-pattern>*</url-pattern>
 	</filter-mapping>
 </web-app>

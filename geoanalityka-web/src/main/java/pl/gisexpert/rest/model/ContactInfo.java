@@ -1,7 +1,6 @@
 package pl.gisexpert.rest.model;
 
 import pl.gisexpert.cms.model.Address;
-import pl.gisexpert.cms.model.Company;
 
 public class ContactInfo {
 	private String companyName;
@@ -17,21 +16,7 @@ public class ContactInfo {
 	public ContactInfo(){
 		
 	}
-	
-	public ContactInfo(Company company) {
-		
-		companyName = company.getCompanyName();
-		taxId = company.getTaxId();
-		phone = company.getPhone();
-		
-		Address address = company.getAddress();
-		street = address.getStreet();
-		houseNumber = address.getHouseNumber();
-		flatNumber = address.getFlatNumber();
-		zipcode = address.getZipcode();
-		city = address.getCity();
-	}
-	
+
 	public ContactInfo(Address address) {
 		street = address.getStreet();
 		houseNumber = address.getHouseNumber();

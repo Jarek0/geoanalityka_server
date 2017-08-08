@@ -24,7 +24,7 @@ public class AccountConverter implements Converter {
         }
 
         String username = value;
-        return accountRepository.findByUsername(username);
+        return accountRepository.findByEmail(username);
 
     }
 
@@ -34,7 +34,7 @@ public class AccountConverter implements Converter {
             return "";
         }
 
-        String username = ((Account)value).getUsername();
+        String username = ((Account)value).getEmailAddress();
         return (username != null) ? username : null;
 
     }

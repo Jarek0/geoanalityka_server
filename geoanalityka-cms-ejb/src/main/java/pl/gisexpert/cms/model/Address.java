@@ -18,6 +18,12 @@ import org.hibernate.envers.NotAudited;
 @Entity
 @Audited
 @Table(name = "addresses")
+@lombok.Getter
+@lombok.Setter
+@lombok.EqualsAndHashCode
+@lombok.NoArgsConstructor
+@lombok.AllArgsConstructor
+@lombok.ToString
 public class Address implements Serializable {
 
     private static final long serialVersionUID = -6442068216931841076L;
@@ -48,76 +54,4 @@ public class Address implements Serializable {
     @Column(name = "flat_number", length = 12)
     private String flatNumber;
 
-    public Address() {
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getZipcode() {
-        return zipcode;
-    }
-
-    public void setZipcode(String zipcode) {
-        this.zipcode = zipcode;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    public String getStreet() {
-        return street;
-    }
-
-    public void setStreet(String street) {
-        this.street = street;
-    }
-
-    public String getHouseNumber() {
-		return houseNumber;
-	}
-
-	public void setHouseNumber(String houseNumber) {
-		this.houseNumber = houseNumber;
-	}
-
-	public String getFlatNumber() {
-		return flatNumber;
-	}
-
-	public void setFlatNumber(String flatNumber) {
-		this.flatNumber = flatNumber;
-	}
-
-	@Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 23 * hash + Objects.hashCode(this.id);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Address other = (Address) obj;
-        if (!Objects.equals(this.id, other.id)) {
-            return false;
-        }
-        return true;
-    }
 }

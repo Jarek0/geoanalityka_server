@@ -39,7 +39,7 @@ public class AccountController implements Serializable {
 		Subject subject = SecurityUtils.getSubject();
 		if (subject.isAuthenticated()) {
 			log.info((String) subject.getPrincipal());
-			account = accountRepository.findByUsername((String) subject.getPrincipal());
+			account = accountRepository.findByEmail((String) subject.getPrincipal());
 		}
 	}
 

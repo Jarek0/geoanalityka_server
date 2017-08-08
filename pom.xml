@@ -28,11 +28,9 @@
 	</licenses>
 	<modules>
 		<module>geoanalityka-cms-ejb</module>
-		<module>geoanalityka-stat-ejb</module>
 		<module>geoanalityka-web</module>
 		<module>geoanalityka-ear</module>
 		<module>geoanalityka-common-ejb</module>
-		<module>geoanalityka-common-jar</module>
 	</modules>
 
 	<repositories>
@@ -105,13 +103,6 @@
 				<type>ejb</type>
 			</dependency>
 
-			<dependency>
-				<groupId>pl.gisexpert</groupId>
-				<artifactId>geoanalityka-stat-ejb</artifactId>
-				<version>${project.version}</version>
-				<type>ejb</type>
-			</dependency>
-
 			<!-- Define the version of the WAR so that we don't need to repeat ourselves 
 				in every module -->
 			<dependency>
@@ -163,6 +154,16 @@
 					<inherited>true</inherited>
 					<configuration>
 						<skip>true</skip>
+					</configuration>
+				</plugin>
+
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<configuration>
+						<source>1.8</source>
+						<target>1.8</target>
 					</configuration>
 				</plugin>
 			</plugins>

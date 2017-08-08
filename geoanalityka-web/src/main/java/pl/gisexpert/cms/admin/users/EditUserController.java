@@ -52,7 +52,6 @@ public class EditUserController implements Serializable {
         roles = new DualListModel<>(new ArrayList<>(rolesSource), new ArrayList<>(rolesTarget));
         
         newEmail = account.getEmailAddress();
-        credits = account.getCredits();
         
     }
     
@@ -71,9 +70,6 @@ public class EditUserController implements Serializable {
         }
         if (!newEmail.equals(account.getEmailAddress())){
             account.setEmailAddress(newEmail);
-        }
-        if (!credits.equals(account.getCredits())){
-            account.setCredits(credits);
         }
         accountRepository.edit(account);      
         accountService.setRoles(account, new HashSet<>(roles.getTarget()));

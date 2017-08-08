@@ -8,11 +8,10 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
 import pl.gisexpert.cms.model.Account;
-import pl.gisexpert.cms.model.Company;
-import pl.gisexpert.cms.model.CompanyAccount;
 import pl.gisexpert.cms.model.Role;
-import pl.gisexpert.cms.visitor.DefaultAccountVisitor;
 
+@lombok.Getter
+@lombok.Setter
 public class AccountInfo {
 	private String username;
 	private String email;
@@ -27,117 +26,18 @@ public class AccountInfo {
 	private String accountType;
 	private List<String> roles;
 	private ArrayList<ArrayList<Double>> analysesBbox;
-	
+
 	public AccountInfo(){
-		
+
 	}
 	
 	public AccountInfo(Account account, List<Role> roles) {
-		
-		username = account.getUsername();
 		email=account.getEmailAddress();
 		lastLogin = account.getLastLoginDate();
-		credits = account.getCredits();
-		queuedPayment = account.getQueuedPayment();
 		firstName = account.getFirstName();
 		lastName = account.getLastName();
 		accountType = account.getDiscriminatorValue();
-		
-		account.accept(new DefaultAccountVisitor() {
-			@Override
-			public void visit(CompanyAccount account) {
-				Company company = account.getCompany();		
-				companyName = company.getCompanyName();
-			}
-		});
-	
-		this.roles = Lists.transform(roles, new Function<Role, String>(){
-			@Override
-			public String apply(Role input) {
-				return input.getName();
-			}
-		});
-	}
-	
-	public String getUsername() {
-		return username;
-	}
-	public void setUsername(String username) {
-		this.username = username;
-	}
-	public String getEmail() {
-		return email;
-	}
-	public void setEmail(String email) {
-		this.email = email;
-	}
-	public Date getLastLogin() {
-		return lastLogin;
-	}
-	public void setLastLogin(Date lastLogin) {
-		this.lastLogin = lastLogin;
-	}
-	public String getCompanyName() {
-		return companyName;
-	}
-	public void setCompanyName(String companyName) {
-		this.companyName = companyName;
-	}
-	public String getFirstName() {
-		return firstName;
-	}
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
-	public String getLastName() {
-		return lastName;
-	}
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
-	}
-	public Double getCredits() {
-		return credits;
-	}
-	public void setCredits(Double credits) {
-		this.credits = credits;
-	}
-	public Date getTokenExpires() {
-		return tokenExpires;
-	}
-	public void setTokenExpires(Date tokenExpires) {
-		this.tokenExpires = tokenExpires;
-	}
-	public String getAccessToken() {
-		return accessToken;
-	}
-	public void setAccessToken(String accessToken) {
-		this.accessToken = accessToken;
-	}
-	public Double getQueuedPayment() {
-		return queuedPayment;
-	}
-	public void setQueuedPayment(Double queuedPayment) {
-		this.queuedPayment = queuedPayment;
-	}
 
-	public List<String> getRoles() {
-		return roles;
+		this.roles = Lists.transform(roles, Role::getName);
 	}
-
-	public void setRoles(List<String> roles) {
-		this.roles = roles;
-	}
-
-	public String getAccountType() {
-		return accountType;
-	}
-
-	public void setAccountType(String accountType) {
-		this.accountType = accountType;
-	}
-
-	public ArrayList<ArrayList<Double>> getAnalysesBbox() { return analysesBbox; }
-
-	public void setAnalysesBbox(ArrayList<ArrayList<Double>> analysesBbox) { this.analysesBbox = analysesBbox; }
-
 }
