@@ -34,7 +34,7 @@ public class AccountConverter implements Converter {
             return "";
         }
 
-        String username = ((Account)value).getEmailAddress();
+        String username = ((Account)value).getUsername();
         return (username != null) ? username : null;
 
     }

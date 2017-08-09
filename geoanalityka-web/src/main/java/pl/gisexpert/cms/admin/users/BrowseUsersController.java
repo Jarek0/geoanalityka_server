@@ -11,6 +11,7 @@ import org.primefaces.model.LazyDataModel;
 
 import pl.gisexpert.cms.data.AccountRepository;
 import pl.gisexpert.cms.model.Account;
+import pl.gisexpert.cms.model.AccountStatus;
 import pl.gisexpert.entity.lazy.LazyAccountModel;
 
 @Named

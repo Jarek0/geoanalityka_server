@@ -27,10 +27,17 @@ public class EmailUnicityValidator implements Validator {
             message.setSeverity(FacesMessage.SEVERITY_FATAL);
             throw new ValidatorException(message);
         }
+        String email=(String) value;
+        if (!email.matches("^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\." +
+                "+[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@" +
+                "+(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$")) {
 
-        Account account = accountFacade.findByEmail((String) value);
+            FacesMessage message = new FacesMessage("Nieprawidłowy format maila");
+            message.setSeverity(FacesMessage.SEVERITY_ERROR);
+            throw new ValidatorException(message);
+        }
+        Account account = accountFacade.findByEmail(email);
         if (account != null) {
-            
             FacesMessage message = new FacesMessage("Użytkownik o podanym adresie E-Mail już istnieje..");
             message.setSeverity(FacesMessage.SEVERITY_ERROR);
                     

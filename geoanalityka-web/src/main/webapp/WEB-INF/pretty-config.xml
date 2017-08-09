@@ -45,11 +45,6 @@
 		<view-id value="/faces/admin/users/users.xhtml" />
 	</url-mapping>
 
-	<url-mapping parentId="admin_users" id="admin_users_new">
-		<pattern value="new/" />
-		<view-id value="/faces/admin/users/addUser.xhtml" />
-	</url-mapping>
-
 	<url-mapping parentId="admin_users" id="admin_users_edit">
 		<pattern value="edit/#{username}/" />
 		<view-id value="/faces/admin/users/editUser.xhtml" />

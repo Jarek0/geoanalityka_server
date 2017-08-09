@@ -27,7 +27,4 @@ public class ContactForm extends BaseForm {
 	public void setMessage(String message) {
 		this.message = message;
 	}
-	
-	
-	
 }

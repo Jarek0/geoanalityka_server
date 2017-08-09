@@ -30,7 +30,7 @@ import pl.gisexpert.cms.visitor.VisitableAccount;
 @DiscriminatorColumn(name = "account_type", discriminatorType = DiscriminatorType.STRING)
 @lombok.Getter
 @lombok.Setter
-@lombok.EqualsAndHashCode(of = {"emailAddress"})
+@lombok.EqualsAndHashCode(of = {"username"})
 @lombok.NoArgsConstructor
 @lombok.AllArgsConstructor
 @lombok.ToString
@@ -42,31 +42,27 @@ public class Account implements Serializable, VisitableAccount {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(name = "username", nullable = false, length = 80)
+	@Column(name = "username", unique = true, nullable = false, length = 60)
 	@NotNull
-	@Size(min = 1, max = 80)
+	@Size(min = 5, max = 60)
 	private String username;
 
 	@Column(name = "first_name", nullable = false, length = 30)
 	@NotNull
-	@Size(min = 1, max = 30)
+	@Size(min = 3, max = 30)
 	private String firstName;
 
 	@Column(name = "last_name", nullable = false, length = 30)
 	@NotNull
-	@Size(min = 1, max = 30)
+	@Size(min = 3, max = 30)
 	private String lastName;
 
-	@Email
-	@Column(name = "email_address", nullable = false, length = 80)
-	@NotNull
-	private String emailAddress;
-
-	@Column(nullable = false, length = 102)
+	@Column(nullable = false, length = 100)
 	@NotNull
 	private String password;
 
-	@Column(length = 18)
+	@Column(length = 11)
+	@Size(min = 9, max = 11)
 	private String phone;
 
 	@Audited
@@ -86,6 +82,7 @@ public class Account implements Serializable, VisitableAccount {
 	private Date lastLoginDate;
 
 	@Column(name = "account_status", nullable = false)
+	@Enumerated(EnumType.STRING)
 	private AccountStatus accountStatus;
 
 	@Embedded

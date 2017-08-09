@@ -6,7 +6,7 @@ public class RegisterForm extends BaseForm  {
 
 	private String firstname;
 	private String lastname;
-	private String email;
+	private String username;
 	private String password;
 	private String confirmPassword;
 	private AddressForm address;

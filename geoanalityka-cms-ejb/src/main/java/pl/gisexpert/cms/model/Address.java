@@ -33,25 +33,25 @@ public class Address implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 12)
+    @Column(nullable = false, length = 6)
     @NotNull
-    @Size(min = 3, max = 12)
+    @Size(max = 6, min = 6)
     private String zipcode;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 30)
     @NotNull
-    @Size(min = 1, max = 50)
+    @Size(min = 3, max = 30)
     private String city;
 
-    @Column(length = 100)
-    @Size(max = 100)
+    @Column(length = 30)
+    @Size(min = 3, max = 30)
     private String street;
 
-    @Column(name = "house_number", nullable = false, length = 12)
+    @Column(name = "house_number", nullable = false, length = 5)
     @NotNull
     private String houseNumber;
 
-    @Column(name = "flat_number", length = 12)
+    @Column(name = "flat_number", length = 5)
     private String flatNumber;
 
 }

@@ -11,6 +11,9 @@ import javax.persistence.criteria.Root;
 import pl.gisexpert.cms.model.Role;
 import pl.gisexpert.cms.qualifier.CMSEntityManager;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @ApplicationScoped
 public class RoleRepository extends AbstractRepository<Role> {
 
@@ -43,4 +46,18 @@ public class RoleRepository extends AbstractRepository<Role> {
 		}
 	}
 
+    public List<String> findAllAdminsUsernames() {
+		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+		CriteriaQuery<String> cq = cb.createQuery(String.class);
+		Root<Role> role = cq.from(Role.class);
+		cq.distinct(true).select(role.join("accounts").get("username"));
+		cq.where(cb.equal(role.get("name"), "Administrator"));
+		TypedQuery<String> q = getEntityManager().createQuery(cq);
+
+		try {
+			return q.getResultList();
+		} catch (Exception e) {
+			return null;
+		}
+    }
 }

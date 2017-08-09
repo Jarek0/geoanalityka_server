@@ -29,9 +29,6 @@
                     <p:column headerText="#{i18n['account.username']}" sortBy="#{account.username}" filterBy="#{account.username}">
                         <h:outputText value="#{account.username}" />
                     </p:column>
-                    <p:column headerText="#{i18n['account.email']}" sortBy="#{account.emailAddress}" filterBy="#{account.emailAddress}">
-                        <h:outputText value="#{account.emailAddress}" />
-                    </p:column>
                     <p:column width="80" style="text-align: center;" rendered="#{request.isUserInRole('Administrator') and account.username ne 'admin'}">
                         <pretty:link mappingId="admin_users_edit" styleClass="btn btn-primary btn-xs">
                             <f:param value="#{account.username}"/>

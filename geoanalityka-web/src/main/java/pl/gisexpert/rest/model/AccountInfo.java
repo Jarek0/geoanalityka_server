@@ -14,7 +14,6 @@ import pl.gisexpert.cms.model.Role;
 @lombok.Setter
 public class AccountInfo {
 	private String username;
-	private String email;
 	private Date lastLogin;
 	private String companyName;
 	private String firstName;
@@ -32,7 +31,6 @@ public class AccountInfo {
 	}
 	
 	public AccountInfo(Account account, List<Role> roles) {
-		email=account.getEmailAddress();
 		lastLogin = account.getLastLoginDate();
 		firstName = account.getFirstName();
 		lastName = account.getLastName();

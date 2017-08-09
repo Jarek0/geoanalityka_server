@@ -16,9 +16,7 @@ import javax.transaction.Transactional;
 import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 
-import pl.gisexpert.cms.model.Account;
-import pl.gisexpert.cms.model.NaturalPersonAccount;
-import pl.gisexpert.cms.model.Role;
+import pl.gisexpert.cms.model.*;
 import pl.gisexpert.cms.qualifier.CMSEntityManager;
 import pl.gisexpert.cms.visitor.DefaultAccountVisitor;
 
@@ -64,6 +62,27 @@ public class AccountRepository extends AbstractRepository<Account> {
 	}
 
 	@Transactional
+	public Address findAddressByUsername(String username){
+		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+		CriteriaQuery<Address> cq = cb.createQuery(Address.class);
+		Root<NaturalPersonAccount> account = cq.from(NaturalPersonAccount.class);
+		cq.select(account.join("address"));
+		cq.where(cb.equal(account.get("username"), username));
+		TypedQuery<Address> q = getEntityManager().createQuery(cq);
+		try {
+			return q.getSingleResult();
+		} catch (NoResultException e) {
+			log.debug("Address of username: " + username + " could not be found.");
+			return null;
+		} catch (Exception e) {
+			log.debug("An exception occurred while retrieving address of username: " + username + " from db.");
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+
+	@Transactional
 	public Account fetchContactData(Account account) {
 		Account resultAccount = em.getReference(Account.class, account.getId());
 		resultAccount.accept(new DefaultAccountVisitor() {
@@ -84,7 +103,7 @@ public class AccountRepository extends AbstractRepository<Account> {
 		CriteriaQuery<Account> cq = cb.createQuery(Account.class);
 		Root<Account> account = cq.from(Account.class);
 		cq.select(account);
-		cq.where(cb.equal(account.get("emailAddress"), email));
+		cq.where(cb.equal(account.get("username"), email));
 		TypedQuery<Account> q = getEntityManager().createQuery(cq);
 
 		try {
@@ -99,7 +118,7 @@ public class AccountRepository extends AbstractRepository<Account> {
 
 		for (Role role : roles) {
 			Query query = getEntityManager().createNamedQuery("Account.removeRole");
-			query.setParameter(1, account.getEmailAddress());
+			query.setParameter(1, account.getUsername());
 			query.setParameter(2, role.getName());
 			query.executeUpdate();
 		}
@@ -128,4 +147,19 @@ public class AccountRepository extends AbstractRepository<Account> {
 		em.persist(account);
 	}
 
+    public Account findByToken(String confirmationToken) {
+		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+		CriteriaQuery<Account> cq = cb.createQuery(Account.class);
+		Root<Account> account = cq.from(Account.class);
+		cq.select(account);
+		cq.where(cb.equal(account.get("accountConfirmation").get("token"), confirmationToken));
+		TypedQuery<Account> q = getEntityManager().createQuery(cq);
+
+		try {
+			Account resultAccount = q.getSingleResult();
+			return resultAccount;
+		} catch (Exception e) {
+			return null;
+		}
+    }
 }

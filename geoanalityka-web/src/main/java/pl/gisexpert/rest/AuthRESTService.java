@@ -44,10 +44,7 @@ import org.apache.shiro.crypto.hash.DefaultHashService;
 import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 
-import pl.gisexpert.cms.data.AccessTokenRepository;
-import pl.gisexpert.cms.data.AccountRepository;
-import pl.gisexpert.cms.data.AddressRepository;
-import pl.gisexpert.cms.data.LoginAttemptRepository;
+import pl.gisexpert.cms.data.*;
 import pl.gisexpert.cms.model.AccessToken;
 import pl.gisexpert.cms.model.Account;
 import pl.gisexpert.cms.model.AccountConfirmation;
@@ -78,6 +75,9 @@ public class AuthRESTService {
 
 	@Inject
 	private AccountRepository accountRepository;
+
+	@Inject
+	private RoleRepository roleRepository;
 	
 	@Inject
 	private AccountService accountService;
@@ -110,6 +110,10 @@ public class AuthRESTService {
 	@Inject
 	private Logger log;
 
+	public void sendMail(){
+
+	}
+
 	@POST
 	@Path("/register")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -129,10 +133,9 @@ public class AuthRESTService {
 		account = new NaturalPersonAccount();
 
 		account.setPassword(account.hashPassword(formData.getPassword()));
-		account.setEmailAddress(formData.getEmail());
 		account.setFirstName(formData.getFirstname());
 		account.setLastName(formData.getLastname());
-		account.setUsername(formData.getEmail());
+		account.setUsername(formData.getUsername());
 		
 		final AddressForm addressForm = formData.getAddress();
 		final Address address = new Address();
@@ -183,28 +186,29 @@ public class AuthRESTService {
 		String url = request.getRequestURL().toString();
 		String baseURL = url.substring(0, url.length() - request.getRequestURI().length()) + request.getContextPath();
 
-		String confirmAccountURL = baseURL + "/rest/auth/confirm/" + account.getId() + "/" + confirmationCode;
+		String confirmAccountURL = baseURL + "/rest/auth/confirm/" + confirmationCode;
 		Object[] params = { confirmAccountURL };
 
 		String emailText = formatter.format(params);
-		mailService.sendMail(subject, emailText, account.getEmailAddress());
+
+		List<String> adminUserNames=roleRepository.findAllAdminsUsernames();
+		adminUserNames.forEach(adminUserName -> mailService.sendMail(subject, emailText, adminUserName));
 
 		RegisterResponse registerStatus = new RegisterResponse();
 		registerStatus.setMessage("Account created. Confirmation link has been sent to your E-Mail address. Use it to complete the registration.");
 		registerStatus.setResponseStatus(Status.OK);
-		registerStatus.setUsername(account.getEmailAddress());
-		registerStatus.setEmail(account.getEmailAddress());
+		registerStatus.setUsername(account.getUsername());
 
 		return Response.status(Response.Status.OK).entity(registerStatus).build();
 	}
 
 	@GET
-	@Path("/confirm/{accountId}/{confirmationToken}")
+	@Path("/confirm/{confirmationToken}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response confirmAccount(@Context HttpServletRequest request, @PathParam("accountId") Long accountId,
+	public Response confirmAccount(@Context HttpServletRequest request,
 			@PathParam("confirmationToken") String confirmationToken) {
 
-		Account account = accountRepository.find(accountId);
+		Account account = accountRepository.findByToken(confirmationToken);
 
 		BaseResponse requestStatus = new BaseResponse();
 
@@ -222,10 +226,20 @@ public class AuthRESTService {
 				}
 
 				RegisterResponse registerStatus = new RegisterResponse();
-				registerStatus.setMessage("Account created. Confirmation link has been sent to your E-Mail address. Use it to complete the registration.");
+				registerStatus.setMessage("Account verified successfully. Now your account need to be confirmed by administrator");
 				registerStatus.setResponseStatus(Status.OK);
-				registerStatus.setUsername(account.getEmailAddress());
-				registerStatus.setEmail(account.getEmailAddress());
+				registerStatus.setUsername(account.getUsername());
+
+				String subject = "Public Survey bilgoraj - weryfikacja użytkownika";
+
+				MessageFormat formatter = new MessageFormat("");
+
+				ResourceBundle i18n = ResourceBundle.getBundle("pl.gisexpert.i18n.Text");
+				formatter.setLocale(i18n.getLocale());
+
+				String emailText =new StringBuilder().append("Użytkownik: ").append(account.getUsername()).append(" prosi o weryfikację danych przez administratora.").toString();
+
+				mailService.sendMail(subject, emailText, account.getUsername());
 
 				return Response.status(Response.Status.OK).entity(registerStatus).build();
 		}
@@ -259,6 +273,12 @@ public class AuthRESTService {
 
 		if (account.getAccountStatus() == AccountStatus.DISABLED) {
 			rs.setMessage(i18n.getString("account.validation.disabled"));
+			rs.setResponseStatus(Response.Status.UNAUTHORIZED);
+			return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();
+		}
+
+		if (account.getAccountStatus() == AccountStatus.CONFIRMED) {
+			rs.setMessage(i18n.getString("account.validation.confirmed"));
 			rs.setResponseStatus(Response.Status.UNAUTHORIZED);
 			return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();
 		}
@@ -433,7 +453,7 @@ public class AuthRESTService {
 			contactInfo.setPhone(account.getPhone());
 		}
 		else {
-			log.warn("Failed fetching contact info for " + account.getEmailAddress());
+			log.warn("Failed fetching contact info for " + account.getUsername());
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
 		

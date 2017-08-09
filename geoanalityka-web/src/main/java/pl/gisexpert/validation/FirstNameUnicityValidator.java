@@ -7,28 +7,24 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
-import javax.inject.Inject;
 
-import pl.gisexpert.cms.data.AccountRepository;
-
-@ManagedBean(name = "usernameUnicityValidator")
+@ManagedBean(name = "firstnameUnicityValidator")
 @RequestScoped
-public class UsernameUnicityValidator implements Validator {
-	
-    @Inject
-    private AccountRepository accountFacade;
-
+public class FirstNameUnicityValidator implements Validator {
     @Override
     public void validate(FacesContext context, UIComponent component, Object value) throws ValidatorException {
-        if (value==null) {
-            FacesMessage message = new FacesMessage("Nazwa użytkownika nie może być pusta.");
+        if (value == null) {
+            FacesMessage message = new FacesMessage("Należy podać imię.");
             message.setSeverity(FacesMessage.SEVERITY_FATAL);
             throw new ValidatorException(message);
         }
-        if (accountFacade.findByEmail((String)value) != null) {
-            FacesMessage message = new FacesMessage("Użytkownik o podanej nazwie już istnieje.");
+
+        String firstname=((String) value);
+        if (!firstname.matches("(^[A-Z ÀÁÂÃÄÅ ĄŻŹ ÒÓÔÕÖØ Ł Ć ĘŚ Ń ÈÉÊË Ç ÌÍÎÏ ÙÚÛÜ Ñ ]{1})([a-zàáâãäåąźżòóÓłćęśńôõöøèéêëçìíîïùúûüÿñ]{2,29}$)")) {
+
+            FacesMessage message = new FacesMessage("Imię musi zaczynać się z dużej litery i mieć od 3 do 30 znaków");
             message.setSeverity(FacesMessage.SEVERITY_ERROR);
             throw new ValidatorException(message);
-       }
+        }
     }
 }

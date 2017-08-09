@@ -48,7 +48,7 @@ public class AccountService {
     public Set<Role> getRoles(Account account) {
     	
     	TypedQuery<Role> query = em.createNamedQuery("Account.getRoles", Role.class);
-    	query.setParameter("username", account.getEmailAddress());
+    	query.setParameter("username", account.getUsername());
     	
     	Set<Role> accountRoles = new HashSet<>(query.getResultList());
     	return accountRoles;
@@ -67,7 +67,7 @@ public class AccountService {
     
     public boolean hasRole(Account account, String roleName) {
     	TypedQuery<Integer> query = em.createNamedQuery("Account.hasRole", Integer.class);
-    	query.setParameter("username", account.getEmailAddress());
+    	query.setParameter("username", account.getUsername());
     	query.setParameter("role", roleName);
     	
     	Integer result = query.getSingleResult();
