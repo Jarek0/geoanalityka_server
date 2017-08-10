@@ -22,7 +22,7 @@ public class FlatNumberUnicityValidator implements Validator {
             return;
         }
 
-        if (!flatnumber.matches("(^[0-9]{1,5}$)")) {
+        if (!flatnumber.matches("(^[0-9]{0,5}$)")) {
 
             FacesMessage message = new FacesMessage("Nieprawidłowy format numeru mieszkania");
             message.setSeverity(FacesMessage.SEVERITY_ERROR);

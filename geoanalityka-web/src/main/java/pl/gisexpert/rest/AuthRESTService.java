@@ -17,12 +17,7 @@
 package pl.gisexpert.rest;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.UUID;
+import java.util.*;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -58,7 +53,6 @@ import pl.gisexpert.cms.service.AccountService;
 import pl.gisexpert.cms.service.LoginAttemptService;
 import pl.gisexpert.cms.visitor.AccountAddressVisitor;
 import pl.gisexpert.cms.visitor.DefaultAccountVisitor;
-import pl.gisexpert.reCaptcha.VerifyUtils;
 import pl.gisexpert.rest.Validator.Validator;
 import pl.gisexpert.rest.model.AccountInfo;
 import pl.gisexpert.rest.model.AddressForm;
@@ -116,29 +110,17 @@ public class AuthRESTService {
 	@Inject
 	private Logger log;
 
-	public void sendMail(){
-
-	}
-
 	@POST
 	@Path("/register")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response registerAccount(@Context HttpServletRequest request, RegisterForm formData) {
-			ArrayList obj = validator.validate(formData);
-		if(obj.size()>0) {
+		Map<String,String> errors = validator.validate(formData);
+		if(errors.size()>0) {
 			Gson gson = new Gson();
-			String mess = gson.toJson(obj);
+			String mess = gson.toJson(errors);
 			BaseResponse errorStatus = new BaseResponse();
 			errorStatus.setMessage(mess);
-			errorStatus.setResponseStatus(Status.BAD_REQUEST);
-			return Response.status(Response.Status.BAD_REQUEST).entity(errorStatus).build();
-		}
-		if(!VerifyUtils.verify(formData.getCaptcha()))
-		{
-			System.out.println("reCapture");
-			BaseResponse errorStatus = new BaseResponse();
-			errorStatus.setMessage("Invalid reCaptcha key");
 			errorStatus.setResponseStatus(Status.BAD_REQUEST);
 			return Response.status(Response.Status.BAD_REQUEST).entity(errorStatus).build();
 		}
