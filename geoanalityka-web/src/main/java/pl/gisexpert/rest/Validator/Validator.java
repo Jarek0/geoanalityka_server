@@ -24,7 +24,7 @@ public class Validator {
         if(matching("(^[A-Z ÀÁÂÃÄÅ ĄŻŹ ÒÓÔÕÖØ Ł Ć ĘŚ Ń ÈÉÊË Ç ÌÍÎÏ ÙÚÛÜ Ñ ]{1})([a-zàáâãäåąźżòóÓłćęśńôõöøèéêëçìíîïùúûüÿñ]{1,}$)",firstname) && firstname.length()<=30){
                 return obj;
         }else {
-            return funkcja (obj,"Imię powinno zaczynać się z wielkiej litery oraz mieć mniej niż 30 znaków");
+            return addError (obj,"Imię powinno zaczynać się z wielkiej litery oraz mieć mniej niż 30 znaków");
         }
     }
     private ArrayList checkLastname(RegisterForm form) {
@@ -33,18 +33,18 @@ public class Validator {
         if (matching("(^[A-Z ÀÁÂÃÄÅ ĄŻŹ ÒÓÔÕÖØ Ł Ć ĘŚ Ń ÈÉÊË Ç ÌÍÎÏ ÙÚÛÜ Ñ ]{1})([a-zàáâãäåąźżòóÓłćęśńôõöøèéêëçìíîïùúûüÿñ]{1,}$)",lastname) && lastname.length()<=30) {
                 return obj;
         } else {
-                return funkcja(obj,"Nazwisko powinno zaczynać się z wielkiej litery oraz mieć mniej niż 30 znaków");
+                return addError(obj,"Nazwisko powinno zaczynać się z wielkiej litery oraz mieć mniej niż 30 znaków");
         }
     }
     private ArrayList checkMail(RegisterForm form){
         String username = form.getUsername();
         ArrayList obj = checkPassword(form);
         if(accountRepository.checkIfUserWithThisMailExist(username))
-            return funkcja(obj,"Użytkownik o podanym mailu istnieje");
+            return addError(obj,"Użytkownik o podanym mailu istnieje");
         if (matching("^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$",username)) {
                 return obj;
         } else {
-                return funkcja(obj,"Mail powinien być w formacie: przyklad@mail.pl");
+                return addError(obj,"Mail powinien być w formacie: przyklad@mail.pl");
         }
     }
     private ArrayList checkPassword(RegisterForm form) {
@@ -53,17 +53,17 @@ public class Validator {
         ArrayList obj = checkStreet(form);
         if (password == null) {
             if (confirmPassword == null)
-                funkcja(obj, "Potwierdzenie jest puste");
-            return funkcja(obj, "Hasło jest puste");
+                addError(obj, "Potwierdzenie jest puste");
+            return addError(obj, "Hasło jest puste");
         }
         if (password.length() >= 6) {
             if (password.equals(confirmPassword)) {
                 return obj;
             } else {
-                return funkcja(obj, "Hasła nie zgadzają się");
+                return addError(obj, "Hasła nie zgadzają się");
             }
         } else {
-            funkcja(obj, "Hasło jest za krótkie");
+            addError(obj, "Hasło jest za krótkie");
             return obj;
         }
     }
@@ -73,7 +73,7 @@ public class Validator {
         if(matching("(^[A-Z ÀÁÂÃÄÅ ĄŻŹ ÒÓÔÕÖØ Ł Ć ĘŚ Ń ÈÉÊË Ç ÌÍÎÏ ÙÚÛÜ Ñ]{1})([a-zàáâãäåąźżòóÓłćęśńôõöøèéêëçìíîïùúûüÿñ]{1,}$)",street) && street.length()<=30)
             return obj;
         else
-            return funkcja(obj,"Nazwa ulicy powinna zaczynać się z wielkiej litery oraz mieć mniej niż 30 znaków");
+            return addError(obj,"Nazwa ulicy powinna zaczynać się z wielkiej litery oraz mieć mniej niż 30 znaków");
     }
     private ArrayList checkBuilding (RegisterForm form){
         String buildingNumber = form.getAddress().getBuildingNumber();
@@ -81,7 +81,7 @@ public class Validator {
         try{
             Integer.valueOf(buildingNumber);
         }catch (NumberFormatException e){
-            funkcja(obj, "Numer budynku powinien być cyfrą");
+            addError(obj, "Numer budynku powinien być cyfrą");
         }
         finally {
             return obj;
@@ -94,7 +94,7 @@ public class Validator {
         try{
             Integer.valueOf(flatNumber);
         }catch (NumberFormatException e){
-            funkcja(obj, "Numer mieszkania powinien być cyfrą");
+            addError(obj, "Numer mieszkania powinien być cyfrą");
         }
         };
             return obj;
@@ -105,7 +105,7 @@ public class Validator {
         if(matching("^[0-9]{2}-?[0-9]{3}$",form.getAddress().getZipCode()))
             return obj;
         else
-            return funkcja(obj,"Kod pocztowy powinien być w formacie: 22-222");
+            return addError(obj,"Kod pocztowy powinien być w formacie: 22-222");
     }
     private ArrayList checkCity (RegisterForm form){
         String city = form.getAddress().getCity();
@@ -113,21 +113,21 @@ public class Validator {
         if(matching("(^[A-Z ÀÁÂÃÄÅ ĄŻŹ ÒÓÔÕÖØ Ł Ć ĘŚ Ń ÈÉÊË Ç ÌÍÎÏ ÙÚÛÜ Ñ]{1})([a-zàáâãäåąźżòóÓłćęśńôõöøèéêë)çìíîïùúûüÿñ]{1,}$)",city) && city.length()<=30)
             return obj;
         else
-            return funkcja(obj, "Nazwa maista powinna zaczynać się z wielkiej litery oraz mieć mniej niż 30 znaków");
+            return addError(obj, "Nazwa maista powinna zaczynać się z wielkiej litery oraz mieć mniej niż 30 znaków");
     }
     private ArrayList checkPhone(RegisterForm form){
         ArrayList obj = new ArrayList();
         if(matching("^(\\(?\\+?[0-9]{1,3}\\)?)? ?[0-9 \\-]{7,20}$",form.getAddress().getPhone()))
             return obj;
         else
-            return funkcja(obj, "Numer telefonu powinien być mieć ciąg 9 cyfr bez spacji");
+            return addError(obj, "Numer telefonu powinien być mieć ciąg 9 cyfr bez spacji");
     }
     private Boolean matching(String pattern, String regex){
         Pattern p = Pattern.compile(pattern);
         Matcher match = p.matcher(regex);
         return match.find();
     }
-    private ArrayList funkcja (ArrayList lista, String nazwa){
+    private ArrayList addError (ArrayList lista, String nazwa){
         lista.add(nazwa);
         return lista;
     }
