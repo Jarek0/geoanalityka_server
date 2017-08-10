@@ -38,6 +38,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
@@ -170,6 +171,7 @@ public class AuthRESTService {
 
 		account.setDateRegistered(new Date());
 		account.setAccountStatus(AccountStatus.UNCONFIRMED);
+		account.setRoles(Sets.newHashSet(roleRepository.findByName("Ankietowani")));
 
 		UUID confirmationCode = UUID.randomUUID();
 		AccountConfirmation accountConfirmation = new AccountConfirmation();
@@ -178,7 +180,7 @@ public class AuthRESTService {
 		account.setAccountConfirmation(accountConfirmation);
 
 		try {
-			accountRepository.create(account);
+			accountRepository.edit(account);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 			BaseResponse errorStatus = new BaseResponse();
@@ -187,7 +189,7 @@ public class AuthRESTService {
 			return Response.status(Response.Status.BAD_REQUEST).entity(errorStatus).build();
 		}
 
-		String subject = "Public Survey bilgoraj - potwierdzenie rejestracji użytkownika";
+		String subject = "Geoanalizy.pl - potwierdzenie rejestracji użytkownika";
 
 		MessageFormat formatter = new MessageFormat("");
 
@@ -203,9 +205,7 @@ public class AuthRESTService {
 		Object[] params = { confirmAccountURL };
 
 		String emailText = formatter.format(params);
-
-		List<String> adminUserNames=roleRepository.findAllAdminsUsernames();
-		adminUserNames.forEach(adminUserName -> mailService.sendMail(subject, emailText, adminUserName));
+		mailService.sendMail(subject, emailText, account.getUsername());
 
 		RegisterResponse registerStatus = new RegisterResponse();
 		registerStatus.setMessage("Account created. Confirmation link has been sent to your E-Mail address. Use it to complete the registration.");
@@ -252,7 +252,8 @@ public class AuthRESTService {
 
 			String emailText =new StringBuilder().append("Użytkownik: ").append(account.getUsername()).append(" prosi o weryfikację danych przez administratora.").toString();
 
-			mailService.sendMail(subject, emailText, account.getUsername());
+			List<String> adminUserNames=roleRepository.findAllAdminsUsernames();
+			adminUserNames.forEach(adminUserName -> mailService.sendMail(subject, emailText, adminUserName));
 
 			return Response.status(Response.Status.OK).entity(registerStatus).build();
 		}
