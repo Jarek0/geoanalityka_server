@@ -1,11 +1,15 @@
 package pl.gisexpert.rest.Validator;
 
 import pl.gisexpert.cms.data.AccountRepository;
+import pl.gisexpert.reCaptcha.CaptchaVerifyUtils;
+import pl.gisexpert.rest.model.BaseResponse;
 import pl.gisexpert.rest.model.RegisterForm;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import java.util.ArrayList;
+import javax.ws.rs.core.Response;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.*;
 
 @RequestScoped
@@ -14,122 +18,86 @@ public class Validator {
     @Inject
     private AccountRepository accountRepository;
 
+    @Inject
+    private CaptchaVerifyUtils captchaVerifyUtils;
 
-    public ArrayList validate(RegisterForm form){
-        return checkFirstname(form);
+    public Map<String,String> validate(RegisterForm form){
+        Map<String,String> errors = new HashMap<>();
+        this.checkFirstName(errors,form.getFirstname());
+        this.checkLastname(errors,form.getLastname());
+        this.checkMail(errors,form.getUsername());
+        this.checkPassword(errors,form.getPassword(),form.getConfirmPassword());
+        this.checkStreet(errors,form.getAddress().getStreet());
+        this.checkBuildingNumber(errors,form.getAddress().getBuildingNumber());
+        this.checkZipCode(errors,form.getAddress().getZipCode());
+        this.checkCity(errors,form.getAddress().getCity());
+        this.checkPhone(errors,form.getAddress().getPhone());
+        this.checkCaptcha(errors,form.getCaptcha());
+        return errors;
     }
-    private ArrayList checkFirstname(RegisterForm form){
-        String firstname = form.getFirstname();
-        ArrayList obj = checkLastname(form);
-        if(matching("(^[A-Z ÀÁÂÃÄÅ ĄŻŹ ÒÓÔÕÖØ Ł Ć ĘŚ Ń ÈÉÊË Ç ÌÍÎÏ ÙÚÛÜ Ñ ]{1})([a-zàáâãäåąźżòóÓłćęśńôõöøèéêëçìíîïùúûüÿñ]{1,}$)",firstname) && firstname.length()<=30){
-                return obj;
-        }else {
-            return addError (obj,"Imię powinno zaczynać się z wielkiej litery oraz mieć mniej niż 30 znaków");
-        }
-    }
-    private ArrayList checkLastname(RegisterForm form) {
-        String lastname = form.getLastname();
-        ArrayList obj = checkMail(form);
-        if (matching("(^[A-Z ÀÁÂÃÄÅ ĄŻŹ ÒÓÔÕÖØ Ł Ć ĘŚ Ń ÈÉÊË Ç ÌÍÎÏ ÙÚÛÜ Ñ ]{1})([a-zàáâãäåąźżòóÓłćęśńôõöøèéêëçìíîïùúûüÿñ]{1,}$)",lastname) && lastname.length()<=30) {
-                return obj;
-        } else {
-                return addError(obj,"Nazwisko powinno zaczynać się z wielkiej litery oraz mieć mniej niż 30 znaków");
-        }
-    }
-    private ArrayList checkMail(RegisterForm form){
-        String username = form.getUsername();
-        ArrayList obj = checkPassword(form);
-        if(accountRepository.checkIfUserWithThisMailExist(username))
-            return addError(obj,"Użytkownik o podanym mailu istnieje");
-        if (matching("^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$",username)) {
-                return obj;
-        } else {
-                return addError(obj,"Mail powinien być w formacie: przyklad@mail.pl");
-        }
-    }
-    private ArrayList checkPassword(RegisterForm form) {
-        String password = form.getPassword();
-        String confirmPassword = form.getConfirmPassword();
-        ArrayList obj = checkStreet(form);
-        if (password == null) {
-            if (confirmPassword == null)
-                addError(obj, "Potwierdzenie jest puste");
-            return addError(obj, "Hasło jest puste");
-        }
-        if (password.length() >= 6) {
-            if (password.equals(confirmPassword)) {
-                return obj;
-            } else {
-                return addError(obj, "Hasła nie zgadzają się");
-            }
-        } else {
-            addError(obj, "Hasło jest za krótkie");
-            return obj;
-        }
-    }
-    private ArrayList checkStreet(RegisterForm form){
-        String street = form.getAddress().getStreet();
-        ArrayList obj = checkBuilding(form);
-        if(matching("(^[A-Z ÀÁÂÃÄÅ ĄŻŹ ÒÓÔÕÖØ Ł Ć ĘŚ Ń ÈÉÊË Ç ÌÍÎÏ ÙÚÛÜ Ñ]{1})([a-zàáâãäåąźżòóÓłćęśńôõöøèéêëçìíîïùúûüÿñ]{1,}$)",street) && street.length()<=30)
-            return obj;
-        else
-            return addError(obj,"Nazwa ulicy powinna zaczynać się z wielkiej litery oraz mieć mniej niż 30 znaków");
-    }
-    private ArrayList checkBuilding (RegisterForm form){
-        String buildingNumber = form.getAddress().getBuildingNumber();
-        ArrayList obj = checkLocale(form);
-        try{
-            Integer.valueOf(buildingNumber);
-        }catch (NumberFormatException e){
-            addError(obj, "Numer budynku powinien być cyfrą");
-        }
-        finally {
-            return obj;
-        }
-    }
-    private ArrayList checkLocale (RegisterForm form){
-        String flatNumber = form.getAddress().getFlatNumber();
-        ArrayList obj = checkZip(form);
-        if(flatNumber != null){
-        try{
-            Integer.valueOf(flatNumber);
-        }catch (NumberFormatException e){
-            addError(obj, "Numer mieszkania powinien być cyfrą");
-        }
-        };
-            return obj;
+    private void checkFirstName(Map<String,String> errors, String firstName) {
+        if (!matching("(^[A-Z ÀÁÂÃÄÅ ĄŻŹ ÒÓÔÕÖØ Ł Ć ĘŚ Ń ÈÉÊË Ç ÌÍÎÏ ÙÚÛÜ Ñ ]{1})([a-zàáâãäåąźżòóÓłćęśńôõöøèéêëçìíîïùúûüÿñ]{2,29}$)", firstName))
+        errors.put("firstname","Imię musi zaczynać się z wielkiej litery i mieć co najmniej 3 znaki");
 
     }
-    private ArrayList checkZip(RegisterForm form){
-        ArrayList obj = checkCity(form);
-        if(matching("^[0-9]{2}-?[0-9]{3}$",form.getAddress().getZipCode()))
-            return obj;
-        else
-            return addError(obj,"Kod pocztowy powinien być w formacie: 22-222");
+    private void checkLastname(Map<String,String> errors, String lastname) {
+        if (!matching("(^[A-Z ÀÁÂÃÄÅ ĄŻŹ ÒÓÔÕÖØ Ł Ć ĘŚ Ń ÈÉÊË Ç ÌÍÎÏ ÙÚÛÜ Ñ]{1})([a-zàáâãäåąźżòóÓłćęśńôõöøèéêëçìíîïùúûüÿñ]{2,29}$)",lastname))
+        errors.put("lastname","Nazwisko musi zaczynać się z wielkiej litery i mieć co najmniej 3 znaki");
     }
-    private ArrayList checkCity (RegisterForm form){
-        String city = form.getAddress().getCity();
-        ArrayList obj = checkPhone(form);
-        if(matching("(^[A-Z ÀÁÂÃÄÅ ĄŻŹ ÒÓÔÕÖØ Ł Ć ĘŚ Ń ÈÉÊË Ç ÌÍÎÏ ÙÚÛÜ Ñ]{1})([a-zàáâãäåąźżòóÓłćęśńôõöøèéêë)çìíîïùúûüÿñ]{1,}$)",city) && city.length()<=30)
-            return obj;
-        else
-            return addError(obj, "Nazwa maista powinna zaczynać się z wielkiej litery oraz mieć mniej niż 30 znaków");
+
+    private void checkMail(Map<String,String> errors, String email){
+        if (!matching("(^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.+[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@+(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$)",email)){
+            errors.put("username","Email ma nieprawidłowy format");
+        }
+        else if(accountRepository.checkIfUserWithThisMailExist(email))
+            errors.put("username","Konto z tym mailem istnieje, zaloguj się na nie zamiast tworzyć nowe");
     }
-    private ArrayList checkPhone(RegisterForm form){
-        ArrayList obj = new ArrayList();
-        if(matching("^(\\(?\\+?[0-9]{1,3}\\)?)? ?[0-9 \\-]{7,20}$",form.getAddress().getPhone()))
-            return obj;
-        else
-            return addError(obj, "Numer telefonu powinien być mieć ciąg 9 cyfr bez spacji");
+
+    private void checkPassword(Map<String,String> errors, String password, String confirmPassword) {
+        if (password == null || confirmPassword == null) {
+            errors.put("password","Hasło powinno zawierać co najmniej 6 znaków");
+        }
+        else if (password.length() < 6) {
+            errors.put("password","Hasło powinno zawierać co najmniej 6 znaków");
+        }
+        else if(!password.equals(confirmPassword)){
+            errors.put("confirmPassword","Hasła nie pokrywają się");
+        }
     }
+    private void checkStreet(Map<String,String> errors, String street){
+        if (!matching("(^[A-Z ÀÁÂÃÄÅ ĄŻŹ ÒÓÔÕÖØ Ł Ć ĘŚ Ń ÈÉÊË Ç ÌÍÎÏ ÙÚÛÜ Ñ]{1})([a-zàáâãäåąźżòóÓłćęśńôõöøèéêëçìíîïùúûüÿñ]{2,29}$)",street))
+            errors.put("street","Nazwa ulicy musi zaczynać się z wielkiej litery i mieć co najmniej 3 znaki");
+    }
+    private void checkBuildingNumber(Map<String,String> errors, String buildingNumber){
+        if (!matching("(^[0-9]{1,5}$)",buildingNumber))
+            errors.put("buildingNumber","Numer budynku ma nieprawidłowy format");
+    }
+
+    private void checkFlatNumber(Map<String,String> errors, String flatNumber){
+        if (!matching("(^[0-9]{0,5}$)",flatNumber))
+            errors.put("flatNumber","Numer lokalu ma nieprawidłowy format");
+    }
+
+    private void checkZipCode(Map<String,String> errors, String zipCode){
+        if (!matching("(^[0-9]{2}-?[0-9]{3}$)",zipCode))
+            errors.put("zipCode","Kod pocztowy ma nieprawidłowy format");
+    }
+    private void checkCity(Map<String,String> errors, String city){
+        if (!matching("(^[A-Z ÀÁÂÃÄÅ ĄŻŹ ÒÓÔÕÖØ Ł Ć ĘŚ Ń ÈÉÊË Ç ÌÍÎÏ ÙÚÛÜ Ñ ]{1})([a-zàáâãäåąźżòóÓłćęśńôõöøèéêëçìíîïùúûüÿñ]{2,29}$)",city))
+            errors.put("city","Nazwa miasta musi zaczynać się z wielkiej litery i mieć co najmniej 3 znaki");
+    }
+    private void checkPhone(Map<String,String> errors, String phone){
+        if (!matching("(^[0-9]{9,11}$)",phone))
+            errors.put("phone","Nazwa miasta musi zaczynać się z wielkiej litery i mieć co najmniej 3 znaki");
+    }
+    private void checkCaptcha(Map<String,String> errors, String captcha){
+        if(!captchaVerifyUtils.verify(captcha))
+            errors.put("captcha","Nie przeszedłeś ochrony anty botowej");
+    }
+
     private Boolean matching(String pattern, String regex){
         Pattern p = Pattern.compile(pattern);
         Matcher match = p.matcher(regex);
         return match.find();
     }
-    private ArrayList addError (ArrayList lista, String nazwa){
-        lista.add(nazwa);
-        return lista;
-    }
-
 }
