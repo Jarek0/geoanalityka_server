@@ -38,6 +38,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import com.google.gson.Gson;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.apache.shiro.crypto.hash.DefaultHashService;
@@ -57,6 +58,7 @@ import pl.gisexpert.cms.service.LoginAttemptService;
 import pl.gisexpert.cms.visitor.AccountAddressVisitor;
 import pl.gisexpert.cms.visitor.DefaultAccountVisitor;
 import pl.gisexpert.reCaptcha.VerifyUtils;
+import pl.gisexpert.rest.Validator.Validator;
 import pl.gisexpert.rest.model.AccountInfo;
 import pl.gisexpert.rest.model.AddressForm;
 import pl.gisexpert.rest.model.BaseResponse;
@@ -78,19 +80,19 @@ public class AuthRESTService {
 
 	@Inject
 	private RoleRepository roleRepository;
-	
+
 	@Inject
 	private AccountService accountService;
 
 	@Inject
 	private AccessTokenRepository accessTokenRepository;
-	
+
 	@Inject
 	private LoginAttemptRepository loginAttemptRepository;
 
 	@Inject
 	private LoginAttemptService loginAttemptService;
-	
+
 	@Inject
 	private GlobalConfigService appConfig;
 
@@ -99,14 +101,17 @@ public class AuthRESTService {
 
 	@Inject
 	private AddressRepository addressRepository;
-	
+
 	@Inject
 	private AccountAddressVisitor addressVisitor;
-	
+
+	@Inject
+	private Validator validator;
+
 	@Inject
 	@RESTI18n
 	private ResourceBundle i18n;
-	
+
 	@Inject
 	private Logger log;
 
@@ -119,7 +124,15 @@ public class AuthRESTService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response registerAccount(@Context HttpServletRequest request, RegisterForm formData) {
-
+			ArrayList obj = validator.validate(formData);
+		if(obj.size()>0) {
+			Gson gson = new Gson();
+			String mess = gson.toJson(obj);
+			BaseResponse errorStatus = new BaseResponse();
+			errorStatus.setMessage(mess);
+			errorStatus.setResponseStatus(Status.BAD_REQUEST);
+			return Response.status(Response.Status.BAD_REQUEST).entity(errorStatus).build();
+		}
 		if(!VerifyUtils.verify(formData.getCaptcha()))
 		{
 			System.out.println("reCapture");
@@ -128,7 +141,7 @@ public class AuthRESTService {
 			errorStatus.setResponseStatus(Status.BAD_REQUEST);
 			return Response.status(Response.Status.BAD_REQUEST).entity(errorStatus).build();
 		}
-		
+
 		Account account;
 		account = new NaturalPersonAccount();
 
@@ -136,7 +149,7 @@ public class AuthRESTService {
 		account.setFirstName(formData.getFirstname());
 		account.setLastName(formData.getLastname());
 		account.setUsername(formData.getUsername());
-		
+
 		final AddressForm addressForm = formData.getAddress();
 		final Address address = new Address();
 
@@ -206,7 +219,7 @@ public class AuthRESTService {
 	@Path("/confirm/{confirmationToken}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response confirmAccount(@Context HttpServletRequest request,
-			@PathParam("confirmationToken") String confirmationToken) {
+								   @PathParam("confirmationToken") String confirmationToken) {
 
 		Account account = accountRepository.findByToken(confirmationToken);
 
@@ -220,28 +233,28 @@ public class AuthRESTService {
 			account.setAccountStatus(AccountStatus.CONFIRMED);
 			accountRepository.edit(account);
 
-				String remoteHost = request.getHeader("Host");
-				if (remoteHost == null){
-					remoteHost = request.getRemoteHost();
-				}
+			String remoteHost = request.getHeader("Host");
+			if (remoteHost == null){
+				remoteHost = request.getRemoteHost();
+			}
 
-				RegisterResponse registerStatus = new RegisterResponse();
-				registerStatus.setMessage("Account verified successfully. Now your account need to be confirmed by administrator");
-				registerStatus.setResponseStatus(Status.OK);
-				registerStatus.setUsername(account.getUsername());
+			RegisterResponse registerStatus = new RegisterResponse();
+			registerStatus.setMessage("Account verified successfully. Now your account need to be confirmed by administrator");
+			registerStatus.setResponseStatus(Status.OK);
+			registerStatus.setUsername(account.getUsername());
 
-				String subject = "Public Survey bilgoraj - weryfikacja użytkownika";
+			String subject = "Public Survey bilgoraj - weryfikacja użytkownika";
 
-				MessageFormat formatter = new MessageFormat("");
+			MessageFormat formatter = new MessageFormat("");
 
-				ResourceBundle i18n = ResourceBundle.getBundle("pl.gisexpert.i18n.Text");
-				formatter.setLocale(i18n.getLocale());
+			ResourceBundle i18n = ResourceBundle.getBundle("pl.gisexpert.i18n.Text");
+			formatter.setLocale(i18n.getLocale());
 
-				String emailText =new StringBuilder().append("Użytkownik: ").append(account.getUsername()).append(" prosi o weryfikację danych przez administratora.").toString();
+			String emailText =new StringBuilder().append("Użytkownik: ").append(account.getUsername()).append(" prosi o weryfikację danych przez administratora.").toString();
 
-				mailService.sendMail(subject, emailText, account.getUsername());
+			mailService.sendMail(subject, emailText, account.getUsername());
 
-				return Response.status(Response.Status.OK).entity(registerStatus).build();
+			return Response.status(Response.Status.OK).entity(registerStatus).build();
 		}
 
 		requestStatus.setMessage("Account confirmation failed.");
@@ -282,14 +295,14 @@ public class AuthRESTService {
 			rs.setResponseStatus(Response.Status.UNAUTHORIZED);
 			return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();
 		}
-		
+
 		List<LoginAttempt> recentLoginAttempts = loginAttemptService.findRecentLoginAttempts(5, account, 100);
 		if (recentLoginAttempts != null && recentLoginAttempts.size() == 20) {
 			rs.setMessage(i18n.getString("account.validation.toomanyloginattempts"));
 			rs.setResponseStatus(Response.Status.FORBIDDEN);
 			return Response.status(Response.Status.FORBIDDEN).entity(rs).build();
 		}
-		
+
 		LoginAttempt loginAttempt = new LoginAttempt();
 		loginAttempt.setDate(new Date());
 		loginAttempt.setAccount(account);
@@ -304,14 +317,14 @@ public class AuthRESTService {
 
 			AccessToken accessToken = new AccessToken();
 			String token = UUID.randomUUID().toString();
-			
+
 			while (accessTokenRepository.findByToken(token) != null) {
 				token = UUID.randomUUID().toString();
 			}
 			accessToken.setToken(token);
 
 			Date date = new Date();
-			
+
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(date);
 			cal.add(Calendar.MINUTE, 240); // token will expire after 240 minutes
@@ -326,15 +339,15 @@ public class AuthRESTService {
 			getTokenStatus.setToken(token);
 			getTokenStatus.setResponseStatus(Response.Status.OK);
 			getTokenStatus.setExpires(date);
-			
+
 			loginAttempt.setSuccessful(true);
 			account.setLastLoginDate(new Date());
 			accountRepository.edit(account);
 			loginAttemptRepository.create(loginAttempt);
-			
+
 			return Response.status(Response.Status.OK).entity(getTokenStatus).build();
 		}
-		
+
 		loginAttempt.setSuccessful(false);
 		loginAttemptRepository.create(loginAttempt);
 
@@ -343,20 +356,20 @@ public class AuthRESTService {
 
 		return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();
 	}
-	
+
 	@GET
 	@Path("/renewToken")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response renewToken(@Context HttpServletRequest request) {
 		String token = request.getHeader("Access-Token");
-		
+
 		AccessToken accessToken = accessTokenRepository.findByToken(token);
-		
+
 		if (accessToken == null) {
 			log.debug("Failed to renew token: " + token);
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
-		
+
 		Date date = new Date();
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
@@ -365,11 +378,11 @@ public class AuthRESTService {
 
 		accessToken.setExpires(date);
 		accessTokenRepository.edit(accessToken);
-		
+
 		log.debug("Successfully renewed token: " + accessToken.getToken());
-		
+
 		return Response.status(Response.Status.OK).build();
-		
+
 	}
 
 	@GET
@@ -398,23 +411,23 @@ public class AuthRESTService {
 
 		Subject currentUser = SecurityUtils.getSubject();
 		String username = (String) currentUser.getPrincipal();
-		
+
 		if (username == null) {
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
 		log.debug("Getting account info for username: " + username);
 		Account account = accountRepository.findByEmail(username);
-		
+
 		if (account == null) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
 		}
-		
+
 		account = accountRepository.fetchContactData(account);
-		
+
 		AccountInfo accountInfo = new AccountInfo(account, new ArrayList<>(accountService.getRoles(account)));
-		
+
 		String token = request.getHeader("Access-Token");
-		
+
 		AccessToken accessToken = accessTokenRepository.findByToken(token);
 		if (accessToken == null) {
 			return Response.status(Response.Status.FORBIDDEN).build();
@@ -426,7 +439,7 @@ public class AuthRESTService {
 
 		return Response.status(Response.Status.OK).entity(accountInfo).build();
 	}
-	
+
 	@GET
 	@Path("/contactInfo")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -434,19 +447,19 @@ public class AuthRESTService {
 
 		Subject currentUser = SecurityUtils.getSubject();
 		String username = (String) currentUser.getPrincipal();
-		
+
 		log.debug("Getting contact info for " + username);
 		if (username == null) {
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
-		
+
 		Account account = accountRepository.findByEmail(username);
 		account = accountRepository.fetchContactData(account);
-		
+
 		account.accept(addressVisitor);
-		
+
 		Address address = addressVisitor.getAddress();
-		
+
 		ContactInfo contactInfo;
 		if (address != null) {
 			contactInfo = new ContactInfo(address);
@@ -456,47 +469,47 @@ public class AuthRESTService {
 			log.warn("Failed fetching contact info for " + account.getUsername());
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
-		
+
 		return Response.status(Response.Status.OK).entity(contactInfo).build();
 	}
-	
+
 	@POST
 	@Path("/contactInfo")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response changeContactInfo(final ContactInfo contactInfo) {
-		
+
 		Subject currentUser = SecurityUtils.getSubject();
 		String username = (String) currentUser.getPrincipal();
-		
+
 		if (username == null) {
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
 		Account account = accountRepository.findByEmail(username);
-		
+
 		final Address address = new Address();
 		address.setCity(contactInfo.getCity());
 		address.setFlatNumber(contactInfo.getFlatNumber());
 		address.setHouseNumber(contactInfo.getHouseNumber());
 		address.setStreet(contactInfo.getStreet());
 		address.setZipcode(contactInfo.getZipcode());
-		
+
 		account.accept(new DefaultAccountVisitor() {
 			@Override
 			public void visit(NaturalPersonAccount account) {
-				
+
 				addressRepository.create(address);
 				account.setPhone(contactInfo.getPhone());
 				account.setAddress(address);
 			}
 		});
-		
+
 		accountRepository.edit(account);
-		
+
 		BaseResponse response = new BaseResponse();
 		response.setMessage("Pomyślnie zmieniono dane.");
 		response.setResponseStatus(Response.Status.OK);
-		
+
 		return Response.status(Response.Status.OK).entity(response).build();
 	}
 }
