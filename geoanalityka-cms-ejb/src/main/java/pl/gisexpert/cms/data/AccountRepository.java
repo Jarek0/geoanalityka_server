@@ -40,6 +40,15 @@ public class AccountRepository extends AbstractRepository<Account> {
 	}
 
 	@Transactional
+	public boolean checkIfUserWithThisMailExist(String email){
+		Account searched = findByUsername(email);
+		if(searched!=null)
+			return true;
+		else
+			return false;
+	}
+
+	@Transactional
 	public Account findByUsername(String username) {
 		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
 		CriteriaQuery<Account> cq = cb.createQuery(Account.class);
