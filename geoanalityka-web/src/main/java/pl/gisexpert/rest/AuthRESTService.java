@@ -17,12 +17,7 @@
 package pl.gisexpert.rest;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.UUID;
+import java.util.*;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -38,6 +33,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
@@ -57,7 +53,6 @@ import pl.gisexpert.cms.service.AccountService;
 import pl.gisexpert.cms.service.LoginAttemptService;
 import pl.gisexpert.cms.visitor.AccountAddressVisitor;
 import pl.gisexpert.cms.visitor.DefaultAccountVisitor;
-import pl.gisexpert.reCaptcha.VerifyUtils;
 import pl.gisexpert.rest.Validator.Validator;
 import pl.gisexpert.rest.model.AccountInfo;
 import pl.gisexpert.rest.model.AddressForm;
@@ -129,20 +124,12 @@ public class AuthRESTService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response registerAccount(@Context HttpServletRequest request, RegisterForm formData) {
-			ArrayList obj = validator.validate(formData);
-		if(obj.size()>0) {
+		Map<String,String> errors = validator.validate(formData);
+		if(errors.size()>0) {
 			Gson gson = new Gson();
-			String mess = gson.toJson(obj);
+			String mess = gson.toJson(errors);
 			BaseResponse errorStatus = new BaseResponse();
 			errorStatus.setMessage(mess);
-			errorStatus.setResponseStatus(Status.BAD_REQUEST);
-			return Response.status(Response.Status.BAD_REQUEST).entity(errorStatus).build();
-		}
-		if(!VerifyUtils.verify(formData.getCaptcha()))
-		{
-			System.out.println("reCapture");
-			BaseResponse errorStatus = new BaseResponse();
-			errorStatus.setMessage("Invalid reCaptcha key");
 			errorStatus.setResponseStatus(Status.BAD_REQUEST);
 			return Response.status(Response.Status.BAD_REQUEST).entity(errorStatus).build();
 		}
@@ -175,6 +162,7 @@ public class AuthRESTService {
 
 		account.setDateRegistered(new Date());
 		account.setAccountStatus(AccountStatus.UNCONFIRMED);
+		account.setRoles(Sets.newHashSet(roleRepository.findByName("Ankietowani")));
 
 		UUID confirmationCode = UUID.randomUUID();
 		AccountConfirmation accountConfirmation = new AccountConfirmation();
@@ -183,7 +171,7 @@ public class AuthRESTService {
 		account.setAccountConfirmation(accountConfirmation);
 
 		try {
-			accountRepository.create(account);
+			accountRepository.edit(account);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 			BaseResponse errorStatus = new BaseResponse();
@@ -191,17 +179,24 @@ public class AuthRESTService {
 			errorStatus.setResponseStatus(Status.BAD_REQUEST);
 			return Response.status(Response.Status.BAD_REQUEST).entity(errorStatus).build();
 		}
-		String url,baseURL;
-		Mail mail=new Mail();
-		mail.formatter.applyPattern(i18n.getString("account.confirm.emailtext"));
-		url = request.getRequestURL().toString();
-		baseURL = url.substring(0, url.length() - request.getRequestURI().length()) + request.getContextPath();
+
+		String subject = "Geoanalizy.pl - potwierdzenie rejestracji użytkownika";
+
+		MessageFormat formatter = new MessageFormat("");
+
+		ResourceBundle i18n = ResourceBundle.getBundle("pl.gisexpert.i18n.Text");
+		formatter.setLocale(i18n.getLocale());
+
+		formatter.applyPattern(i18n.getString("account.confirm.emailtext"));
+
+		String url = request.getRequestURL().toString();
+		String baseURL = url.substring(0, url.length() - request.getRequestURI().length()) + request.getContextPath();
+
 		String confirmAccountURL = baseURL + "/rest/auth/confirm/" + confirmationCode;
 		Object[] params = { confirmAccountURL };
 
-
-		List<String> adminUserNames=roleRepository.findAllAdminsUsernames();
-		adminUserNames.forEach(adminUserName -> mailService.sendMail(mail.getSubject(), confirmAccountURL, adminUserName));
+		String emailText = formatter.format(params);
+		mailService.sendMail(subject, emailText, account.getUsername());
 
 		RegisterResponse registerStatus = new RegisterResponse();
 		registerStatus.setMessage(account.getUsername());
@@ -239,7 +234,17 @@ public class AuthRESTService {
 			registerStatus.setResponseStatus(Status.OK);
 			registerStatus.setUsername(account.getUsername());
 
-			mailService.createUsrMail(account.getUsername());
+			String subject = "Public Survey bilgoraj - weryfikacja użytkownika";
+
+			MessageFormat formatter = new MessageFormat("");
+
+			ResourceBundle i18n = ResourceBundle.getBundle("pl.gisexpert.i18n.Text");
+			formatter.setLocale(i18n.getLocale());
+
+			String emailText =new StringBuilder().append("Użytkownik: ").append(account.getUsername()).append(" prosi o weryfikację danych przez administratora.").toString();
+
+			List<String> adminUserNames=roleRepository.findAllAdminsUsernames();
+			adminUserNames.forEach(adminUserName -> mailService.sendMail(subject, emailText, adminUserName));
 
 			return Response.status(Response.Status.OK).entity(registerStatus).build();
 		}
