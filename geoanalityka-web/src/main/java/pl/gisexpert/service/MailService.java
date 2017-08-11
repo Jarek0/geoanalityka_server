@@ -13,9 +13,12 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
 
 import org.ini4j.Wini;
 import org.slf4j.Logger;
+import pl.gisexpert.rest.Mail;
 
 @ApplicationScoped
 public class MailService {
@@ -60,7 +63,8 @@ public class MailService {
 
 	}
 
-	public void sendMail(String subject, String text, String address) {
+
+	public void sendMail(String subject, String text, String address) {//
 
 		Session session = Session.getInstance(sessionProps, new javax.mail.Authenticator() {
 			@Override

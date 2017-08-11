@@ -5,8 +5,12 @@ import pl.gisexpert.rest.model.RegisterForm;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.ResourceBundle;
 import java.util.regex.*;
+import java.util.UUID;
 
 @RequestScoped
 public class Validator {

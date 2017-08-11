@@ -75,6 +75,7 @@ import pl.gisexpert.service.MailService;
 @RequestScoped
 public class AuthRESTService {
 
+
 	@Inject
 	private AccountRepository accountRepository;
 
@@ -115,8 +116,12 @@ public class AuthRESTService {
 	@Inject
 	private Logger log;
 
-	public void sendMail(){
-
+	@GET
+	@Path("/resendMail")
+	public void createUsrMail(String username){
+		String emailText =new StringBuilder().append("Użytkownik: ").append(username).append(" prosi o weryfikację danych przez administratora.").toString();
+		Mail mail = new Mail();
+		mailService.sendMail(mail.getSubject(), emailText, username);
 	}
 
 	@POST
@@ -186,29 +191,20 @@ public class AuthRESTService {
 			errorStatus.setResponseStatus(Status.BAD_REQUEST);
 			return Response.status(Response.Status.BAD_REQUEST).entity(errorStatus).build();
 		}
-
-		String subject = "Public Survey bilgoraj - potwierdzenie rejestracji użytkownika";
-
-		MessageFormat formatter = new MessageFormat("");
-
-		ResourceBundle i18n = ResourceBundle.getBundle("pl.gisexpert.i18n.Text");
-		formatter.setLocale(i18n.getLocale());
-
-		formatter.applyPattern(i18n.getString("account.confirm.emailtext"));
-
-		String url = request.getRequestURL().toString();
-		String baseURL = url.substring(0, url.length() - request.getRequestURI().length()) + request.getContextPath();
-
+		String url,baseURL;
+		Mail mail=new Mail();
+		mail.formatter.applyPattern(i18n.getString("account.confirm.emailtext"));
+		url = request.getRequestURL().toString();
+		baseURL = url.substring(0, url.length() - request.getRequestURI().length()) + request.getContextPath();
 		String confirmAccountURL = baseURL + "/rest/auth/confirm/" + confirmationCode;
 		Object[] params = { confirmAccountURL };
 
-		String emailText = formatter.format(params);
 
 		List<String> adminUserNames=roleRepository.findAllAdminsUsernames();
-		adminUserNames.forEach(adminUserName -> mailService.sendMail(subject, emailText, adminUserName));
+		adminUserNames.forEach(adminUserName -> mailService.sendMail(mail.getSubject(), confirmAccountURL, adminUserName));
 
 		RegisterResponse registerStatus = new RegisterResponse();
-		registerStatus.setMessage("Account created. Confirmation link has been sent to your E-Mail address. Use it to complete the registration.");
+		registerStatus.setMessage(account.getUsername());
 		registerStatus.setResponseStatus(Status.OK);
 		registerStatus.setUsername(account.getUsername());
 
@@ -243,20 +239,10 @@ public class AuthRESTService {
 			registerStatus.setResponseStatus(Status.OK);
 			registerStatus.setUsername(account.getUsername());
 
-			String subject = "Public Survey bilgoraj - weryfikacja użytkownika";
-
-			MessageFormat formatter = new MessageFormat("");
-
-			ResourceBundle i18n = ResourceBundle.getBundle("pl.gisexpert.i18n.Text");
-			formatter.setLocale(i18n.getLocale());
-
-			String emailText =new StringBuilder().append("Użytkownik: ").append(account.getUsername()).append(" prosi o weryfikację danych przez administratora.").toString();
-
-			mailService.sendMail(subject, emailText, account.getUsername());
+			mailService.createUsrMail(account.getUsername());
 
 			return Response.status(Response.Status.OK).entity(registerStatus).build();
 		}
-
 		requestStatus.setMessage("Account confirmation failed.");
 		requestStatus.setResponseStatus(Response.Status.UNAUTHORIZED);
 
