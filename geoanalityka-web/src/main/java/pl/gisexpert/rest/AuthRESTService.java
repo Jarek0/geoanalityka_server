@@ -38,7 +38,13 @@ import com.google.gson.Gson;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.apache.shiro.crypto.hash.DefaultHashService;
+import org.apache.shiro.crypto.hash.Hash;
+import org.apache.shiro.crypto.hash.HashRequest;
+import org.apache.shiro.crypto.hash.HashService;
+import org.apache.shiro.crypto.hash.format.HashFormat;
+import org.apache.shiro.crypto.hash.format.Shiro1CryptFormat;
 import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ByteSource;
 import org.slf4j.Logger;
 
 import pl.gisexpert.cms.data.*;
@@ -65,6 +71,9 @@ import pl.gisexpert.rest.model.RegisterResponse;
 import pl.gisexpert.rest.util.producer.qualifier.RESTI18n;
 import pl.gisexpert.service.GlobalConfigService;
 import pl.gisexpert.service.MailService;
+
+import static org.apache.shiro.authc.credential.DefaultPasswordService.DEFAULT_HASH_ALGORITHM;
+import static org.apache.shiro.authc.credential.DefaultPasswordService.DEFAULT_HASH_ITERATIONS;
 
 @Path("/auth")
 @RequestScoped
@@ -294,7 +303,12 @@ public class AuthRESTService {
 		DefaultPasswordService passwordService = new DefaultPasswordService();
 		DefaultHashService dhs = new DefaultHashService();
 		dhs.setHashIterations(5);
+		dhs.setHashAlgorithmName(DEFAULT_HASH_ALGORITHM);
 		passwordService.setHashService(dhs);
+
+        String encryptedPassword = passwordService.encryptPassword(formData.getPassword());
+
+        System.out.println(encryptedPassword);
 
 		if (passwordService.passwordsMatch(formData.getPassword(), account.getPassword())) {
 
@@ -338,6 +352,10 @@ public class AuthRESTService {
 		rs.setResponseStatus(Response.Status.UNAUTHORIZED);
 
 		return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();
+	}
+
+	protected HashRequest createHashRequest(ByteSource plaintext) {
+		return new HashRequest.Builder().setSource(plaintext).build();
 	}
 
 	@GET
