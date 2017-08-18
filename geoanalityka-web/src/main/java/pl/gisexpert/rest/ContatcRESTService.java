@@ -30,6 +30,8 @@ import pl.gisexpert.rest.model.ContactForm;
 import pl.gisexpert.service.GlobalConfigService;
 import pl.gisexpert.service.MailService;
 
+import java.util.ArrayList;
+
 @Path("/contact")
 public class ContatcRESTService {
 	
@@ -48,7 +50,9 @@ public class ContatcRESTService {
 		String message = "Nazwisko: " + contactForm.getName() + "\n" +
 				"E-Mail zwrotny: " + contactForm.getEmail() + "\n" + 
 				"Treść wiadomości:\n" + contactForm.getMessage();
-		mailService.sendMail(subject, message, appConfig.getSettings().getContactFormTarget());
+		ArrayList lista = new ArrayList();
+		lista.add(appConfig.getSettings().getContactFormTarget());
+		mailService.sendMail(subject, message, lista);
 		
 		BaseResponse response = new BaseResponse();
 		response.setMessage("Message sent");
