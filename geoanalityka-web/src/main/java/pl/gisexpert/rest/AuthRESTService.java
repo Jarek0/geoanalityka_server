@@ -204,7 +204,7 @@ public class AuthRESTService {
 			return Response.status(Response.Status.BAD_REQUEST).entity(errorStatus).build();
 		}
 
-		String subject = "Geoanalizy.pl - potwierdzenie rejestracji użytkownika";
+		String subject = "Public Survey bilgoraj - potwierdzenie rejestracji użytkownika";
 
 		MessageFormat formatter = new MessageFormat("");
 
@@ -295,7 +295,7 @@ public class AuthRESTService {
 		}
 
 		if (account.getAccountStatus() == AccountStatus.UNCONFIRMED) {
-			rs.setMessage(i18n.getString("account.validation.notconfirmed"));
+			rs.setMessage("UNCONFIRMED");
 			rs.setResponseStatus(Response.Status.UNAUTHORIZED);
 			return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();
 		}

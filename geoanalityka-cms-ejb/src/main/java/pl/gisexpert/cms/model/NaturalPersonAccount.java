@@ -1,10 +1,6 @@
 package pl.gisexpert.cms.model;
 
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 
 import org.hibernate.envers.AuditJoinTable;
 import org.hibernate.envers.Audited;
@@ -19,7 +15,7 @@ public class NaturalPersonAccount extends Account {
 
 	@Audited
 	@AuditJoinTable(name = "account_addresses_aud")
-	@OneToOne(fetch = FetchType.LAZY)
+	@OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
 	@JoinColumn(name = "address_id")
 	private Address address;
 
