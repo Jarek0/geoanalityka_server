@@ -12,16 +12,12 @@ import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
+import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import java.util.stream.*;
 import org.ini4j.Wini;
 import org.slf4j.Logger;
 import pl.gisexpert.cms.data.AccountRepository;
-import pl.gisexpert.rest.Mail;
-import pl.gisexpert.cms.model.Account;
 @ApplicationScoped
 public class MailService {
 
@@ -90,6 +86,22 @@ public class MailService {
 		} catch (MessagingException e) {
 			throw new RuntimeException(e);
 		}});
+	}
+
+	public void sendMail(String subject, String text, String address) throws MessagingException {//
+
+		Session session = Session.getInstance(sessionProps, new javax.mail.Authenticator() {
+			@Override
+			protected PasswordAuthentication getPasswordAuthentication() {
+				return new PasswordAuthentication(username, password);
+			}
+		});
+		Message message = new MimeMessage(session);
+		message.setFrom(new InternetAddress(from));
+		message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(address));
+		message.setSubject(subject);
+		message.setText(text);
+		Transport.send(message);
 	}
 
 }
