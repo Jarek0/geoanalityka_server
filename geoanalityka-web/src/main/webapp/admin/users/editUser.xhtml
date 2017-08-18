@@ -62,24 +62,27 @@
                     </div>
 
                     <hr class="col-sm-12 col-lg-8" />
+                        <div class="form-group col-sm-12 col-lg-8">
+                            <input type="button" onclick="$(document.getElementById('divToHide')).toggle()" value="Pokaż panel zmiany hasła"/>
+                            <div id ="divToHide" style="display:none" >
+                                <div class="form-group col-sm-12 col-lg-8">
+                                    <p:outputLabel for="account-newpassword" value="#{i18n['account.changepassword.new']}" styleClass="control-label col-sm-4"/>
+                                    <div class="col-sm-8">
+                                        <p:password id="account-newpassword" styleClass="form-control" value="#{editUserController.newPassword}" pt:placeholder="#{i18n['account.changepassword.new']}"/>
+                                    </div>
+                                </div>
 
-                    <div class="form-group col-sm-12 col-lg-8">
-                        <p:outputLabel for="account-newpassword" value="#{i18n['account.changepassword.new']}" styleClass="control-label col-sm-4"/>
-                        <div class="col-sm-8">
-                            <p:password id="account-newpassword" styleClass="form-control" value="#{editUserController.newPassword}" pt:placeholder="#{i18n['account.changepassword.new']}"/>
+                                <div class="form-group col-sm-12 col-lg-8">
+                                    <p:outputLabel for="account-newpasswordrepeat" value="#{i18n['account.changepassword.repeatnew']}" styleClass="control-label col-sm-4"/>
+                                    <div class="col-sm-8">
+                                        <p:password id="account-newpasswordrepeat" styleClass="form-control" pt:placeholder="#{i18n['account.changepassword.repeatnew']}">
+                                            <f:validator validatorId="duplicateFieldValidator" />
+                                            <f:attribute name="field1Id" value="#{component.parent.clientId}:account-newpassword" />
+                                        </p:password>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="form-group col-sm-12 col-lg-8">
-                        <p:outputLabel for="account-newpasswordrepeat" value="#{i18n['account.changepassword.repeatnew']}" styleClass="control-label col-sm-4"/>
-                        <div class="col-sm-8">
-                            <p:password id="account-newpasswordrepeat" styleClass="form-control" pt:placeholder="#{i18n['account.changepassword.repeatnew']}">
-                                <f:validator validatorId="duplicateFieldValidator" />
-                                <f:attribute name="field1Id" value="#{component.parent.clientId}:account-newpassword" />
-                            </p:password>
-                        </div>
-                    </div>
-
                     <hr class="col-sm-12 col-lg-8" />
 
                     <div class="form-group col-sm-12 col-lg-8">
