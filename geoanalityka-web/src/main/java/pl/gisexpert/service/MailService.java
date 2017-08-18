@@ -1,6 +1,7 @@
 package pl.gisexpert.service;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 
 import javax.annotation.PostConstruct;
@@ -11,12 +12,12 @@ import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
+import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-
 import org.ini4j.Wini;
 import org.slf4j.Logger;
-
+import pl.gisexpert.cms.data.AccountRepository;
 @ApplicationScoped
 public class MailService {
 
@@ -32,7 +33,8 @@ public class MailService {
 
 	@Inject
 	Logger log;
-
+	@Inject
+	private AccountRepository accountRepository;
 	@PostConstruct
 	public void init() {
 
@@ -60,7 +62,8 @@ public class MailService {
 
 	}
 
-	public void sendMail(String subject, String text, String address) {
+
+	public void sendMail(String subject, String text, List<String> addresses) {//
 
 		Session session = Session.getInstance(sessionProps, new javax.mail.Authenticator() {
 			@Override
@@ -68,11 +71,12 @@ public class MailService {
 				return new PasswordAuthentication(username, password);
 			}
 		});
-
-		try {
-			Message message = new MimeMessage(session);
-			message.setFrom(new InternetAddress(from));
-			message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(address));
+		addresses
+				.stream()
+				.forEach(address->{try {
+					Message message = new MimeMessage(session);
+					message.setFrom(new InternetAddress(from));
+					message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(address));
 			message.setSubject(subject);
 			message.setText(text);
 
@@ -81,7 +85,23 @@ public class MailService {
 
 		} catch (MessagingException e) {
 			throw new RuntimeException(e);
-		}
+		}});
+	}
+
+	public void sendMail(String subject, String text, String address) throws MessagingException {//
+
+		Session session = Session.getInstance(sessionProps, new javax.mail.Authenticator() {
+			@Override
+			protected PasswordAuthentication getPasswordAuthentication() {
+				return new PasswordAuthentication(username, password);
+			}
+		});
+		Message message = new MimeMessage(session);
+		message.setFrom(new InternetAddress(from));
+		message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(address));
+		message.setSubject(subject);
+		message.setText(text);
+		Transport.send(message);
 	}
 
 }

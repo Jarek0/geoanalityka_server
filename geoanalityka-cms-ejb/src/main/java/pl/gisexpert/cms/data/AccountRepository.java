@@ -90,6 +90,27 @@ public class AccountRepository extends AbstractRepository<Account> {
 		}
 	}
 
+	@Transactional
+	public Account findById(Long id){
+		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+		CriteriaQuery<Account> cq = cb.createQuery(Account.class);
+		Root<Account> account = cq.from(Account.class);
+		cq.select(account);
+		cq.where(cb.equal(account.get("id"), id));
+		TypedQuery<Account> q = getEntityManager().createQuery(cq);
+
+		try {
+			Account resultAccount = q.getSingleResult();
+			return resultAccount;
+		} catch (NoResultException e) {
+			log.debug("Account with username: " + id + " could not be found.");
+			return null;
+		} catch (Exception e) {
+			log.debug("An exception occurred while retrieving account with username: " + id + " from db.");
+			e.printStackTrace();
+			return null;
+		}
+	}
 
 	@Transactional
 	public Account fetchContactData(Account account) {

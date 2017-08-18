@@ -23,6 +23,7 @@ import javax.enterprise.context.RequestScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -66,6 +67,7 @@ import static org.apache.shiro.authc.credential.DefaultPasswordService.DEFAULT_H
 @RequestScoped
 public class AuthRESTService {
 
+
 	@Inject
 	private AccountRepository accountRepository;
 
@@ -107,6 +109,39 @@ public class AuthRESTService {
 	private Logger log;
 
 	private final RandomTokenGenerator resetPasswordTokenGenerator = new RandomTokenGenerator();
+
+	@POST
+	@Path("/resendMail")
+	public void createUsrMail(@Context HttpServletRequest request, String username){
+
+		MessageFormat formatter = new MessageFormat("");
+
+		ResourceBundle i18n = ResourceBundle.getBundle("pl.gisexpert.i18n.Text");
+		formatter.setLocale(i18n.getLocale());
+
+		formatter.applyPattern(i18n.getString("account.confirm.emailtext"));
+		Mail mail = new Mail();
+		ArrayList usernames = new ArrayList();
+		usernames.add(username);
+		UUID confirmationCode = UUID.randomUUID();
+		AccountConfirmation accountConfirmation = new AccountConfirmation();
+		accountConfirmation.setToken(confirmationCode.toString());
+		Account account = accountRepository.findByUsername(username);
+		account.setAccountConfirmation(accountConfirmation);
+		String url = request.getRequestURL().toString();
+		String baseURL = url.substring(0, url.length() - request.getRequestURI().length()) + request.getContextPath();
+		String confirmAccountURL = baseURL + "/rest/auth/confirm/" + confirmationCode;
+		Object[] params = { confirmAccountURL };
+		String emailText = formatter.format(params);
+		if(AccountStatus.UNCONFIRMED.equals(account.getAccountStatus())) {
+			try {
+				accountRepository.edit(account);
+				mailService.sendMail(mail.getSubject(), emailText, usernames);
+			} catch (Exception e) {
+
+			}
+		}
+	}
 
 	@POST
 	@Path("/register")
@@ -183,12 +218,13 @@ public class AuthRESTService {
 
 		String confirmAccountURL = baseURL + "/rest/auth/confirm/" + confirmationCode;
 		Object[] params = { confirmAccountURL };
-
+		ArrayList<String> lista = new ArrayList();
+		lista.add(account.getUsername());
 		String emailText = formatter.format(params);
-		mailService.sendMail(subject, emailText, account.getUsername());
+		mailService.sendMail(subject, emailText,lista );
 
 		RegisterResponse registerStatus = new RegisterResponse();
-		registerStatus.setMessage("Account created. Confirmation link has been sent to your E-Mail address. Use it to complete the registration.");
+		registerStatus.setMessage(account.getUsername());
 		registerStatus.setResponseStatus(Status.OK);
 		registerStatus.setUsername(account.getUsername());
 
@@ -233,11 +269,10 @@ public class AuthRESTService {
 			String emailText =new StringBuilder().append("Użytkownik: ").append(account.getUsername()).append(" prosi o weryfikację danych przez administratora.").toString();
 
 			List<String> adminUserNames=roleRepository.findAllAdminsUsernames();
-			adminUserNames.forEach(adminUserName -> mailService.sendMail(subject, emailText, adminUserName));
+			mailService.sendMail(subject, emailText, adminUserNames);
 
 			return Response.status(Response.Status.OK).entity(registerStatus).build();
 		}
-
 		requestStatus.setMessage("Account confirmation failed.");
 		requestStatus.setResponseStatus(Response.Status.UNAUTHORIZED);
 
@@ -541,7 +576,14 @@ public class AuthRESTService {
 			Object[] params = { resetPasswordURL };
 			String emailText = formatter.format(params);
 
-			mailService.sendMail(subject, emailText, resetPasswordForm.getUsername());
+			try {
+				mailService.sendMail(subject, emailText, resetPasswordForm.getUsername());
+			} catch (Exception e) {
+				rs.setMessage("Nie udało się wysłać maila. W celu ponownego " +
+						"wysłania spróbuj zalogować się w systemie lub skontaktuj się z administratorem");
+				rs.setResponseStatus(Status.BAD_REQUEST);
+				return Response.status(Response.Status.BAD_REQUEST).entity(rs).build();
+			}
 
 			rs.setMessage("Wiadomość została wysłana");
 			rs.setResponseStatus(Status.OK);

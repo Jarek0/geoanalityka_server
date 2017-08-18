@@ -2,12 +2,10 @@ package pl.gisexpert.rest.Validator;
 
 import pl.gisexpert.cms.data.AccountRepository;
 import pl.gisexpert.reCaptcha.CaptchaVerifyUtils;
-import pl.gisexpert.rest.model.BaseResponse;
 import pl.gisexpert.rest.model.RegisterForm;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.ws.rs.core.Response;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.*;

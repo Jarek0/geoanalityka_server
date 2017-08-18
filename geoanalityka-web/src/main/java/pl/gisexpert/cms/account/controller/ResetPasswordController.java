@@ -2,6 +2,7 @@ package pl.gisexpert.cms.account.controller;
 
 import java.io.Serializable;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.ResourceBundle;
@@ -86,8 +87,9 @@ public class ResetPasswordController implements Serializable {
 			String resetPasswordURL = baseURL + "/reset_password/" + token;
 			Object[] params = { resetPasswordURL };
 			String emailText = formatter.format(params);
-
-			mailService.sendMail(subject, emailText, email);
+			ArrayList lista = new ArrayList();
+			lista.add(email);
+			mailService.sendMail(subject, emailText, lista);
 
 			FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Wiadomość została wysłana", null);
 			context.addMessage(null, message);
