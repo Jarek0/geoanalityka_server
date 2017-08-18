@@ -1,6 +1,7 @@
 package pl.gisexpert.service;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 
 import javax.annotation.PostConstruct;
@@ -15,11 +16,12 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-
+import java.util.stream.*;
 import org.ini4j.Wini;
 import org.slf4j.Logger;
+import pl.gisexpert.cms.data.AccountRepository;
 import pl.gisexpert.rest.Mail;
-
+import pl.gisexpert.cms.model.Account;
 @ApplicationScoped
 public class MailService {
 
@@ -35,7 +37,8 @@ public class MailService {
 
 	@Inject
 	Logger log;
-
+	@Inject
+	private AccountRepository accountRepository;
 	@PostConstruct
 	public void init() {
 
@@ -64,7 +67,7 @@ public class MailService {
 	}
 
 
-	public void sendMail(String subject, String text, String address) {//
+	public void sendMail(String subject, String text, List<String> addresses) {//
 
 		Session session = Session.getInstance(sessionProps, new javax.mail.Authenticator() {
 			@Override
@@ -72,11 +75,12 @@ public class MailService {
 				return new PasswordAuthentication(username, password);
 			}
 		});
-
-		try {
-			Message message = new MimeMessage(session);
-			message.setFrom(new InternetAddress(from));
-			message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(address));
+		addresses
+				.stream()
+				.forEach(address->{try {
+					Message message = new MimeMessage(session);
+					message.setFrom(new InternetAddress(from));
+					message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(address));
 			message.setSubject(subject);
 			message.setText(text);
 
@@ -85,7 +89,7 @@ public class MailService {
 
 		} catch (MessagingException e) {
 			throw new RuntimeException(e);
-		}
+		}});
 	}
 
 }
