@@ -20,6 +20,8 @@ import java.text.MessageFormat;
 import java.util.*;
 
 import javax.enterprise.context.RequestScoped;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -38,39 +40,24 @@ import com.google.gson.Gson;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.apache.shiro.crypto.hash.DefaultHashService;
-import org.apache.shiro.crypto.hash.Hash;
 import org.apache.shiro.crypto.hash.HashRequest;
-import org.apache.shiro.crypto.hash.HashService;
-import org.apache.shiro.crypto.hash.format.HashFormat;
-import org.apache.shiro.crypto.hash.format.Shiro1CryptFormat;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ByteSource;
+import org.omnifaces.util.Faces;
 import org.slf4j.Logger;
 
 import pl.gisexpert.cms.data.*;
-import pl.gisexpert.cms.model.AccessToken;
-import pl.gisexpert.cms.model.Account;
-import pl.gisexpert.cms.model.AccountConfirmation;
-import pl.gisexpert.cms.model.AccountStatus;
-import pl.gisexpert.cms.model.Address;
-import pl.gisexpert.cms.model.LoginAttempt;
-import pl.gisexpert.cms.model.NaturalPersonAccount;
+import pl.gisexpert.cms.model.*;
 import pl.gisexpert.cms.service.AccountService;
 import pl.gisexpert.cms.service.LoginAttemptService;
 import pl.gisexpert.cms.visitor.AccountAddressVisitor;
 import pl.gisexpert.cms.visitor.DefaultAccountVisitor;
 import pl.gisexpert.rest.Validator.Validator;
-import pl.gisexpert.rest.model.AccountInfo;
-import pl.gisexpert.rest.model.AddressForm;
-import pl.gisexpert.rest.model.BaseResponse;
-import pl.gisexpert.rest.model.ContactInfo;
-import pl.gisexpert.rest.model.GetTokenForm;
-import pl.gisexpert.rest.model.GetTokenResponse;
-import pl.gisexpert.rest.model.RegisterForm;
-import pl.gisexpert.rest.model.RegisterResponse;
+import pl.gisexpert.rest.model.*;
 import pl.gisexpert.rest.util.producer.qualifier.RESTI18n;
 import pl.gisexpert.service.GlobalConfigService;
 import pl.gisexpert.service.MailService;
+import pl.gisexpert.util.RandomTokenGenerator;
 
 import static org.apache.shiro.authc.credential.DefaultPasswordService.DEFAULT_HASH_ALGORITHM;
 import static org.apache.shiro.authc.credential.DefaultPasswordService.DEFAULT_HASH_ITERATIONS;
@@ -118,6 +105,8 @@ public class AuthRESTService {
 
 	@Inject
 	private Logger log;
+
+	private final RandomTokenGenerator resetPasswordTokenGenerator = new RandomTokenGenerator();
 
 	@POST
 	@Path("/register")
@@ -512,5 +501,96 @@ public class AuthRESTService {
 		response.setResponseStatus(Response.Status.OK);
 
 		return Response.status(Response.Status.OK).entity(response).build();
+	}
+
+	@POST
+	@Path("/resetPassword")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response resetPassword(@Context HttpServletRequest request, ResetPasswordForm resetPasswordForm) {
+
+		String subject = i18n.getString("account.resetpassword.emailtitle");
+		FacesContext context = Faces.getContext();
+
+		Account account = accountRepository.findByEmail(resetPasswordForm.getUsername());
+		BaseResponse rs = new BaseResponse();
+		if (account != null) {
+
+			String token = resetPasswordTokenGenerator.nextToken();
+			ResetPassword resetPassword = new ResetPassword();
+			Date date = new Date();
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(date);
+			cal.add(Calendar.HOUR, 24);
+			date = cal.getTime();
+
+			resetPassword.setExpDate(date);
+			resetPassword.setToken(token);
+
+			account.setResetPassword(resetPassword);
+			accountRepository.edit(account);
+
+			MessageFormat formatter = new MessageFormat("");
+			formatter.setLocale(i18n.getLocale());
+
+			formatter.applyPattern(i18n.getString("account.resetpassword.emailtext"));
+
+			String baseURL = "http://localhost/aplikacja3d_bilgoraj/bilgoraj_v2?resetToken=";
+
+			String resetPasswordURL = baseURL + token;
+			Object[] params = { resetPasswordURL };
+			String emailText = formatter.format(params);
+
+			mailService.sendMail(subject, emailText, resetPasswordForm.getUsername());
+
+			rs.setMessage("Wiadomość została wysłana");
+			rs.setResponseStatus(Status.OK);
+			return Response.status(Status.OK).entity(rs).build();
+		} else {
+
+			rs.setMessage("Podany adres E-Mail nie jest zarejestrowany w systemie");
+			rs.setResponseStatus(Status.BAD_REQUEST);
+			return Response.status(Response.Status.BAD_REQUEST).entity(rs).build();
+		}
+	}
+
+	@POST
+	@Path("/changePassword")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response resetPassword(@Context HttpServletRequest request,ChangePasswordForm changePasswordForm) {
+		DefaultPasswordService passwordService = new DefaultPasswordService();
+		DefaultHashService dhs = new DefaultHashService();
+		dhs.setHashIterations(5);
+		dhs.setHashAlgorithmName("SHA-256");
+		passwordService.setHashService(dhs);
+
+		Account account = accountRepository.findByResetPasswordToken(changePasswordForm.getResetPasswordToken());
+		BaseResponse rs = new BaseResponse();
+		if(account==null){
+			rs.setMessage("Nieprawidłowy token");
+			rs.setResponseStatus(Status.BAD_REQUEST);
+			return Response.status(Response.Status.BAD_REQUEST).entity(rs).build();
+		}
+		else if(changePasswordForm.getConfirmPassword()==null || changePasswordForm.getPassword()==null ||
+				changePasswordForm.getConfirmPassword().isEmpty() || changePasswordForm.getPassword().isEmpty()){
+			rs.setMessage("Pole nie może być puste");
+			rs.setResponseStatus(Status.BAD_REQUEST);
+			return Response.status(Response.Status.BAD_REQUEST).entity(rs).build();
+		}
+		else if(!changePasswordForm.getConfirmPassword().equals(changePasswordForm.getPassword())){
+			rs.setMessage("Podane hasła nie są zgodne");
+			rs.setResponseStatus(Status.BAD_REQUEST);
+			return Response.status(Response.Status.BAD_REQUEST).entity(rs).build();
+		}
+
+		FacesContext context = FacesContext.getCurrentInstance();
+		account.setPassword(passwordService.encryptPassword(changePasswordForm.getPassword()));
+		account.setResetPassword(new ResetPassword());
+		accountRepository.edit(account);
+
+		rs.setMessage("Hasło zostało zmienione");
+		rs.setResponseStatus(Status.OK);
+		return Response.status(Status.OK).entity(rs).build();
 	}
 }
