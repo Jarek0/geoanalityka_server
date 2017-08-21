@@ -1,11 +1,16 @@
 package pl.gisexpert.cms.visitor;
 
-import javax.inject.Inject;
 
 import pl.gisexpert.cms.model.Account;
 import pl.gisexpert.cms.model.Address;
 import pl.gisexpert.cms.model.NaturalPersonAccount;
 
+@lombok.Getter
+@lombok.Setter
+@lombok.EqualsAndHashCode
+@lombok.NoArgsConstructor
+@lombok.AllArgsConstructor
+@lombok.ToString
 public class AccountAddressVisitor implements AccountVisitor {
 
 	private Address address;
@@ -17,13 +22,4 @@ public class AccountAddressVisitor implements AccountVisitor {
 
 	@Override
 	public void visit(Account account) {}
-
-	public Address getAddress() {
-		return address;
-	}
-
-	public void setAddress(Address address) {
-		this.address = address;
-	}
-
 }

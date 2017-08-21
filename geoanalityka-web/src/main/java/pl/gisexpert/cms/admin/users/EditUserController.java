@@ -19,6 +19,7 @@ import pl.gisexpert.cms.data.AddressRepository;
 import pl.gisexpert.cms.data.RoleRepository;
 import pl.gisexpert.cms.model.*;
 import pl.gisexpert.cms.service.AccountService;
+import pl.gisexpert.service.PasswordHasher;
 
 @Named
 @ViewScoped
@@ -35,6 +36,9 @@ public class EditUserController implements Serializable {
 
     @Inject
     AddressRepository addressRepository;
+
+    @Inject
+    PasswordHasher passwordHasher;
     
     @Inject
     RoleRepository roleRepository;
@@ -98,7 +102,7 @@ public class EditUserController implements Serializable {
     public void save(){
         
         if (newPassword != null && !newPassword.isEmpty()){
-            account.setPassword(account.hashPassword(newPassword));
+            account.setPassword(passwordHasher.hashPassword(newPassword));
         }
 
         account.setUsername(newEmail);

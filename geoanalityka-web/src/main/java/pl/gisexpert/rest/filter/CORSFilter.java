@@ -1,4 +1,4 @@
-package pl.gisexpert.filter;
+package pl.gisexpert.rest.filter;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;

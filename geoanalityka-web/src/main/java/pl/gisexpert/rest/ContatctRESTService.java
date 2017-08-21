@@ -33,7 +33,7 @@ import pl.gisexpert.service.MailService;
 import java.util.ArrayList;
 
 @Path("/contact")
-public class ContatcRESTService {
+public class ContatctRESTService {
 	
 	@Inject
 	private MailService mailService;

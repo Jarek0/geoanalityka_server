@@ -18,7 +18,15 @@ import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 
 @Entity
-@Table(name = "login_attempts", indexes = {@Index(name="login_attempts_date_account_index", columnList="date,account_id", unique=false)})
+@Table(name = "login_attempts",
+        indexes = {@Index(name="login_attempts_date_account_index", columnList="date,account_id", unique=false)})
+
+@lombok.Getter
+@lombok.Setter
+@lombok.EqualsAndHashCode
+@lombok.NoArgsConstructor
+@lombok.AllArgsConstructor
+@lombok.ToString
 public class LoginAttempt implements Serializable {
 
     private static final long serialVersionUID = -1658846400249396866L;
@@ -36,8 +44,6 @@ public class LoginAttempt implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date date;
 
-
-
     @Column(nullable = false)
     @NotNull
     private String ip;
@@ -45,64 +51,4 @@ public class LoginAttempt implements Serializable {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "account_id")
     private Account account;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setIp(String ip) { this.ip = ip; }
-
-    public Boolean getSuccessful() {
-		return successful;
-	}
-
-	public void setSuccessful(Boolean successful) {
-		this.successful = successful;
-	}
-
-	public Date getDate() {
-		return date;
-	}
-
-	public void setDate(Date date) {
-		this.date = date;
-	}
-
-	public Account getAccount() {
-		return account;
-	}
-
-	public void setAccount(Account account) {
-		this.account = account;
-	}
-
-	@Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof LoginAttempt)) {
-            return false;
-        }
-        LoginAttempt other = (LoginAttempt) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        return "pl.gisexpert.ejb.entity.AccessToken[ id=" + id + " ]";
-    }
-
 }

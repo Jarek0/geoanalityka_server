@@ -12,7 +12,12 @@ import pl.gisexpert.cms.model.Role;
 
 @lombok.Getter
 @lombok.Setter
+@lombok.EqualsAndHashCode
+@lombok.NoArgsConstructor
+@lombok.AllArgsConstructor
+@lombok.ToString
 public class AccountInfo {
+
 	private String username;
 	private Date lastLogin;
 	private String companyName;
@@ -26,10 +31,6 @@ public class AccountInfo {
 	private List<String> roles;
 	private ArrayList<ArrayList<Double>> analysesBbox;
 
-	public AccountInfo(){
-
-	}
-	
 	public AccountInfo(Account account, List<Role> roles) {
 		lastLogin = account.getLastLoginDate();
 		firstName = account.getFirstName();

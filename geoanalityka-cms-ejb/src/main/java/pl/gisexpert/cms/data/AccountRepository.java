@@ -39,59 +39,28 @@ public class AccountRepository extends AbstractRepository<Account> {
 		super(Account.class);
 	}
 
-	@Transactional
 	public boolean checkIfUserWithThisMailExist(String email){
-		Account searched = findByUsername(email);
-		if(searched!=null)
-			return true;
-		else
-			return false;
+		Account searched = findByEmail(email);
+		return searched != null;
 	}
 
-	@Transactional
-	public Account findByUsername(String username) {
-		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
-		CriteriaQuery<Account> cq = cb.createQuery(Account.class);
-		Root<Account> account = cq.from(Account.class);
-		cq.select(account);
-		cq.where(cb.equal(account.get("username"), username));
-		TypedQuery<Account> q = getEntityManager().createQuery(cq);
-
-		try {
-			Account resultAccount = q.getSingleResult();
-			return resultAccount;
-		} catch (NoResultException e) {
-			log.debug("Account with username: " + username + " could not be found.");
-			return null;
-		} catch (Exception e) {
-			log.debug("An exception occurred while retrieving account with username: " + username + " from db.");
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	@Transactional
-	public Address findAddressByUsername(String username){
+	public Address findAddressByUsername(String username) throws NoResultException{
 		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
 		CriteriaQuery<Address> cq = cb.createQuery(Address.class);
 		Root<NaturalPersonAccount> account = cq.from(NaturalPersonAccount.class);
 		cq.select(account.join("address"));
 		cq.where(cb.equal(account.get("username"), username));
 		TypedQuery<Address> q = getEntityManager().createQuery(cq);
+
 		try {
 			return q.getSingleResult();
-		} catch (NoResultException e) {
-			log.debug("Address of username: " + username + " could not be found.");
-			return null;
-		} catch (Exception e) {
-			log.debug("An exception occurred while retrieving address of username: " + username + " from db.");
-			e.printStackTrace();
+		}
+		catch (Exception e){
 			return null;
 		}
 	}
 
-	@Transactional
-	public Account findById(Long id){
+	public Account findById(Long id) throws NoResultException{
 		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
 		CriteriaQuery<Account> cq = cb.createQuery(Account.class);
 		Root<Account> account = cq.from(Account.class);
@@ -100,14 +69,9 @@ public class AccountRepository extends AbstractRepository<Account> {
 		TypedQuery<Account> q = getEntityManager().createQuery(cq);
 
 		try {
-			Account resultAccount = q.getSingleResult();
-			return resultAccount;
-		} catch (NoResultException e) {
-			log.debug("Account with username: " + id + " could not be found.");
-			return null;
-		} catch (Exception e) {
-			log.debug("An exception occurred while retrieving account with username: " + id + " from db.");
-			e.printStackTrace();
+		return q.getSingleResult();
+		}
+		catch (Exception e){
 			return null;
 		}
 	}
@@ -128,7 +92,7 @@ public class AccountRepository extends AbstractRepository<Account> {
 
 	}
 
-	public Account findByEmail(String email) {
+	public Account findByEmail(String email)  throws NoResultException{
 		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
 		CriteriaQuery<Account> cq = cb.createQuery(Account.class);
 		Root<Account> account = cq.from(Account.class);
@@ -137,13 +101,14 @@ public class AccountRepository extends AbstractRepository<Account> {
 		TypedQuery<Account> q = getEntityManager().createQuery(cq);
 
 		try {
-			Account resultAccount = q.getSingleResult();
-			return resultAccount;
-		} catch (Exception e) {
+			return q.getSingleResult();
+		}
+		catch (Exception e){
 			return null;
 		}
 	}
 
+	@Transactional
 	public void removeRoles(Account account, List<Role> roles) {
 
 		for (Role role : roles) {
@@ -154,7 +119,7 @@ public class AccountRepository extends AbstractRepository<Account> {
 		}
 	}
 
-	public Account findByResetPasswordToken(String token) {
+	public Account findByResetPasswordToken(String token) throws NoResultException{
 
 		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
 		CriteriaQuery<Account> cq = cb.createQuery(Account.class);
@@ -162,11 +127,10 @@ public class AccountRepository extends AbstractRepository<Account> {
 		cq.select(account);
 		cq.where(cb.equal(account.get("resetPassword").get("token"), token));
 		TypedQuery<Account> q = getEntityManager().createQuery(cq);
-
 		try {
-			Account resultAccount = q.getSingleResult();
-			return resultAccount;
-		} catch (Exception e) {
+		return q.getSingleResult();
+		}
+		catch (Exception e){
 			return null;
 		}
 	}
@@ -177,18 +141,17 @@ public class AccountRepository extends AbstractRepository<Account> {
 		em.persist(account);
 	}
 
-    public Account findByToken(String confirmationToken) {
+    public Account findByToken(String confirmationToken) throws NoResultException{
 		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
 		CriteriaQuery<Account> cq = cb.createQuery(Account.class);
 		Root<Account> account = cq.from(Account.class);
 		cq.select(account);
 		cq.where(cb.equal(account.get("accountConfirmation").get("token"), confirmationToken));
 		TypedQuery<Account> q = getEntityManager().createQuery(cq);
-
 		try {
-			Account resultAccount = q.getSingleResult();
-			return resultAccount;
-		} catch (Exception e) {
+		return q.getSingleResult();
+		}
+		catch (Exception e){
 			return null;
 		}
     }

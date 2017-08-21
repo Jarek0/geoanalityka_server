@@ -1,9 +1,12 @@
 package pl.gisexpert.rest.model;
 
-@lombok.Setter
 @lombok.Getter
-public class RegisterForm extends BaseForm  {
-
+@lombok.Setter
+@lombok.EqualsAndHashCode
+@lombok.NoArgsConstructor
+@lombok.AllArgsConstructor
+@lombok.ToString
+public class RegisterForm{
 	private String firstname;
 	private String lastname;
 	private String username;

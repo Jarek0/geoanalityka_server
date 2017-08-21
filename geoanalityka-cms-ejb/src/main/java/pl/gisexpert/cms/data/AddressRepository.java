@@ -3,6 +3,7 @@ package pl.gisexpert.cms.data;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
 
 import pl.gisexpert.cms.model.Address;
 import pl.gisexpert.cms.qualifier.CMSEntityManager;

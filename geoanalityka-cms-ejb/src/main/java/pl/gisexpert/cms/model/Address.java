@@ -3,27 +3,24 @@ package pl.gisexpert.cms.model;
 import java.io.Serializable;
 import java.util.Objects;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import org.hibernate.envers.AuditJoinTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 
 @Entity
 @Audited
 @Table(name = "addresses")
+
 @lombok.Getter
 @lombok.Setter
 @lombok.EqualsAndHashCode
 @lombok.NoArgsConstructor
 @lombok.AllArgsConstructor
-@lombok.ToString
+@lombok.ToString(exclude = "naturalPersonAccount")
 public class Address implements Serializable {
 
     private static final long serialVersionUID = -6442068216931841076L;
@@ -54,4 +51,15 @@ public class Address implements Serializable {
     @Column(name = "flat_number", length = 5)
     private String flatNumber;
 
+    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    @JoinColumn(name = "user_id")
+    private NaturalPersonAccount naturalPersonAccount;
+
+    public Address(String zipcode, String city, String street, String houseNumber, String flatNumber) {
+        this.zipcode = zipcode;
+        this.city = city;
+        this.street = street;
+        this.houseNumber = houseNumber;
+        this.flatNumber = flatNumber;
+    }
 }

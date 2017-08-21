@@ -28,12 +28,13 @@ import pl.gisexpert.cms.visitor.VisitableAccount;
 		@NamedNativeQuery(name = "Account.getRoles", query = "SELECT roles.* FROM roles, account_roles WHERE account_roles.username = :username AND roles.name = account_roles.role", resultClass = Role.class),
 		@NamedNativeQuery(name = "Account.hasRole", query = "SELECT COUNT(*) as items_count FROM account_roles WHERE username = :username AND role = :role", resultSetMapping = "Account.sumMapping") })
 @DiscriminatorColumn(name = "account_type", discriminatorType = DiscriminatorType.STRING)
+
 @lombok.Getter
 @lombok.Setter
+
 @lombok.EqualsAndHashCode(of = {"username"})
 @lombok.NoArgsConstructor
 @lombok.AllArgsConstructor
-@lombok.ToString
 public class Account implements Serializable, VisitableAccount {
 
 	private static final long serialVersionUID = 1033705321916453635L;
@@ -66,7 +67,7 @@ public class Account implements Serializable, VisitableAccount {
 	private String phone;
 
 	@Audited
-	@ManyToMany(cascade = CascadeType.ALL)
+	@ManyToMany
 	@JoinTable(name = "account_roles", joinColumns = {
 			@JoinColumn(name = "username", referencedColumnName = "username") }, inverseJoinColumns = {
 					@JoinColumn(name = "role", referencedColumnName = "name") }, indexes = {
@@ -94,15 +95,17 @@ public class Account implements Serializable, VisitableAccount {
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, mappedBy = "account")
 	private List<AccessToken> tokens;
 
-	public String hashPassword(String password) {
-		DefaultPasswordService passwordService = new DefaultPasswordService();
-		DefaultHashService dhs = new DefaultHashService();
-		dhs.setHashIterations(5);
-		dhs.setHashAlgorithmName("SHA-256");
-		dhs.setGeneratePublicSalt(true);
-		dhs.setRandomNumberGenerator(new SecureRandomNumberGenerator());
-		passwordService.setHashService(dhs);
-		return passwordService.encryptPassword(password);
+	public Account(String username, String firstName, String lastName, String password, String phone,
+				   Set<Role> roles, Date dateRegistered, AccountStatus accountStatus, AccountConfirmation accountConfirmation) {
+		this.username = username;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.password = password;
+		this.phone = phone;
+		this.roles = roles;
+		this.accountStatus = accountStatus;
+		this.dateRegistered = dateRegistered;
+		this.accountConfirmation = accountConfirmation;
 	}
 
 	@Transient

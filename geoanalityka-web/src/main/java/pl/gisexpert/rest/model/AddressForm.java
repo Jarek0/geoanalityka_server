@@ -2,7 +2,11 @@ package pl.gisexpert.rest.model;
 
 @lombok.Setter
 @lombok.Getter
-public class AddressForm extends BaseForm {
+@lombok.EqualsAndHashCode
+@lombok.NoArgsConstructor
+@lombok.AllArgsConstructor
+@lombok.ToString
+public class AddressForm{
 	private String street;
 	private String buildingNumber;
 	private String flatNumber;

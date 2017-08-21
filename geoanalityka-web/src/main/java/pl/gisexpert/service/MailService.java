@@ -72,7 +72,6 @@ public class MailService {
 			}
 		});
 		addresses
-				.stream()
 				.forEach(address->{try {
 					Message message = new MimeMessage(session);
 					message.setFrom(new InternetAddress(from));

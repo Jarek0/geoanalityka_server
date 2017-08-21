@@ -76,7 +76,7 @@ public class LoginController implements Serializable {
 
 		try {
 			subject.login(token);
-			Account account = accountRepository.findByUsername(username);
+			Account account = accountRepository.findByEmail(username);
 			this.accountController.setAccount(account);
 			account.setLastLoginDate(new Date());
 			accountRepository.edit(account);

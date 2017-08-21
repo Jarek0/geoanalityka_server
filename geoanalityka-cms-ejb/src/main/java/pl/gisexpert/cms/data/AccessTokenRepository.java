@@ -37,13 +37,13 @@ public class AccessTokenRepository extends AbstractRepository<AccessToken> {
         TypedQuery<AccessToken> q = getEntityManager().createQuery(cq);
 
         try {
-            AccessToken resultAccessToken = q.getSingleResult();
-            return resultAccessToken;
-        } catch (Exception e) {
+            return q.getSingleResult();
+        }
+        catch (Exception e){
             return null;
         }
     }
-    
+
     @Transactional
     public AccessToken create(AccessToken entity, boolean flush) {
 		entity = getEntityManager().merge(entity);

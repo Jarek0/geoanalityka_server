@@ -1,4 +1,4 @@
-package pl.gisexpert.reCaptcha;
+package pl.gisexpert.rest.reCaptcha;
 
 import javax.faces.bean.RequestScoped;
 import javax.json.Json;

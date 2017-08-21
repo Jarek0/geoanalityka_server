@@ -4,6 +4,6 @@ import pl.gisexpert.cms.model.Account;
 import pl.gisexpert.cms.model.NaturalPersonAccount;
 
 public interface AccountVisitor {
-	public void visit(NaturalPersonAccount account);
-	public void visit(Account account);
+	void visit(NaturalPersonAccount account);
+	void visit(Account account);
 }

@@ -9,6 +9,13 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 @Embeddable
+
+@lombok.Getter
+@lombok.Setter
+@lombok.EqualsAndHashCode
+@lombok.NoArgsConstructor
+@lombok.AllArgsConstructor
+@lombok.ToString
 public class ResetPassword implements Serializable {
     private static final long serialVersionUID = -5081745710024124741L;
 
@@ -18,20 +25,4 @@ public class ResetPassword implements Serializable {
     @Column(name = "reset_pass_token_exp")
     @Temporal(TemporalType.TIMESTAMP)
     private Date expDate;
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public Date getExpDate() {
-        return expDate;
-    }
-
-    public void setExpDate(Date expDate) {
-        this.expDate = expDate;
-    }
 }
