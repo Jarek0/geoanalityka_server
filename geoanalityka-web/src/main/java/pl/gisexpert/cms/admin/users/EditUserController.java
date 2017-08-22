@@ -81,14 +81,12 @@ public class EditUserController implements Serializable {
         newPhone = account.getPhone();
         accountStatus = account.getAccountStatus().name();
 
-        if(account instanceof NaturalPersonAccount) {
             address = accountRepository.findAddressByUsername(account.getUsername());
             newZipCode = address.getZipcode();
             newCity = address.getCity();
             newStreet = address.getStreet();
             newHouseNumber = address.getHouseNumber();
             newFlatNumber = address.getFlatNumber();
-        }
     }
     
     public Account getAccount() {
@@ -112,14 +110,12 @@ public class EditUserController implements Serializable {
         if(!isAdmin)
         account.setAccountStatus(AccountStatus.valueOf(accountStatus));
 
-        if(account instanceof NaturalPersonAccount) {
             address.setZipcode(newZipCode);
             address.setCity(newCity);
             address.setStreet(newStreet);
             address.setHouseNumber(newHouseNumber);
             address.setFlatNumber(newFlatNumber);
-            ((NaturalPersonAccount) account).setAddress(address);
-        }
+            account.setAddress(address);
 
         accountRepository.edit(account);
         if(roles.getTarget().stream().map(Role::getName).anyMatch(roleName -> roleName.equals("Administrator")))

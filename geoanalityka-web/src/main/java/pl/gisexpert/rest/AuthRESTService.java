@@ -46,8 +46,6 @@ import pl.gisexpert.cms.data.*;
 import pl.gisexpert.cms.model.*;
 import pl.gisexpert.cms.service.AccountService;
 import pl.gisexpert.cms.service.LoginAttemptService;
-import pl.gisexpert.cms.visitor.AccountAddressVisitor;
-import pl.gisexpert.cms.visitor.DefaultAccountVisitor;
 import pl.gisexpert.rest.Validator.RegistrationValidator;
 import pl.gisexpert.rest.model.*;
 import pl.gisexpert.rest.util.producer.qualifier.RESTI18n;
@@ -88,9 +86,6 @@ public class AuthRESTService {
 
     @Inject
 	private AddressRepository addressRepository;
-
-    @Inject
-	private AccountAddressVisitor addressVisitor;
 
     @Inject
 	private PasswordHasher passwordHasher;
@@ -178,7 +173,7 @@ public class AuthRESTService {
 		Role role=roleRepository.findByName("Ankietowani");
 
 		Account account =
-				new NaturalPersonAccount(formData.getUsername(),
+				new Account(formData.getUsername(),
 						formData.getFirstname(),
 						formData.getLastname(),
 						passwordHasher.hashPassword(formData.getPassword()),
@@ -191,15 +186,7 @@ public class AuthRESTService {
 				);
 
 		role.addAccount(account);
-		address.setNaturalPersonAccount((NaturalPersonAccount)account);
-
-		account.accept(new DefaultAccountVisitor() {
-			@Override
-			public void visit(NaturalPersonAccount naturalAccount) {
-				naturalAccount.setAddress(address);
-				naturalAccount.setPhone(addressForm.getPhone());
-			}
-		});
+		address.setAccount(account);
 
 		try {
 			accountRepository.create(account);
@@ -261,7 +248,6 @@ public class AuthRESTService {
 		BaseResponse requestStatus = new BaseResponse(Response.Status.OK,"Konto zostało zweryfikowane. " +
 				"Twoje konto potrzebuje aktywacji przez administratora");
 		return Response.status(Response.Status.OK).entity(requestStatus).build();
-
 	}
 
 	@POST
@@ -485,109 +471,4 @@ public class AuthRESTService {
 		return Response.status(Response.Status.OK).build();
 	}
 
-	@GET
-	@Path("/accountInfo")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAccountInfo(@Context HttpServletRequest request) {
-
-		Subject currentUser = SecurityUtils.getSubject();
-		String username = (String) currentUser.getPrincipal();
-
-		if (username == null) {
-			return Response.status(Response.Status.FORBIDDEN).build();
-		}
-		log.debug("Getting account info for username: " + username);
-		Account account = accountRepository.findByEmail(username);
-
-		if (account == null) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-		}
-
-		account = accountRepository.fetchContactData(account);
-
-		AccountInfo accountInfo = new AccountInfo(account, new ArrayList<>(accountService.getRoles(account)));
-
-		String token = request.getHeader("Access-Token");
-
-		AccessToken accessToken = accessTokenRepository.findByToken(token);
-		if (accessToken == null) {
-			return Response.status(Response.Status.FORBIDDEN).build();
-		}
-		accountInfo.setAccessToken(accessToken.getToken());
-		accountInfo.setTokenExpires(accessToken.getExpires());
-		accountInfo.setAnalysesBbox(appConfig.getPlanTestowyBbox().getBbox());
-
-
-		return Response.status(Response.Status.OK).entity(accountInfo).build();
-	}
-
-	@GET
-	@Path("/contactInfo")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getContactInfo() {
-
-		Subject currentUser = SecurityUtils.getSubject();
-		String username = (String) currentUser.getPrincipal();
-
-		log.debug("Getting contact info for " + username);
-		if (username == null) {
-			return Response.status(Response.Status.FORBIDDEN).build();
-		}
-
-		Account account = accountRepository.findByEmail(username);
-		account = accountRepository.fetchContactData(account);
-
-		account.accept(addressVisitor);
-
-		Address address = addressVisitor.getAddress();
-
-		ContactInfo contactInfo;
-		if (address != null) {
-			contactInfo = new ContactInfo(address);
-			contactInfo.setPhone(account.getPhone());
-		}
-		else {
-			log.warn("Failed fetching contact info for " + account.getUsername());
-			return Response.status(Response.Status.FORBIDDEN).build();
-		}
-
-		return Response.status(Response.Status.OK).entity(contactInfo).build();
-	}
-
-	@POST
-	@Path("/contactInfo")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response changeContactInfo(final ContactInfo contactInfo) {
-
-		Subject currentUser = SecurityUtils.getSubject();
-		String username = (String) currentUser.getPrincipal();
-
-		if (username == null) {
-			return Response.status(Response.Status.FORBIDDEN).build();
-		}
-		Account account = accountRepository.findByEmail(username);
-
-		final Address address = new Address();
-		address.setCity(contactInfo.getCity());
-		address.setFlatNumber(contactInfo.getFlatNumber());
-		address.setHouseNumber(contactInfo.getHouseNumber());
-		address.setStreet(contactInfo.getStreet());
-		address.setZipcode(contactInfo.getZipcode());
-
-		account.accept(new DefaultAccountVisitor() {
-			@Override
-			public void visit(NaturalPersonAccount account) {
-
-				addressRepository.create(address);
-				account.setPhone(contactInfo.getPhone());
-				account.setAddress(address);
-			}
-		});
-
-		accountRepository.edit(account);
-
-		BaseResponse response = new BaseResponse(Response.Status.OK,"Pomyślnie zmieniono dane.");
-
-		return Response.status(Response.Status.OK).entity(response).build();
-	}
 }

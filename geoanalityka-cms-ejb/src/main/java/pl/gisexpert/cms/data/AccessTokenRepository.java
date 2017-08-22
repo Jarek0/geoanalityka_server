@@ -51,7 +51,7 @@ public class AccessTokenRepository extends AbstractRepository<AccessToken> {
 		if (flush) {
 			getEntityManager().flush();
 		}
-		
+
 		return entity;
 	}
 

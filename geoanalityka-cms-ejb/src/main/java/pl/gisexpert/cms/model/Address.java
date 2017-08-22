@@ -12,21 +12,18 @@ import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 
 @Entity
-@Audited
-@Table(name = "addresses")
 
 @lombok.Getter
 @lombok.Setter
 @lombok.EqualsAndHashCode
 @lombok.NoArgsConstructor
 @lombok.AllArgsConstructor
-@lombok.ToString(exclude = "naturalPersonAccount")
+@lombok.ToString(exclude = "account")
 public class Address implements Serializable {
 
     private static final long serialVersionUID = -6442068216931841076L;
 
     @Id
-    @NotAudited
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -53,7 +50,7 @@ public class Address implements Serializable {
 
     @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "user_id")
-    private NaturalPersonAccount naturalPersonAccount;
+    private Account account;
 
     public Address(String zipcode, String city, String street, String houseNumber, String flatNumber) {
         this.zipcode = zipcode;

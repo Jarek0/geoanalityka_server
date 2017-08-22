@@ -13,12 +13,10 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 
-import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 
 import pl.gisexpert.cms.model.*;
 import pl.gisexpert.cms.qualifier.CMSEntityManager;
-import pl.gisexpert.cms.visitor.DefaultAccountVisitor;
 
 @ApplicationScoped
 public class AccountRepository extends AbstractRepository<Account> {
@@ -47,7 +45,7 @@ public class AccountRepository extends AbstractRepository<Account> {
 	public Address findAddressByUsername(String username) throws NoResultException{
 		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
 		CriteriaQuery<Address> cq = cb.createQuery(Address.class);
-		Root<NaturalPersonAccount> account = cq.from(NaturalPersonAccount.class);
+		Root<Account> account = cq.from(Account.class);
 		cq.select(account.join("address"));
 		cq.where(cb.equal(account.get("username"), username));
 		TypedQuery<Address> q = getEntityManager().createQuery(cq);
@@ -78,17 +76,8 @@ public class AccountRepository extends AbstractRepository<Account> {
 
 	@Transactional
 	public Account fetchContactData(Account account) {
-		Account resultAccount = em.getReference(Account.class, account.getId());
-		resultAccount.accept(new DefaultAccountVisitor() {
-			@Override
-			public void visit(NaturalPersonAccount account) {
-				if (!Hibernate.isInitialized(account.getAddress())) {
-					Hibernate.initialize(account.getAddress());
-				}
-			}
-		});
 
-		return resultAccount;
+		return em.getReference(Account.class, account.getId());
 
 	}
 
