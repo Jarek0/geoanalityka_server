@@ -3,21 +3,14 @@ package pl.gisexpert.cms.model;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-import org.apache.shiro.authc.credential.DefaultPasswordService;
-import org.apache.shiro.crypto.SecureRandomNumberGenerator;
-import org.apache.shiro.crypto.hash.DefaultHashService;
 import org.hibernate.envers.Audited;
-import org.hibernate.validator.constraints.Email;
 
-import pl.gisexpert.cms.visitor.AccountVisitor;
-import pl.gisexpert.cms.visitor.VisitableAccount;
 
 @Entity
 @Table(name = "accounts", indexes = { @Index(name = "username_index", columnList = "username", unique = true) })
@@ -27,14 +20,15 @@ import pl.gisexpert.cms.visitor.VisitableAccount;
 		@NamedNativeQuery(name = "Account.removeRole", query = "DELETE FROM account_roles WHERE username = ? AND role = ?"),
 		@NamedNativeQuery(name = "Account.getRoles", query = "SELECT roles.* FROM roles, account_roles WHERE account_roles.username = :username AND roles.name = account_roles.role", resultClass = Role.class),
 		@NamedNativeQuery(name = "Account.hasRole", query = "SELECT COUNT(*) as items_count FROM account_roles WHERE username = :username AND role = :role", resultSetMapping = "Account.sumMapping") })
-@DiscriminatorColumn(name = "account_type", discriminatorType = DiscriminatorType.STRING)
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+
 @lombok.Getter
 @lombok.Setter
+
 @lombok.EqualsAndHashCode(of = {"username"})
 @lombok.NoArgsConstructor
 @lombok.AllArgsConstructor
-@lombok.ToString
-public class Account implements Serializable, VisitableAccount {
+public class Account implements Serializable{
 
 	private static final long serialVersionUID = 1033705321916453635L;
 
@@ -66,7 +60,7 @@ public class Account implements Serializable, VisitableAccount {
 	private String phone;
 
 	@Audited
-	@ManyToMany(cascade = CascadeType.ALL)
+	@ManyToMany
 	@JoinTable(name = "account_roles", joinColumns = {
 			@JoinColumn(name = "username", referencedColumnName = "username") }, inverseJoinColumns = {
 					@JoinColumn(name = "role", referencedColumnName = "name") }, indexes = {
@@ -94,15 +88,22 @@ public class Account implements Serializable, VisitableAccount {
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, mappedBy = "account")
 	private List<AccessToken> tokens;
 
-	public String hashPassword(String password) {
-		DefaultPasswordService passwordService = new DefaultPasswordService();
-		DefaultHashService dhs = new DefaultHashService();
-		dhs.setHashIterations(5);
-		dhs.setHashAlgorithmName("SHA-256");
-		dhs.setGeneratePublicSalt(true);
-		dhs.setRandomNumberGenerator(new SecureRandomNumberGenerator());
-		passwordService.setHashService(dhs);
-		return passwordService.encryptPassword(password);
+	@OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+	@JoinColumn(name = "address_id")
+	private Address address;
+
+	public Account(String username, String firstName, String lastName, String password, String phone,
+				   Set<Role> roles, Date dateRegistered, AccountStatus accountStatus, AccountConfirmation accountConfirmation, Address address) {
+		this.username = username;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.password = password;
+		this.phone = phone;
+		this.roles = roles;
+		this.accountStatus = accountStatus;
+		this.dateRegistered = dateRegistered;
+		this.accountConfirmation = accountConfirmation;
+		this.address = address;
 	}
 
 	@Transient
@@ -110,11 +111,6 @@ public class Account implements Serializable, VisitableAccount {
 	    DiscriminatorValue val = this.getClass().getAnnotation( DiscriminatorValue.class );
 
 	    return val == null ? null : val.value();
-	}
-
-	@Override
-	public void accept(AccountVisitor visitor) {
-		visitor.visit(this);		
 	}
 
 }

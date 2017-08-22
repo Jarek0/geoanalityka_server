@@ -25,15 +25,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 
-import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 
 import pl.gisexpert.cms.model.Account;
 import pl.gisexpert.cms.model.Role;
 import pl.gisexpert.cms.qualifier.CMSEntityManager;
 
-
-// The @Stateless annotation eliminates the need for manual transaction demarcation
 @Stateless
 public class AccountService {
 

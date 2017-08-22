@@ -24,13 +24,10 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 
-import pl.gisexpert.cms.model.AccessToken;
 import pl.gisexpert.cms.model.Account;
 import pl.gisexpert.cms.model.LoginAttempt;
 import pl.gisexpert.cms.qualifier.CMSEntityManager;
 
-
-// The @Stateless annotation eliminates the need for manual transaction demarcation
 @Stateless
 public class LoginAttemptService{
 

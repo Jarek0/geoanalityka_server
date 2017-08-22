@@ -1,7 +1,7 @@
 package pl.gisexpert.rest.Validator;
 
 import pl.gisexpert.cms.data.AccountRepository;
-import pl.gisexpert.reCaptcha.CaptchaVerifyUtils;
+import pl.gisexpert.rest.reCaptcha.CaptchaVerifyUtils;
 import pl.gisexpert.rest.model.RegisterForm;
 
 import javax.enterprise.context.RequestScoped;
@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.regex.*;
 
 @RequestScoped
-public class Validator {
+public class RegistrationValidator {
 
     @Inject
     private AccountRepository accountRepository;
