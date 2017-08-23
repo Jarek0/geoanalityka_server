@@ -49,7 +49,10 @@
 		<pattern value="edit/#{username}/" />
 		<view-id value="/faces/admin/users/editUser.xhtml" />
 	</url-mapping>
-
+	<url-mapping parentId="admin_users" id="admin_users_password">
+		<pattern value="editPass/#{username}/" />
+		<view-id value="/faces/admin/users/editUserPass.xhtml" />
+	</url-mapping>
 	<url-mapping parentId="admin" id="admin_roles">
 		<pattern value="roles/" />
 		<view-id value="/faces/admin/roles/roles.xhtml" />

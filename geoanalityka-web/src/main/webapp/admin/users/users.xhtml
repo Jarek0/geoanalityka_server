@@ -35,6 +35,12 @@
                             #{i18n['common.edit']}
                         </pretty:link>
                     </p:column>
+                    <p:column width="auto" style="text-align: center;" rendered="#{request.isUserInRole('Administrator') and account.username ne 'admin'}">
+                        <pretty:link mappingId="admin_users_password" styleClass="btn btn-primary btn-xs">
+                            <f:param value="#{account.username}"/>
+                            Zmień hasło
+                        </pretty:link>
+                    </p:column>
                     <p:column width="80" style="text-align: center;" rendered="#{request.isUserInRole('Administrator') and account.username ne 'admin'}">
                         <!-- Button trigger modal -->
                         <p:commandLink ajax="true" update="accountDeleteForm" pt:data-toggle="modal" pt:data-target="#deleteConfirmationModal" action="#{deleteAccountController.setAccountId(account.id)}" pt:title="#{i18n['common.delete']}" value="#{i18n['common.delete']}" styleClass="btn btn-danger btn-xs" rendered="#{account.username ne 'admin'}"></p:commandLink>
