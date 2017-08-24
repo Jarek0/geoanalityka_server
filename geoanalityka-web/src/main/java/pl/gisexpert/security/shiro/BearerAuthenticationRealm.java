@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.ejb.Schedule;
 import javax.sql.DataSource;
 import org.apache.shiro.authc.AccountException;
 import org.apache.shiro.authc.AuthenticationException;
@@ -35,7 +36,6 @@ public class BearerAuthenticationRealm extends AuthorizingRealm {
     protected String userRolesQuery = "SELECT role FROM account_roles WHERE username = ?";
 
     private class AccountInfo {
-
         public Long id;
         public String username;
         public Date expires;
