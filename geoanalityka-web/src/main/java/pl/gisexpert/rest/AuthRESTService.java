@@ -123,7 +123,8 @@ public class AuthRESTService {
 
 		account.setAccountConfirmation(accountConfirmation);
 
-		String baseURL = "http://localhost/aplikacja3d_bilgoraj/bilgoraj_v2?resetToken=";
+		String url = request.getRequestURL().toString();
+		String baseURL = url.substring(0, url.length() - request.getRequestURI().length()) + request.getContextPath();
 		String confirmAccountURL = baseURL + "/rest/auth/confirm/" + confirmationCode;
 
 		formatter.applyPattern(i18n.getString("account.confirm.emailtext"));
@@ -258,9 +259,37 @@ public class AuthRESTService {
 
 		Account account = accountRepository.findByEmail(formData.getUsername());
 
+		LoginAttempt loginAttempt = new LoginAttempt();
+		loginAttempt.setDate(new Date());
+		loginAttempt.setAccount(account);
+		loginAttempt.setIp(request.getRemoteAddr());
+
 		if (account == null) {
+			loginAttempt.setSuccessful(false);
+			loginAttemptRepository.create(loginAttempt);
 			BaseResponse rs = new BaseResponse(Response.Status.UNAUTHORIZED,
 					i18n.getString("account.validation.usernamenotexists"));
+			return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();
+		}
+
+		List<LoginAttempt> recentLoginAttempts = loginAttemptService.findRecentLoginAttempts(5, account, 100);
+		if (recentLoginAttempts != null && recentLoginAttempts.size() == 20) {
+			BaseResponse rs = new BaseResponse(Response.Status.FORBIDDEN,
+					i18n.getString("account.validation.toomanyloginattempts"));
+			return Response.status(Response.Status.FORBIDDEN).entity(rs).build();
+		}
+
+		DefaultPasswordService passwordService = new DefaultPasswordService();
+		DefaultHashService dhs = new DefaultHashService();
+		dhs.setHashIterations(5);
+		dhs.setHashAlgorithmName(DEFAULT_HASH_ALGORITHM);
+		passwordService.setHashService(dhs);
+
+		if (!passwordService.passwordsMatch(formData.getPassword(), account.getPassword())) {
+			loginAttempt.setSuccessful(false);
+			loginAttemptRepository.create(loginAttempt);
+			BaseResponse rs = new BaseResponse(Response.Status.UNAUTHORIZED,
+					i18n.getString("account.validation.authfailed"));
 			return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();
 		}
 
@@ -279,32 +308,6 @@ public class AuthRESTService {
 		if (account.getAccountStatus() == AccountStatus.CONFIRMED) {
 			BaseResponse rs = new BaseResponse(Response.Status.UNAUTHORIZED,
 					i18n.getString("account.validation.confirmed"));
-			return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();
-		}
-
-		List<LoginAttempt> recentLoginAttempts = loginAttemptService.findRecentLoginAttempts(5, account, 100);
-		if (recentLoginAttempts != null && recentLoginAttempts.size() == 20) {
-			BaseResponse rs = new BaseResponse(Response.Status.FORBIDDEN,
-					i18n.getString("account.validation.toomanyloginattempts"));
-			return Response.status(Response.Status.FORBIDDEN).entity(rs).build();
-		}
-
-		LoginAttempt loginAttempt = new LoginAttempt();
-		loginAttempt.setDate(new Date());
-		loginAttempt.setAccount(account);
-		loginAttempt.setIp(request.getRemoteAddr());
-
-		DefaultPasswordService passwordService = new DefaultPasswordService();
-		DefaultHashService dhs = new DefaultHashService();
-		dhs.setHashIterations(5);
-		dhs.setHashAlgorithmName(DEFAULT_HASH_ALGORITHM);
-		passwordService.setHashService(dhs);
-
-		if (!passwordService.passwordsMatch(formData.getPassword(), account.getPassword())) {
-			loginAttempt.setSuccessful(false);
-			loginAttemptRepository.create(loginAttempt);
-			BaseResponse rs = new BaseResponse(Response.Status.UNAUTHORIZED,
-					i18n.getString("account.validation.authfailed"));
 			return Response.status(Response.Status.UNAUTHORIZED).entity(rs).build();
 		}
 
@@ -378,9 +381,11 @@ public class AuthRESTService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response resetPassword(@Context HttpServletRequest request, ResetPasswordForm resetPasswordForm) {
 
+
 		String subject = i18n.getString("account.resetpassword.emailtitle");
 
 		Account account = accountRepository.findByEmail(resetPasswordForm.getUsername());
+
 		if (account == null) {
 			BaseResponse rs = new BaseResponse(Status.BAD_REQUEST,"Podany adres E-Mail nie jest zarejestrowany w systemie");
 			return Response.status(Response.Status.BAD_REQUEST).entity(rs).build();
@@ -437,6 +442,10 @@ public class AuthRESTService {
 		if(changePasswordForm.getConfirmPassword()==null || changePasswordForm.getPassword()==null ||
 				changePasswordForm.getConfirmPassword().isEmpty() || changePasswordForm.getPassword().isEmpty()){
 			BaseResponse rs = new BaseResponse(Status.BAD_REQUEST,"Pole nie może być puste");
+			return Response.status(Response.Status.BAD_REQUEST).entity(rs).build();
+		}
+		if(changePasswordForm.getPassword().length() < 6){
+			BaseResponse rs = new BaseResponse(Status.BAD_REQUEST,"Hasło powinno zawierać co najmniej 6 znaków");
 			return Response.status(Response.Status.BAD_REQUEST).entity(rs).build();
 		}
 		if(!changePasswordForm.getConfirmPassword().equals(changePasswordForm.getPassword())){
