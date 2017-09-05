@@ -27,12 +27,23 @@
                              id="accountTable"
                              lazy="true">
                     <p:column headerText="#{i18n['account.username']}" sortBy="#{account.username}" filterBy="#{account.username}">
-                        <h:outputText value="#{account.username}" />
+                        <div style= " #{account.accountStatus=='DISABLED'? 'background-color:#EF9A9A;' : ''}
+                            #{account.accountStatus=='VERIFIED'? 'background-color:#BBDEFB;' : ''}
+                            #{account.accountStatus=='CONFIRMED'? 'background-color:#C8E6C9;' : ''}
+                            #{account.accountStatus=='UNCONFIRMED'? 'background-color:#D1C4E9;' : ''}">
+                            <h:outputText value="#{account.username}" />
+                        </div>
                     </p:column>
-                    <p:column width="80" style="text-align: center;" rendered="#{request.isUserInRole('Administrator') and account.username ne 'admin'}">
+                    <p:column  width="80" style="text-align: center;" rendered="#{request.isUserInRole('Administrator') and account.username ne 'admin'}">
                         <pretty:link mappingId="admin_users_edit" styleClass="btn btn-primary btn-xs">
                             <f:param value="#{account.username}"/>
                             #{i18n['common.edit']}
+                        </pretty:link>
+                    </p:column>
+                    <p:column width="80" style="text-align: center;" rendered="#{request.isUserInRole('Administrator') and account.username ne 'admin'}">
+                        <pretty:link mappingId="admin_users_password" styleClass="btn btn-primary btn-xs">
+                            <f:param value="#{account.username}"/>
+                            Zmień hasło
                         </pretty:link>
                     </p:column>
                     <p:column width="80" style="text-align: center;" rendered="#{request.isUserInRole('Administrator') and account.username ne 'admin'}">
@@ -41,7 +52,10 @@
                     </p:column>
                 </p:dataTable>
             </h:form>
-           
+           <div style="background-color: #EF9A9A; width:30px;height:30px;"></div>Użytkownik zablokowany
+           <div style="background-color: #D1C4E9; width:30px;height:30px;"></div>Użytkownik niezweryfikowany
+           <div style="background-color: #BBDEFB; width:30px;height:30px;"></div>Użytkownik zweryfikowany
+           <div style="background-color: #C8E6C9; width:30px;height:30px;"></div>Użytkownik zatwierdzony
         </div>
         <!-- /.row -->
 
