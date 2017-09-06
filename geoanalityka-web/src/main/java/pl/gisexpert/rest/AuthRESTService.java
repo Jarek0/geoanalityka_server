@@ -372,10 +372,10 @@ public class AuthRESTService {
 		}
 
 		accessTokenRepository.remove(accessToken);
+		SecurityUtils.getSubject().logout();
 		HttpURLConnection connection = null;
 
 		try {
-			//Create connection
 			URL url = new URL("http://services1.arcgis.com/mQcAehnytds8jMvo/arcgis/rest/services/Bilgoraj_ankieta/FeatureServer/0/applyEdits");
 			connection = (HttpURLConnection) url.openConnection();
 			connection.setRequestMethod("POST");
@@ -389,13 +389,11 @@ public class AuthRESTService {
 			connection.setUseCaches(false);
 			connection.setDoOutput(true);
 
-			//Send request
 			DataOutputStream wr = new DataOutputStream (
 					connection.getOutputStream());
 			wr.writeBytes(submitFormData.getUpdate());
 			wr.close();
 
-			//Get Response
 			InputStream is = connection.getInputStream();
 			BufferedReader rd = new BufferedReader(new InputStreamReader(is));
 			StringBuilder response = new StringBuilder(); // or StringBuffer if Java version 5+
@@ -534,17 +532,19 @@ public class AuthRESTService {
 
 	@GET
 	@Path("/logout")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
 	public Response deauthToken(@Context HttpServletRequest request) {
-
-		String token = request.getHeader("Access-Token");
+		String token = request.getHeader("token");
 
 		if (token == null) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
 
 		AccessToken tokenEntity = accessTokenRepository.findByToken(token);
-		tokenEntity.setExpires(new Date());
-		accessTokenRepository.edit(tokenEntity);
+		if(tokenEntity!=null){
+			accessTokenRepository.remove(tokenEntity);
+		}
 
 		SecurityUtils.getSubject().logout();
 
