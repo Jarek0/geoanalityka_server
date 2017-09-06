@@ -112,5 +112,4 @@ public class Account implements Serializable{
 
 	    return val == null ? null : val.value();
 	}
-
 }

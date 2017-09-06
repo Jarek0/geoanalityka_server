@@ -16,8 +16,16 @@
             <!-- /.col-lg-12 -->
         </div>
         <!-- /.row -->
-
+        <!--<script>
+            setTimeout(setElement(),60000);
+            function setElement() {
+                var newController= "#{browseUsersController}";
+                newController.setupLazyAccounts;
+                $('#accountTable').value="#{browseUsersController.lazyAccounts}";
+            }
+        </script>-->
         <div class="row">
+
             <h:form>
                 <p:dataTable styleClass="uk-table"
                              var="account"
@@ -29,8 +37,8 @@
                     <p:column headerText="#{i18n['account.username']}" sortBy="#{account.username}" filterBy="#{account.username}">
                         <div style= " #{account.accountStatus=='DISABLED'? 'background-color:#EF9A9A;' : ''}
                             #{account.accountStatus=='VERIFIED'? 'background-color:#BBDEFB;' : ''}
-                            #{account.accountStatus=='CONFIRMED'? 'background-color:#C8E6C9;' : ''}
-                            #{account.accountStatus=='UNCONFIRMED'? 'background-color:#D1C4E9;' : ''}">
+                            #{account.accountStatus=='CONFIRMED'? 'background-color: #C8E6C9;' : ''}
+                            #{account.accountStatus=='UNCONFIRMED'? 'background-color:#EDE7F6;' : ''}">
                             <h:outputText value="#{account.username}" />
                         </div>
                     </p:column>
@@ -40,7 +48,7 @@
                             #{i18n['common.edit']}
                         </pretty:link>
                     </p:column>
-                    <p:column width="80" style="text-align: center;" rendered="#{request.isUserInRole('Administrator') and account.username ne 'admin'}">
+                    <p:column width="120" style="text-align: center;" rendered="#{request.isUserInRole('Administrator') and account.username ne 'admin'}">
                         <pretty:link mappingId="admin_users_password" styleClass="btn btn-primary btn-xs">
                             <f:param value="#{account.username}"/>
                             Zmień hasło
@@ -53,7 +61,7 @@
                 </p:dataTable>
             </h:form>
            <div style="background-color: #EF9A9A; width:30px;height:30px;"></div>Użytkownik zablokowany
-           <div style="background-color: #D1C4E9; width:30px;height:30px;"></div>Użytkownik niezweryfikowany
+           <div style="background-color: #EDE7F6; width:30px;height:30px;"></div>Użytkownik niezweryfikowany
            <div style="background-color: #BBDEFB; width:30px;height:30px;"></div>Użytkownik zweryfikowany
            <div style="background-color: #C8E6C9; width:30px;height:30px;"></div>Użytkownik zatwierdzony
         </div>
