@@ -127,7 +127,7 @@ public class AuthRESTService {
 		String baseURL = url.substring(0, url.length() - request.getRequestURI().length()) + request.getContextPath();
 		String confirmAccountURL = baseURL + "/rest/auth/confirm/" + confirmationCode;
 
-		formatter.applyPattern(i18n.getString("account.confirm.emailtext"));
+		formatter.applyPattern(i18n.getString("account.confirm.emailtextwithpassword"));
 		Object[] params = { confirmAccountURL };
 
 		String emailText = formatter.format(params);
@@ -136,7 +136,7 @@ public class AuthRESTService {
 			try {
 				accountRepository.edit(account);
 				mailService.sendMail(
-						"Public Survey bilgoraj - potwierdzenie rejestracji użytkownika",
+						i18n.getString("account.confirm.subject"),
 						emailText,
 						username);
 				BaseResponse successResponse = new BaseResponse(Status.OK,"Mail został wysłany ponownie");
@@ -250,7 +250,7 @@ public class AuthRESTService {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorStatus).build();
 		}
 
-		String subject = "Geoanalizy.pl - potwierdzenie rejestracji użytkownika";
+		String subject = i18n.getString("account.confirm.subject");
 
 		ResourceBundle i18n = ResourceBundle.getBundle("pl.gisexpert.i18n.Text");
 		formatter.applyPattern(i18n.getString("account.confirm.emailtext"));
@@ -268,7 +268,7 @@ public class AuthRESTService {
 			return Response.status(Response.Status.OK).entity(registerStatus).build();
 		}
 
-		BaseResponse registerStatus = new BaseResponse(Status.OK,"Mail został wysłany ponownie");
+		BaseResponse registerStatus = new BaseResponse(Status.OK,"Mail został wysłany");
 		return Response.status(Response.Status.OK).entity(registerStatus).build();
 	}
 
@@ -290,7 +290,7 @@ public class AuthRESTService {
 		account.setAccountStatus(AccountStatus.CONFIRMED);
 		accountRepository.edit(account);
 
-		String subject = "Public Survey bilgoraj - weryfikacja użytkownika";
+		String subject = i18n.getString("account.confirm.adminemailsubject");
 		String emailText =new StringBuilder().append("Użytkownik: ")
 				.append(account.getUsername()).append(" prosi o weryfikację danych przez administratora.").toString();
 
