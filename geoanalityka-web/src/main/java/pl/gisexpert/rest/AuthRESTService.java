@@ -150,6 +150,57 @@ public class AuthRESTService {
 		return Response.status(Response.Status.BAD_REQUEST).entity(errorStatus).build();
 	}
 
+	@GET
+	@Path("/checkToken")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response checkToken(@Context HttpServletRequest request){
+		String token = request.getHeader("token");
+		System.out.print(token);
+		AccessToken accessToken = accessTokenRepository.findByToken(token);
+		if(accessToken!=null){
+			LoginAttempt loginAttempt = new LoginAttempt();
+			loginAttempt.setDate(new Date());
+			loginAttempt.setAccount(accessToken.getAccount());
+			loginAttempt.setIp(request.getRemoteAddr());
+			token = UUID.randomUUID().toString();
+
+			while (accessTokenRepository.findByToken(token) != null) {
+				token = UUID.randomUUID().toString();
+			}
+
+			accessToken.setToken(token);
+
+			Date date = new Date();
+
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(date);
+			cal.add(Calendar.MINUTE, 240); // token will expire after 240 minutes
+			date = cal.getTime();
+
+			accessToken.setExpires(date);
+			accessToken = accessTokenRepository.create(accessToken,true);
+			Account konto = accessToken.getAccount();
+			GetTokenResponse getTokenStatus =
+					new GetTokenResponse(konto.getFirstName(),
+							konto.getLastName(),
+							accessToken.getToken(),
+							date,Response.Status.OK,
+							"Successfully generated token");
+
+			loginAttempt.setSuccessful(true);
+			konto.setLastLoginDate(new Date());
+			accountRepository.edit(konto);
+			loginAttemptRepository.create(loginAttempt);
+			return Response.status(Response.Status.OK).entity(getTokenStatus).build();
+		}
+		else
+		{
+			BaseResponse errorStatus = new BaseResponse(Status.BAD_REQUEST,token+ "Token nie pasuje do żadnego konta");
+			return Response.status(Response.Status.BAD_REQUEST).entity(errorStatus).build();
+		}
+	}
+
 	@POST
 	@Path("/register")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -212,7 +263,7 @@ public class AuthRESTService {
 		try {
 			mailService.sendMail(subject, emailText, account.getUsername());
 		} catch (MessagingException e) {
-			BaseResponse registerStatus = new BaseResponse(Status.OK,"Niestety wysyłanie maila weryfikacyjnego nie " +
+			BaseResponse registerStatus = new BaseResponse(Status.GATEWAY_TIMEOUT,"Niestety wysyłanie maila weryfikacyjnego nie " +
 					"powiodło się. Skontaktuj się z administratorem");
 			return Response.status(Response.Status.OK).entity(registerStatus).build();
 		}
