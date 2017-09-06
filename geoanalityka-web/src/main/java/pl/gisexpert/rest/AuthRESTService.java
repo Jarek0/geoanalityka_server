@@ -161,7 +161,6 @@ public class AuthRESTService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response checkToken(@Context HttpServletRequest request){
 		String token = request.getHeader("token");
-		System.out.print(token);
 		AccessToken accessToken = accessTokenRepository.findByToken(token);
 		if(accessToken!=null){
 			LoginAttempt loginAttempt = new LoginAttempt();
@@ -201,8 +200,8 @@ public class AuthRESTService {
 		}
 		else
 		{
-			BaseResponse errorStatus = new BaseResponse(Status.BAD_REQUEST,token+ "Token nie pasuje do żadnego konta");
-			return Response.status(Response.Status.BAD_REQUEST).entity(errorStatus).build();
+			BaseResponse errorStatus = new BaseResponse(Status.UNAUTHORIZED,token+ "Token nie pasuje do żadnego konta");
+			return Response.status(Response.Status.UNAUTHORIZED).entity(errorStatus).build();
 		}
 	}
 
@@ -411,7 +410,7 @@ public class AuthRESTService {
 
 		if (accessToken == null) {
 			System.out.println("brak tokenu");
-			return Response.status(Response.Status.FORBIDDEN).build();
+			return Response.status(Status.UNAUTHORIZED).build();
 		}
 
 		Date date = new Date();
@@ -419,14 +418,14 @@ public class AuthRESTService {
 		if(date.after(accessToken.getExpires())){
 			System.out.println("przestarzaly token");
 			accessTokenRepository.remove(accessToken);
-			return Response.status(Response.Status.FORBIDDEN).build();
+			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
 
 		accessTokenRepository.remove(accessToken);
+		SecurityUtils.getSubject().logout();
 		HttpURLConnection connection = null;
 
 		try {
-			//Create connection
 			URL url = new URL("http://services1.arcgis.com/mQcAehnytds8jMvo/arcgis/rest/services/Bilgoraj_ankieta/FeatureServer/0/applyEdits");
 			connection = (HttpURLConnection) url.openConnection();
 			connection.setRequestMethod("POST");
@@ -440,13 +439,11 @@ public class AuthRESTService {
 			connection.setUseCaches(false);
 			connection.setDoOutput(true);
 
-			//Send request
 			DataOutputStream wr = new DataOutputStream (
 					connection.getOutputStream());
 			wr.writeBytes(submitFormData.getUpdate());
 			wr.close();
 
-			//Get Response
 			InputStream is = connection.getInputStream();
 			BufferedReader rd = new BufferedReader(new InputStreamReader(is));
 			StringBuilder response = new StringBuilder(); // or StringBuffer if Java version 5+
@@ -474,7 +471,7 @@ public class AuthRESTService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response renewToken(@Context HttpServletRequest request) {
-		String token = request.getHeader("Access-Token");
+		String token = request.getHeader("token");
 
 		AccessToken accessToken = accessTokenRepository.findByToken(token);
 
@@ -584,18 +581,20 @@ public class AuthRESTService {
 	}
 
 	@GET
-	@Path("/logout")
+	@Path("/signOut")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
 	public Response deauthToken(@Context HttpServletRequest request) {
-
-		String token = request.getHeader("Access-Token");
+		String token = request.getHeader("token");
 
 		if (token == null) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
 
 		AccessToken tokenEntity = accessTokenRepository.findByToken(token);
-		tokenEntity.setExpires(new Date());
-		accessTokenRepository.edit(tokenEntity);
+		if(tokenEntity!=null){
+			accessTokenRepository.remove(tokenEntity);
+		}
 
 		SecurityUtils.getSubject().logout();
 
