@@ -72,9 +72,6 @@ public class AuthRESTService {
 	private RoleRepository roleRepository;
 
     @Inject
-	private AccountService accountService;
-
-    @Inject
 	private AccessTokenRepository accessTokenRepository;
 
     @Inject
@@ -409,20 +406,16 @@ public class AuthRESTService {
 		AccessToken accessToken = accessTokenRepository.findByToken(submitFormData.getToken());
 
 		if (accessToken == null) {
-			System.out.println("brak tokenu");
 			return Response.status(Status.UNAUTHORIZED).build();
 		}
 
 		Date date = new Date();
 
 		if(date.after(accessToken.getExpires())){
-			System.out.println("przestarzaly token");
 			accessTokenRepository.remove(accessToken);
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
 
-		accessTokenRepository.remove(accessToken);
-		SecurityUtils.getSubject().logout();
 		HttpURLConnection connection = null;
 
 		try {
@@ -453,10 +446,10 @@ public class AuthRESTService {
 				response.append('\r');
 			}
 			rd.close();
-			System.out.println("Ok");
 			return Response.status(Response.Status.OK).build();
 		} catch (Exception e) {
-			System.out.println("Inny blad");
+			accessTokenRepository.remove(accessToken);
+			SecurityUtils.getSubject().logout();
 			e.printStackTrace();
 			return Response.status(Response.Status.FORBIDDEN).build();
 		} finally {
