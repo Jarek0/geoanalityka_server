@@ -16,10 +16,7 @@
  */
 package pl.gisexpert.rest;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -28,12 +25,12 @@ import java.util.*;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.mail.MessagingException;
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -49,7 +46,6 @@ import org.slf4j.Logger;
 
 import pl.gisexpert.cms.data.*;
 import pl.gisexpert.cms.model.*;
-import pl.gisexpert.cms.service.AccountService;
 import pl.gisexpert.cms.service.LoginAttemptService;
 import pl.gisexpert.rest.Validator.RegistrationValidator;
 import pl.gisexpert.rest.model.*;
@@ -64,6 +60,9 @@ import static org.apache.shiro.authc.credential.DefaultPasswordService.DEFAULT_H
 @Path("/auth")
 @RequestScoped
 public class AuthRESTService {
+
+	@Context
+	ServletContext servletContext;
 
     @Inject
 	private AccountRepository accountRepository;
@@ -85,9 +84,6 @@ public class AuthRESTService {
 
     @Inject
 	private MailService mailService;
-
-    @Inject
-	private AddressRepository addressRepository;
 
     @Inject
 	private PasswordHasher passwordHasher;
@@ -127,7 +123,7 @@ public class AuthRESTService {
 
 		String url = request.getRequestURL().toString();
 		String baseURL = url.substring(0, url.length() - request.getRequestURI().length()) + request.getContextPath();
-		String confirmAccountURL = baseURL + "/rest/auth/confirm/" + confirmationCode;
+		String confirmAccountURL = baseURL + "/rest/auth/confirm?confirmationCode=" + confirmationCode;
 
 		formatter.applyPattern(i18n.getString("account.confirm.emailtextwithpassword"));
 		Object[] params = { confirmAccountURL };
@@ -257,7 +253,7 @@ public class AuthRESTService {
 		formatter.applyPattern(i18n.getString("account.confirm.emailtext"));
 		String url = request.getRequestURL().toString();
 		String baseURL = url.substring(0, url.length() - request.getRequestURI().length()) + request.getContextPath();
-		String confirmAccountURL = baseURL + "/rest/auth/confirm/" + confirmationCode;
+		String confirmAccountURL = baseURL + "/rest/auth/confirm?confirmationCode=" + confirmationCode;
 		Object[] params = { confirmAccountURL };
 		String emailText = formatter.format(params);
 
@@ -271,36 +267,6 @@ public class AuthRESTService {
 
 		BaseResponse registerStatus = new BaseResponse(Status.OK,"Mail został wysłany");
 		return Response.status(Response.Status.OK).entity(registerStatus).build();
-	}
-
-	@GET
-	@Path("/confirm/{confirmationToken}")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response confirmAccount(@Context HttpServletRequest request,
-								   @PathParam("confirmationToken") String confirmationToken) {
-
-		Account account = accountRepository.findByToken(confirmationToken);
-
-		if (!account.getAccountConfirmation().getToken().equals(confirmationToken)) {
-			BaseResponse requestStatus = new BaseResponse(Response.Status.UNAUTHORIZED,"Weryfikacja konta nie powiodła się.");
-			return Response.status(Response.Status.UNAUTHORIZED).entity(requestStatus).build();
-		}
-
-		account.setAccountConfirmation(null);
-		account.setAccountStatus(AccountStatus.CONFIRMED);
-		accountRepository.edit(account);
-
-		String subject = i18n.getString("account.confirm.adminemailsubject");
-		String emailText =new StringBuilder().append("Użytkownik: ")
-				.append(account.getUsername()).append(" prosi o weryfikację danych przez administratora.").toString();
-
-		List<String> adminUserNames=roleRepository.findAllAdminsUsernames();
-		mailService.sendMail(subject, emailText, adminUserNames);
-
-		BaseResponse requestStatus = new BaseResponse(Response.Status.OK,"Konto zostało zweryfikowane. " +
-				"Twoje konto potrzebuje aktywacji przez administratora");
-		return Response.status(Response.Status.OK).entity(requestStatus).build();
 	}
 
 	@POST
@@ -594,4 +560,13 @@ public class AuthRESTService {
 		return Response.status(Response.Status.OK).build();
 	}
 
+	@GET
+	@Path("/backgroundImage")
+	@Produces("image/jpg")
+	public Response getBackgroudImage(@Context HttpServletRequest request) {
+		return Response.ok()
+                .entity(this.servletContext.getResourceAsStream("/WEB-INF/splash2.jpg"))
+                .type("image/jpeg")
+                .build();
+	}
 }
