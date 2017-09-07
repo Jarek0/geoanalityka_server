@@ -95,11 +95,11 @@ public class MailService {
 				return new PasswordAuthentication(username, password);
 			}
 		});
-		Message message = new MimeMessage(session);
+		MimeMessage message = new MimeMessage(session);
 		message.setFrom(new InternetAddress(from));
 		message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(address));
-		message.setSubject(subject);
-		message.setText(text);
+		message.setSubject(subject, "UTF-8");
+		message.setText(text, "UTF-8");
 		Transport.send(message);
 	}
 
