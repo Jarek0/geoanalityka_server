@@ -11,10 +11,10 @@
 	language governing permissions and limitations under the License. -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<name>geoanalityka</name>
+	<name>ankieta</name>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>pl.gisexpert</groupId>
-	<artifactId>geoanalityka</artifactId>
+	<artifactId>ankieta</artifactId>
 	<version>0.10</version>
 	<packaging>pom</packaging>
 
@@ -27,10 +27,10 @@
 		</license>
 	</licenses>
 	<modules>
-		<module>geoanalityka-cms-ejb</module>
-		<module>geoanalityka-web</module>
-		<module>geoanalityka-ear</module>
-		<module>geoanalityka-common-ejb</module>
+		<module>ankieta-cms-ejb</module>
+		<module>ankieta-web</module>
+		<module>ankieta-ear</module>
+		<module>ankieta-common-ejb</module>
 	</modules>
 
 	<repositories>
@@ -84,21 +84,14 @@
 
 			<dependency>
 				<groupId>pl.gisexpert</groupId>
-				<artifactId>geoanalityka-common-jar</artifactId>
-				<version>${project.version}</version>
-				<type>jar</type>
-			</dependency>
-			
-			<dependency>
-				<groupId>pl.gisexpert</groupId>
-				<artifactId>geoanalityka-common-ejb</artifactId>
+				<artifactId>ankieta-common-ejb</artifactId>
 				<version>${project.version}</version>
 				<type>ejb</type>
 			</dependency>
 
 			<dependency>
 				<groupId>pl.gisexpert</groupId>
-				<artifactId>geoanalityka-cms-ejb</artifactId>
+				<artifactId>ankieta-cms-ejb</artifactId>
 				<version>${project.version}</version>
 				<type>ejb</type>
 			</dependency>
@@ -107,7 +100,7 @@
 				in every module -->
 			<dependency>
 				<groupId>pl.gisexpert</groupId>
-				<artifactId>geoanalityka-web</artifactId>
+				<artifactId>ankieta-web</artifactId>
 				<version>${project.version}</version>
 				<type>war</type>
 				<scope>compile</scope>
