@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
+                template="../../templates/admin.xhtml">
+
+    <f:metadata>
+        <f:viewParam required="true"
+                     name="username"
+                     value="#{editUserController.account}"
+                     converter="#{accountConverter}"
+                     />
+        <f:event type="preRenderView" listener="#{editUserController.init()}"/>
+    </f:metadata>
+
+    <ui:define name="content">
+
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="page-header">#{i18n['account']} <em>#{editUserController.account.username}</em></h1>
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+        <!-- /.row -->
+
+        <div class="panel panel-info" >
+            <div class="panel-heading">
+                <div class="panel-title">#{i18n['editaccount.formtitle']}</div>
+            </div>     
+
+            <div style="padding-top:30px" class="panel-body" >
+
+                <div style="display:none" id="login-alert" class="alert alert-danger col-sm-12"></div>
+
+                <h:form id="editUser" styleClass="form-horizontal" role="form">
+                    <p:messages />
+
+                    <div class="form-group col-sm-12 col-lg-8">
+                        <p:outputLabel for="account-email" value="#{i18n['account.email']}" styleClass="control-label col-sm-4"/>
+                        <div class="col-sm-8">
+                            <p:inputText id="account-email" styleClass="form-control" value="#{editUserController.newEmail}" pt:placeholder="#{i18n['account.email']}">
+                                <f:validator binding="#{emailUnicityValidator}" id="emailUnicityValidator" />
+                                <f:attribute name="userId" value="#{editUserController.account.id}" />
+                            </p:inputText>
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-12 col-lg-8">
+                        <p:outputLabel for="accountStatus" styleClass="control-label col-sm-4" value="#{i18n['account.status']}"/>
+                        <div class="col-sm-8">
+                        <h:selectOneMenu disabled="#{editUserController.isAdmin}" id="accountStatus" styleClass="form-control"
+                                         value="#{editUserController.accountStatus}">
+                            <f:selectItems value="#{editUserController.allAccountStatus}"
+                                           var="accountStatus"
+                                           itemValue="#{accountStatus.toString()}"
+                                           itemLabel="#{i18n['account.status.' += accountStatus.toString()]}"/>
+                        </h:selectOneMenu>
+                        </div>
+                    </div>
+
+                    <hr class="col-sm-12 col-lg-8" />
+
+                    <div class="form-group col-sm-12 col-lg-8">
+                        <p:outputLabel for="account-firstname" value="#{i18n['account.firstname']}" styleClass="control-label col-sm-4"/>
+                        <div class="col-sm-8">
+                            <p:inputText id="account-firstname" styleClass="form-control" value="#{editUserController.newFirstname}" pt:placeholder="#{i18n['account.firstname']}">
+                                <f:validator binding="#{firstnameUnicityValidator}" id="firstnameUnicityValidator" />
+                            </p:inputText>
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-12 col-lg-8">
+                        <p:outputLabel for="account-lastname" value="#{i18n['account.lastname']}" styleClass="control-label col-sm-4"/>
+                        <div class="col-sm-8">
+                            <p:inputText id="account-lastname" styleClass="form-control" value="#{editUserController.newLastname}" pt:placeholder="#{i18n['account.lastname']}">
+                                <f:validator binding="#{lastnameUnicityValidator}" id="lastnameUnicityValidator" />
+                            </p:inputText>
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-12 col-lg-8">
+                        <p:outputLabel for="account-phone" value="#{i18n['account.phone']}" styleClass="control-label col-sm-4"/>
+                        <div class="col-sm-8">
+                            <p:inputText id="account-phone" styleClass="form-control" value="#{editUserController.newPhone}" pt:placeholder="#{i18n['account.phone']}">
+                                <f:validator binding="#{phoneUnicityValidator}" id="phoneUnicityValidator" />
+                            </p:inputText>
+                        </div>
+                    </div>
+                    <h:panelGroup rendered="#{not empty editUserController.address}">
+                    <hr class="col-sm-12 col-lg-8" />
+
+                    <div class="form-group col-sm-12 col-lg-8">
+                        <p:outputLabel for="address-zipcode" value="#{i18n['address.zipcode']}" styleClass="control-label col-sm-4"/>
+                        <div class="col-sm-8">
+                            <p:inputText id="address-zipcode" styleClass="form-control" value="#{editUserController.newZipCode}" pt:placeholder="#{i18n['address.zipcode']}">
+                                <f:validator binding="#{zipCodeUnicityValidator}" id="zipCodeUnicityValidator" />
+                            </p:inputText>
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-12 col-lg-8">
+                        <p:outputLabel for="address-city" value="#{i18n['address.city']}" styleClass="control-label col-sm-4"/>
+                        <div class="col-sm-8">
+                            <p:inputText id="address-city" styleClass="form-control" value="#{editUserController.newCity}" pt:placeholder="#{i18n['address.city']}">
+                                <f:validator binding="#{cityUnicityValidator}" id="cityUnicityValidator" />
+                            </p:inputText>
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-12 col-lg-8">
+                        <p:outputLabel for="address-street" value="#{i18n['address.street']}" styleClass="control-label col-sm-4"/>
+                        <div class="col-sm-8">
+                            <p:inputText id="address-street" styleClass="form-control" value="#{editUserController.newStreet}" pt:placeholder="#{i18n['address.street']}">
+                                <f:validator binding="#{streetUnicityValidator}" id="streetUnicityValidator" />
+                            </p:inputText>
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-12 col-lg-8">
+                        <p:outputLabel for="address-homenumber" value="#{i18n['address.homenumber']}" styleClass="control-label col-sm-4"/>
+                        <div class="col-sm-8">
+                            <p:inputText id="address-homenumber" styleClass="form-control" value="#{editUserController.newHouseNumber}" pt:placeholder="#{i18n['address.homenumber']}">
+                                <f:validator binding="#{houseNumberUnicityValidator}" id="houseNumberUnicityValidator" />
+                            </p:inputText>
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-12 col-lg-8">
+                        <p:outputLabel for="address-flatnumber" value="#{i18n['address.flatnumber']}" styleClass="control-label col-sm-4"/>
+                        <div class="col-sm-8">
+                            <p:inputText id="address-flatnumber" styleClass="form-control" value="#{editUserController.newFlatNumber}" pt:placeholder="#{i18n['address.flatnumber']}">
+                                <f:validator binding="#{flatNumberUnicityValidator}" id="flatNumberUnicityValidator" />
+                            </p:inputText>
+                        </div>
+                    </div>
+                    </h:panelGroup>
+                    <div class="form-group col-sm-12 col-lg-8">
+                        <div class="col-md-8">
+                            <h4>#{i18n['roles']}</h4>
+                            <p:pickList id="pickList"
+                                        value="#{editUserController.roles}"
+                                        var="role"
+                                        itemLabel="#{role.name}"
+                                        itemValue="#{role}"
+                                        converter="entityConverter"/>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:10px" class="form-group">
+                        <!-- Button -->
+
+                        <div class="col-sm-12 controls">
+                            <p:commandButton update="editUser" styleClass="btn btn-success" actionListener="#{editUserController.save()}" value="#{i18n['common.change']}"/>
+                        </div>
+                    </div>
+                </h:form>
+            </div>                     
+        </div> 
+    </ui:define>
+
+
+</ui:composition>
